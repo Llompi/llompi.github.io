@@ -1,8 +1,84 @@
-/* Styles for the website go here */
-
-.color-style-1 {
-  /* Styles for color style 1 go here */
-}
-.color-style-2 {
-  /* Styles for color style 2 go here */
-}
+:root {
+    --primary-color: #45595a;
+    --secondary-color: #8fa9b1;
+    --tertiary-color: #e9b872;
+  }
+  
+  body {
+    font-family: 'Open Sans', sans-serif;
+  }
+  
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+  }
+  
+  header img {
+    height: 50px;
+  }
+  
+  header h1 {
+    margin: 0;
+  }
+  
+  header .hamburger-menu {
+    background-color: transparent;
+    border: none;
+    font-size: 30px;
+  }
+  
+  main {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  section {
+    padding: 20px;
+  }
+  
+  section h2 {
+    margin-top: 0;
+  }
+  
+  section img {
+    max-width: 100%;
+  }
+  
+  .color-style-1 {
+    --title-color: var(--primary-color);
+    --text-color: var(--secondary-color);
+    --background-color: var(--tertiary-color);
+  }
+  
+  .color-style-2 {
+    --title-color: var(--secondary-color);
+    --text-color: var(--tertiary-color);
+    --background-color: var(--primary-color);
+  }
+  
+  .color-style-3 {
+    --title-color: var(--tertiary-color);
+    --text-color: var(--primary-color);
+    --background-color: var(--secondary-color);
+  }
+  
+  .color-style-1,
+  .color-style-2,
+  .color-style-3 {
+    color: var(--text-color);
+  }
+  
+  .color-style-1 h2,
+  .color-style-2 h2,
+  .color-style-3 h2 {
+    color: var(--title-color);
+  }
+  
+  .color-style-1 section,
+  .color-style-2 section,
+  .color-style-3 section {
+    background-color: var(--background-color);
+  }
+  
