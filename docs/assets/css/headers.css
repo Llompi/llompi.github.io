@@ -1,0 +1,22 @@
+header {
+    background-image: url("docs/assets/img/background.png");
+    background-size: cover;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+  }
+  
+  .logo {
+    max-height: 40px;
+  }
+  
+  .logo img {
+    max-height: 100%;
+  }
+  
