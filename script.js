@@ -1,6 +1,5 @@
-const menuIcon = document.querySelector('.menu-icon');
-const hamburgerMenu = document.querySelector('.hamburger-menu');
-
-menuIcon.addEventListener('click', () => {
-    hamburgerMenu.classList.toggle('open');
-});
+function toggleMenu() {
+    const nav = document.querySelector('.hamburger-nav');
+    nav.style.display = nav.style.display === 'none' ? 'block' : 'none';
+  }
+  
