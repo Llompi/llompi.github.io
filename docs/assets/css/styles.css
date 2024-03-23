@@ -80,6 +80,13 @@ body.dark-theme {
   align-items: center;
 }
 
+img {
+  width: 100%;
+  height: auto;
+  margin: 1rem 0;
+  border-radius: 5px; /* Optional: for rounded corners on images */
+}
+
 .switch {
   position: relative;
   display: inline-block;
