@@ -1,140 +1,159 @@
-/* Reset default margin and padding */
-body, h1, h2, h3, p, ul, li {
-  margin: 0;
-  padding: 0;
-}
-/* Your existing CSS styles */
-:root {
-  --primary-color: #45595a;
-  --secondary-color: #8fa9b1;
-  --tertiary-color: #e9b872;
+body {
+  font-family: 'Asap', sans-serif;
+  transition: background-color 0.3s, color 0.3s; /* Smooth transition for background and text color */
 }
 
-body {
-  font-family: 'Open Sans', sans-serif;
-  margin: 0;
-  padding: 0;
+header {
+  text-align: center;
+  margin: 4rem 0;
 }
 
 h1 {
-  color: var(--primary-color);
+  font-size: 3rem;
+  transition: color 0.3s; /* Smooth transition for color */
+}
+
+h2 {
+  font-weight: 700;
+  font-size: 1.5rem;
+  transition: color 0.3s; /* Smooth transition for color */
 }
 
 p {
-  color: var(--secondary-color);
+  font-weight: 400;
+  transition: color 0.3s; /* Smooth transition for color */
 }
 
-a {
-  color: var(--tertiary-color);
+.project {
+  width: 90%;
+  margin: 2rem auto;
+  padding: 1rem;
+  border-radius: 10px;
+  transition: background-color 0.3s, box-shadow 0.3s, transform 0.3s;
 }
 
-/* Transparent Header Styles */
-.transparent-header {
+.project:hover {
+  transform: scale(1.03);
+  box-shadow: 0 6px 12px 0 rgba(0, 0, 0, 0.15);
+}
+
+/* Light Theme Styles */
+body.light-theme {
+  background-color: #f0f0f0; /* Off-white background for light theme */
+  color: #333; /* Dark text for light theme */
+}
+
+.light-theme header h1,
+.light-theme header h2,
+.light-theme header p {
+  color: #333; /* Dark text for light theme */
+}
+
+.light-theme .project {
+  background-color: #fff; /* White card background for light theme */
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1); /* Lighter shadow for light theme */
+}
+
+/* Dark Theme Styles */
+body.dark-theme {
+  background-color: #333; /* Dark gray background for dark theme */
+  color: #e0e0e0; /* Lighter text for dark theme for better contrast */
+}
+
+.dark-theme header h1,
+.dark-theme header h2,
+.dark-theme header p {
+  color: #e0e0e0; /* Lighter text for dark theme for better contrast */
+}
+
+.dark-theme .project {
+  background-color: #4f4f4f; /* Lighter gray for card in dark theme */
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); /* Darker shadow for dark theme */
+}
+
+/* Theme Switch Styles */
+.theme-switch {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 20px;
 }
 
-.logo img {
-  height: 50px;
-}
-
-.hamburger-nav {
-  display: none;
-  position: absolute;
-  top: calc(100% + 10px); /* Add some space from the button */
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #fff;
-  border-radius: 5px;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-  z-index: 999; /* Ensure it's above other elements */
-}
-
-.hamburger-nav ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.hamburger-nav li {
-  padding: 12px 16px;
-}
-
-.hamburger-nav li:hover {
-  background-color: #f1f1f1;
-}
-
-/* Show the menu on hover instead of click */
-.hamburger-menu:hover + .hamburger-nav {
-  display: block;
-}
-
-/* Adjust the size of the menu dynamically based on the content */
-.hamburger-nav {
-  min-width: max-content;
-  max-width: 80%; /* Limit the maximum width if needed */
-}
-
-/* Center the menu text */
-.hamburger-nav a {
-  text-align: center;
-  display: block;
-}
-
-/* Position the hamburger menu in the center of the button */
-.hamburger-menu {
+.switch {
   position: relative;
-  width: 30px;
-  height: 22.5px;
-  cursor: pointer;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+  margin: 0 10px;
 }
 
-.hamburger-menu:before,
-.hamburger-menu:after,
-.hamburger-menu div {
-  content: '';
-  position: absolute;
-  width: 100%;
-  height: 4.5px;
-  border-radius: 4.5px;
-  background-color: var(--primary-color);
-  transition: all .3s ease-in-out;
-}
-
-.hamburger-menu:before {
-  top: -10px;
-}
-
-.hamburger-menu div {
-  top: calc(50% - (4.5px / 2));
-}
-
-.hamburger-menu:after {
-  bottom: -10px;
-}
-
-.hamburger-menu.open:before,
-.hamburger-menu.open div,
-.hamburger-menu.open:after {
-  top: calc(50% - (4.5px / 2));
-}
-
-.hamburger-menu.open:before,
-.hamburger-menu.open div,
-.hamburger-menu.open:after {
-  transform-origin: center center;
-}
-
-.hamburger-menu.open:before {
-  transform: rotate(-45deg);
-}
-
-.hamburger-menu.open div {
+.switch input {
   opacity: 0;
+  width: 0;
+  height: 0;
 }
 
-.hamburger-menu.open:after {
-  transform: rotate(45deg);
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #2196F3;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+.material-icons {
+  color: #fff;
+}
+
+/* Dark Theme Styles */
+.dark-theme {
+  background-color: #333; /* Dark gray background for dark theme */
+  color: #fff; /* White text for dark theme */
+}
+
+.dark-theme header h1 {
+  color: #4a90e2; /* Dark non-perfect blue for dark theme */
+}
+
+.dark-theme .project {
+  background-color: #4f4f4f; /* Lighter gray for card in dark theme */
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); /* Darker shadow for dark theme */
+}
+
+.dark-theme .theme-switch .material-icons {
+  color: #ccc;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

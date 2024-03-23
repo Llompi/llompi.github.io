@@ -3,50 +3,40 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Project Portfolio</title>
-  <link rel="stylesheet" href="docs/assets/css/style.css"> <!-- Updated path to your CSS file -->
+  <title>Portfolio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Asap:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
+<div id="preloader"></div>
+<div class="theme-switch">
+  <span class="material-icons">wb_sunny</span>
+  <label class="switch">
+    <input type="checkbox" id="theme-toggle">
+    <span class="slider round"></span>
+  </label>
+  <span class="material-icons">nights_stay</span>
+</div>
 <header>
-  <h1>My Project Portfolio</h1>
+  <h1>Your Name</h1>
+  <h2>Creative Developer</h2>
+  <p>Welcome to my online portfolio where I showcase my passion for creating innovative and user-friendly digital experiences.</p>
 </header>
-
-<nav>
-  <!-- Add navigation links to your projects or sections -->
-  <ul>
-    <li><a href="#project1">Project 1</a></li>
-    <li><a href="#project2">Project 2</a></li>
-    <li><a href="#project3">Project 3</a></li>
-  </ul>
-</nav>
-
 <main>
-  <!-- Project 1 Section -->
-  <section id="project1">
-    <h2>Project 1</h2>
-    <p>Description of Project 1.</p>
-    <img src="docs/assets/img/project1.png" alt="Project 1 Image"> <!-- Updated path to your image -->
+  <section class="project" id="project1">
+    <h2>Project Title One</h2>
+    <p>Project description goes here. This is a placeholder text.</p>
   </section>
-
-  <!-- Project 2 Section -->
-  <section id="project2">
-    <h2>Project 2</h2>
-    <p>Description of Project 2.</p>
-    <img src="docs/assets/img/project2.jpg" alt="Project 2 Image"> <!-- Updated path to your image -->
+  <section class="project" id="project2">
+    <h2>Project Title Two</h2>
+    <p>Project description goes here. This is a placeholder text.</p>
   </section>
-
-  <!-- Project 3 Section -->
-  <section id="project3">
-    <h2>Project 3</h2>
-    <p>Description of Project 3.</p>
-    <img src="docs/assets/img/project3.jpg" alt="Project 3 Image"> <!-- Updated path to your image -->
+  <section class="project" id="project3">
+    <h2>Project Title Three</h2>
+    <p>Project description goes here. This is a placeholder text.</p>
   </section>
 </main>
-
-<footer>
-  <p>&copy; 2023 My Project Portfolio</p>
-</footer>
-
-<script src="docs/assets/js/script.js"></script> <!-- Updated path to your JavaScript file -->
+<script src="script.js"></script>
 </body>
 </html>
