@@ -81,9 +81,10 @@ body.dark-theme {
 }
 
 img {
+  display: block;
   width: 40%;
   height: 30%;
-  margin: 1rem 0;
+  margin: 1rem auto; /* Changed from '1rem 0' to '1rem auto' */
   border-radius: 5px; /* Optional: for rounded corners on images */
 }
 
