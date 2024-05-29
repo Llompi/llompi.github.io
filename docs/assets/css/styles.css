@@ -1,35 +1,70 @@
+/* General Styles */
 body {
   font-family: 'Asap', sans-serif;
-  transition: background-color 0.3s, color 0.3s; /* Smooth transition for background and text color */
+  background-color: #f0f0f0; /* Light base for light theme */
+  color: #333;
+  margin: 0; /* Remove default margin */
+  padding: 20px; /* Add overall padding */
 }
 
+
+/* Above the fold */
 header {
-  text-align: center;
-  margin: 4rem 0;
+  background-image: url('path/to/hero-image.jpg'); /* Introduce a hero image */
+  background-size: cover;
+  background-position: center;
+  min-height: 350px; /* Ensure some image is visible at most screen sizes */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
-h1 {
-  font-size: 3rem;
-  transition: color 0.3s; /* Smooth transition for color */
+header h1 {
+  color: white;
+  font-size: 4rem;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
 }
 
 h2 {
   font-weight: 700;
   font-size: 1.5rem;
-  transition: color 0.3s; /* Smooth transition for color */
+  transition: color 0.3s;
 }
 
 p {
   font-weight: 400;
-  transition: color 0.3s; /* Smooth transition for color */
+  transition: color 0.3s;
 }
 
+
+/* Project Grid */
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Flexible columns */
+  gap: 20px;
+}
+
+.project-card { /* Style for individual project thumbnails */
+  border: 1px solid #eee;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.project-card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+/* Project Section Styles */
 .project {
   width: 90%;
   margin: 2rem auto;
   padding: 1rem;
   border-radius: 10px;
   transition: background-color 0.3s, box-shadow 0.3s, transform 0.3s;
+  box-sizing: border-box;
 }
 
 .project:hover {
@@ -37,38 +72,52 @@ p {
   box-shadow: 0 6px 12px 0 rgba(0, 0, 0, 0.15);
 }
 
+.image-container {
+  overflow: hidden; /* Contain the image if it gets cropped */
+  margin-bottom: 1rem;
+}
+
+.project img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto; /* Changed from '1rem auto' */
+  border-radius: 5px;
+  object-fit: cover;
+}
+
 /* Light Theme Styles */
 body.light-theme {
-  background-color: #f0f0f0; /* Off-white background for light theme */
-  color: #333; /* Dark text for light theme */
+  background-color: #f0f0f0;
+  color: #333;
 }
 
 .light-theme header h1,
 .light-theme header h2,
 .light-theme header p {
-  color: #333; /* Dark text for light theme */
+  color: #333;
 }
 
 .light-theme .project {
-  background-color: #fff; /* White card background for light theme */
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1); /* Lighter shadow for light theme */
+  background-color: #fff;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1);
 }
 
 /* Dark Theme Styles */
 body.dark-theme {
-  background-color: #333; /* Dark gray background for dark theme */
-  color: #e0e0e0; /* Lighter text for dark theme for better contrast */
+  background-color: #333;
+  color: #e0e0e0;
 }
 
 .dark-theme header h1,
 .dark-theme header h2,
 .dark-theme header p {
-  color: #e0e0e0; /* Lighter text for dark theme for better contrast */
+  color: #e0e0e0;
 }
 
 .dark-theme .project {
-  background-color: #4f4f4f; /* Lighter gray for card in dark theme */
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); /* Darker shadow for dark theme */
+  background-color: #4f4f4f;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
 }
 
 /* Theme Switch Styles */

@@ -5,13 +5,14 @@ window.addEventListener('load', () => {
     }, 1000); // Pre-loading animation for 1 second
 });
 
-document.body.classList.add('dark-theme');
-
+// Theme Switching Functionality
 const toggleSwitch = document.getElementById('theme-toggle');
 const currentTheme = localStorage.getItem('theme') || 'dark-theme';
 
 // Set the checked state of the toggle based on the current theme
 toggleSwitch.checked = currentTheme === 'dark-theme';
+
+document.body.classList.add(currentTheme);
 
 function switchTheme(e) {
     if (e.target.checked) {
@@ -24,8 +25,3 @@ function switchTheme(e) {
 }
 
 toggleSwitch.addEventListener('change', switchTheme, false);
-
-// Apply the theme on initial load
-if (currentTheme) {
-    document.body.classList.add(currentTheme);
-}
