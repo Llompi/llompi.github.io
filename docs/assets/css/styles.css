@@ -73,7 +73,6 @@ p {
 
 .image-container {
   overflow: hidden; /* Contain the image if it gets cropped */
-  margin-bottom: 1rem;
   text-align: left; /* Align images to the left */
 }
 
@@ -88,6 +87,7 @@ p {
 
 .project h2 {
   text-align: left; /* Align titles to the left */
+  margin-top: 1rem; /* Space above the title */
 }
 
 /* Light Theme Styles */
