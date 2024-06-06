@@ -7,7 +7,6 @@ body {
   padding: 20px; /* Add overall padding */
 }
 
-
 /* Above the fold */
 header {
   background-image: url('path/to/hero-image.jpg'); /* Introduce a hero image */
@@ -36,7 +35,6 @@ p {
   font-weight: 400;
   transition: color 0.3s;
 }
-
 
 /* Project Grid */
 .project-grid {
@@ -86,6 +84,20 @@ p {
   object-fit: cover;
 }
 
+/* Code Block Styles */
+pre, code {
+  font-family: 'Courier New', Courier, monospace;
+  background-color: #f5f5f5;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 1rem;
+  overflow-x: auto;
+}
+
+pre {
+  margin: 1rem 0;
+}
+
 /* Light Theme Styles */
 body.light-theme {
   background-color: #f0f0f0;
@@ -103,6 +115,12 @@ body.light-theme {
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1);
 }
 
+.light-theme pre, .light-theme code {
+  background-color: #f5f5f5;
+  color: #333;
+  border-color: #ccc;
+}
+
 /* Dark Theme Styles */
 body.dark-theme {
   background-color: #333;
@@ -118,6 +136,12 @@ body.dark-theme {
 .dark-theme .project {
   background-color: #4f4f4f;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+}
+
+.dark-theme pre, .dark-theme code {
+  background-color: #2e2e2e;
+  color: #e0e0e0;
+  border-color: #555;
 }
 
 /* Theme Switch Styles */
@@ -208,42 +232,6 @@ input:checked + .slider:before {
 
 .dark-theme .theme-switch .material-icons {
   color: #ccc;
-}
-
-/* Code Snippet Styles */
-.project pre {
-  white-space: pre-wrap; /* Wrap long lines */
-  word-wrap: break-word; /* Break words if necessary */
-  overflow-x: auto; /* Enable horizontal scrolling if content is too wide */
-  max-width: 100%; /* Ensure it doesn't overflow the container */
-  background-color: #f5f5f5; /* Background color for better readability */
-  padding: 1em; /* Padding for better readability */
-  border-radius: 5px; /* Rounded corners */
-  margin-bottom: 1em; /* Spacing below the pre block */
-}
-
-.project code {
-  display: block; /* Ensure it behaves like a block element */
-  max-width: 100%; /* Ensure it doesn't overflow the container */
-  background-color: inherit; /* Match the pre element's background */
-  padding: 0; /* Remove extra padding */
-  font-family: 'Courier New', Courier, monospace; /* Monospace font for code */
-}
-
-/* Responsive adjustments */
-@media (max-width: 600px) {
-  .project {
-    width: 95%; /* Ensure the project section is slightly more narrow on small screens */
-    padding: 0.5em;
-  }
-
-  .project h2 {
-    font-size: 1.2rem;
-  }
-
-  .project pre {
-    padding: 0.5em;
-  }
 }
 
 @keyframes fadeIn {
