@@ -3,76 +3,424 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portfolio</title>
-  <link href="https://fonts.googleapis.com/css2?family=Asap:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="docs/assets/css/styles.css">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <title>Joan Llompart Portfolio</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #0a84ff;
+      --text-color: #333;
+      --bg-color: #f5f5f7;
+      --section-bg: #ffffff;
+      --link-color: #0056b3;
+      --hardware: #ff6b6b;
+      --software: #4ecdc4;
+      --design: #45aaf2;
+      --engineering: #feca57;
+    }
+
+    .dark-mode {
+      --primary-color: #0a84ff;
+      --text-color: #ffffff;
+      --bg-color: #1c1c1e;
+      --section-bg: #2c2c2e;
+      --link-color: #66b3ff;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    .sidebar {
+      width: 250px;
+      position: fixed;
+      left: -250px;
+      top: 0;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: 0.5s;
+      z-index: 1000;
+    }
+
+    .sidebar.open {
+      left: 0;
+    }
+
+    .sidebar a {
+      margin: 15px 0;
+      text-decoration: none;
+      color: white;
+      font-size: 1.2rem;
+      transition: color 0.3s;
+    }
+
+    .sidebar a:hover {
+      color: var(--primary-color);
+    }
+
+    .hamburger {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      cursor: pointer;
+      z-index: 1001;
+    }
+
+    .hamburger div {
+      width: 30px;
+      height: 3px;
+      background-color: var(--text-color);
+      transition: transform 0.3s, opacity 0.3s;
+    }
+
+    .hamburger.active div:nth-child(1) {
+      transform: rotate(45deg) translate(5px, 5px);
+    }
+
+    .hamburger.active div:nth-child(2) {
+      opacity: 0;
+    }
+
+    .hamburger.active div:nth-child(3) {
+      transform: rotate(-45deg) translate(5px, -5px);
+    }
+
+    .content {
+      padding-top: 60px;
+    }
+
+    section {
+      min-height: 100vh;
+      padding: 60px 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--section-bg);
+      margin-bottom: 20px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    section:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    h1, h2, h3 {
+      margin-bottom: 20px;
+      color: var(--primary-color);
+    }
+
+    p {
+      margin-bottom: 15px;
+      line-height: 1.6;
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      font-size: 1.5rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      z-index: 1001;
+      color: var(--text-color);
+    }
+
+    .project {
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      transition: transform 0.3s;
+    }
+
+    .project:hover {
+      transform: scale(1.05);
+    }
+
+    .skills-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .skill-item {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      transition: transform 0.3s, opacity 0.3s;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    .skill-item:hover {
+      transform: scale(1.1);
+    }
+
+    .skill-item.hardware { background-color: var(--hardware); }
+    .skill-item.software { background-color: var(--software); }
+    .skill-item.design { background-color: var(--design); }
+    .skill-item.engineering { background-color: var(--engineering); }
+
+    a {
+      color: var(--link-color);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 100%;
+        left: -100%;
+      }
+
+      section {
+        padding: 40px 20px;
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    section > * {
+      animation: fadeIn 0.5s ease-out forwards;
+      opacity: 0;
+    }
+
+    section > *:nth-child(1) { animation-delay: 0.1s; }
+    section > *:nth-child(2) { animation-delay: 0.2s; }
+    section > *:nth-child(3) { animation-delay: 0.3s; }
+    section > *:nth-child(4) { animation-delay: 0.4s; }
+    section > *:nth-child(5) { animation-delay: 0.5s; }
+  </style>
 </head>
 <body>
-<div id="preloader"></div>
-<div class="theme-switch">
-  <span class="material-icons">wb_sunny</span>
-  <label class="switch">
-    <input type="checkbox" id="theme-toggle">
-    <span class="slider round"></span>
-  </label>
-  <span class="material-icons">nights_stay</span>
-</div>
-<header>
-  <h1>Joan Llompart</h1>
-  <h2>Electrical Engineer</h2>
-  <p>Welcome to my online portfolio where I showcase my passion for creating innovative and custom projects.</p>
-</header>
-  <main>
-    <section class="project" id="project1">
-      <img src="docs/assets/img/Project photos/RetropieFront.jpg" alt="Raspberry Pi Handheld Console">
-      <h2>Raspberry Pi Handheld Console</h2>
-      <p>This custom-built handheld console powered by Raspberry Pi features retro gaming controls and a sleek design. The project demonstrates skills in embedded systems, circuit design, and software development.</p>
-      <p><strong>Keywords:</strong> Raspberry Pi, Embedded Systems, Circuit Design, C++, Python, 3D Printing</p>
-    </section>
-    
-    <section class="project" id="project2">
-      <img src="docs/assets/img/Project photos/dogTreatDispenser.png" alt="Dog Treat Dispenser">
-      <h2>Dog Treat Dispenser</h2>
-      <p>A smart dispenser that rewards your furry friend automatically or via remote control. This project showcases expertise in IoT development and mechanical design.</p>
-      <p><strong>Keywords:</strong> IoT, Microcontrollers, Mechanical Design, CAD, Automation</p>
+  <div class="hamburger" onclick="toggleSidebar()">
+    <div></div>
+    <div></div>
+    <div></div>
+  </div>
+
+  <div class="sidebar">
+    <a href="#home" onclick="closeSidebar()">Home</a>
+    <a href="#projects" onclick="closeSidebar()">Projects</a>
+    <a href="#skills" onclick="closeSidebar()">Skills & Programs</a>
+    <a href="#contact" onclick="closeSidebar()">Contact</a>
+  </div>
+
+  <button id="theme-toggle" class="theme-toggle">
+    <i class="fas fa-moon"></i>
+  </button>
+
+  <div class="content">
+    <section id="home">
+      <h1>Joan Llompart</h1>
+      <h2>Electrical Engineer</h2>
+      <p>Welcome to my online portfolio where I showcase my passion for creating innovative and custom projects.</p>
     </section>
 
-    <section class="project" id="project3">
-      <img src="docs/assets/img/Project photos/ebike1.jpg" alt="Electric Bike Retrofit">
-      <h2>Electric Bike Retrofit</h2>
-      <p>Senior college project focused on retrofitting an e-bike to include electric braking. The project highlights skills in electric motor design, assembly, and testing.</p>
-      <p><strong>Keywords:</strong> Electric Motors, Retrofitting, Energy Recovery, Prototyping, Testing</p>
+    <section id="projects">
+      <h1>Projects</h1>
+
+      <div class="project">
+        <h3>Raspberry Pi Handheld Console</h3>
+        <p>A custom-built handheld console with retro gaming controls. Demonstrates skills in embedded systems, circuit design, and software development.</p>
+      </div>
+
+      <div class="project">
+        <h3>Dog Treat Dispenser</h3>
+        <p>A smart dispenser that rewards your pet automatically or via remote control. Showcases IoT development and mechanical design.</p>
+      </div>
+
+      <div class="project">
+        <h3>Electric Bike Retrofit</h3>
+        <p>A senior project focusing on retrofitting an e-bike with electric braking, highlighting electric motor design and testing.</p>
+      </div>
+
+      <div class="project">
+        <h3>RF Amplifier</h3>
+        <p>Designed and built a high-fidelity RF amplifier for communication systems, involving circuit simulation and PCB design.</p>
+      </div>
+
+      <div class="project">
+        <h3>Custom Portfolio Website</h3>
+        <p>This website demonstrates my web development skills in HTML, CSS, and JavaScript.</p>
+      </div>
     </section>
 
-    <section class="project" id="project4">
-      <h2>Custom Portfolio Website</h2>
-      <p>This portfolio website, designed and built from scratch, serves as a testament to web development skills. Below is a snippet of the custom JavaScript used for theme switching:</p>
-      <pre><code class="language-javascript">
-// Theme switcher code snippet
-const toggleSwitch = document.getElementById('theme-toggle');
-toggleSwitch.addEventListener('change', switchTheme, false);
-function switchTheme(e) {
-    // Theme switching logic
-}
-      </code></pre>
-      <p><strong>Keywords:</strong> Web Development, HTML, CSS, JavaScript, UI/UX Design</p>
+    <section id="skills">
+      <h1>Skills & Programs</h1>
+      <div class="skills-list">
+        <span class="skill-item hardware" data-category="hardware">PCB Design</span>
+        <span class="skill-item hardware" data-category="hardware">Electric Motor Construction</span>
+        <span class="skill-item software" data-category="software">Ansys</span>
+        <span class="skill-item software" data-category="software">Fusion 360 (Eagle)</span>
+        <span class="skill-item software" data-category="software">KiCAD</span>
+        <span class="skill-item engineering" data-category="engineering">Electrical Systems Design</span>
+        <span class="skill-item engineering" data-category="engineering">Prototype Creation</span>
+        <span class="skill-item engineering" data-category="engineering">Quality Control</span>
+        <span class="skill-item engineering" data-category="engineering">RF Simulations</span>
+        <span class="skill-item software" data-category="software">IoT Development</span>
+        <span class="skill-item software" data-category="software">Automation</span>
+        <span class="skill-item design" data-category="design">Mechanical Design</span>
+        <span class="skill-item design" data-category="design">CAD</span>
+        <span class="skill-item design" data-category="design">UI/UX Design</span>
+        <span class="skill-item software" data-category="software">Figma</span>
+        <span class="skill-item software" data-category="software">HTML</span>
+        <span class="skill-item software" data-category="software">CSS</span>
+        <span class="skill-item software" data-category="software">JavaScript</span>
+        <span class="skill-item software" data-category="software">Expo Framework</span>
+        <span class="skill-item software" data-category="software">AI Integration</span>
+        <span class="skill-item engineering" data-category="engineering">Usability Testing</span>
+        <span class="skill-item engineering" data-category="engineering">Product Commercialization</span>
+      </div>
     </section>
 
-    <section class="project" id="project5">
-      <img src="docs/assets/img/Project photos/RFAmpProgressImg.png" alt="RF Amplifier">
-      <h2>RF Amplifier</h2>
-      <p>Designed and built a high-fidelity RF amplifier for communication systems. The project involved circuit simulation and PCB design.</p>
-      <p><strong>Keywords:</strong> RF Engineering, Amplifiers, Circuit Simulation, PCB Design, Soldering</p>
-    </section>
-    <section class="project" id="project6">
-      <img src="docs/assets/img/Project photos/RFPCB.png" alt="Various PCBs">
-      <h2>Various PCBs for Projects</h2>
-      <p>A collection of custom PCBs designed for various projects, showcasing versatility in electronic design and manufacturing processes.</p>
-      <p><strong>Keywords:</strong> PCB Layout, Electronic Design, Manufacturing, Schematic Capture, Altium Designer</p>
-    </section>
-  </main>
+    <section id="contact">
+      <h1>Contact</h1>
+      <p><i class="fas fa-envelope"></i> <a href="mailto:Joan.llbab@gmail.com">Joan.llbab@gmail.com</a></p>
+      <p><i class="fas fa-map-marker-alt"></i> Portland, OR</p>
+      <p><i class="fas fa-globe"></i> <a href="https://llompi.github.io" target="_blank">llompi.github.io</a></p>
 
-<script src="script.js"></script>
+      <h2>Interests</h2>
+      <p><i class="fas fa-snowboarding"></i> Snowboarding | <i class="fas fa-hiking"></i> Hiking | <i class="fas fa-code"></i> Programming</p>
+
+      <h2>Languages</h2>
+      <p><i class="fas fa-language"></i> English | Spanish | Catalan</p>
+    </section>
+  </div>
+
+  <script>
+    function toggleSidebar() {
+      document.querySelector('.sidebar').classList.toggle('open');
+      document.querySelector('.hamburger').classList.toggle('active');
+    }
+
+    function closeSidebar() {
+      document.querySelector('.sidebar').classList.remove('open');
+      document.querySelector('.hamburger').classList.remove('active');
+    }
+
+    const toggleButton = document.getElementById('theme-toggle');
+    const icon = toggleButton.querySelector('i');
+
+    toggleButton.addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+      if (document.body.classList.contains('dark-mode')) {
+        icon.classList.remove('fa-moon');
+        icon.classList.add('fa-sun');
+      } else {
+        icon.classList.remove('fa-sun');
+        icon.classList.add('fa-moon');
+      }
+    });
+
+    window.onload = () => {
+      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark-mode');
+        icon.classList.remove('fa-moon');
+        icon.classList.add('fa-sun');
+      }
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = 1;
+          entry.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('section').forEach(section => {
+      observer.observe(section);
+    });
+
+    // Skill tags animation
+    const skillsSection = document.querySelector('#skills');
+    const skillItems = document.querySelectorAll('.skill-item');
+
+    function animateSkills() {
+      const sectionTop = skillsSection.offsetTop;
+      const sectionHeight = skillsSection.offsetHeight;
+      const scrollPosition = window.pageYOffset;
+      const windowHeight = window.innerHeight;
+
+      if (scrollPosition > sectionTop - windowHeight && scrollPosition < sectionTop + sectionHeight) {
+        const progress = (scrollPosition - (sectionTop - windowHeight)) / (sectionHeight + windowHeight);
+        skillItems.forEach((item, index) => {
+          const delay = index * 0.03;
+          const opacity = Math.min(1, Math.max(0, progress * 4 - delay));
+          const translateY = Math.max(0, 20 * (1 - opacity));
+          item.style.opacity = opacity;
+          item.style.transform = `translateY(${translateY}px)`;
+        });
+      }
+    }
+
+    window.addEventListener('scroll', animateSkills);
+    window.addEventListener('resize', animateSkills);
+
+    // Initialize animations on page load
+    window.addEventListener('load', () => {
+      animateSkills();
+    });
+
+    // Skill category color management
+    const skillCategories = {
+      hardware: '#ff6b6b',
+      software: '#4ecdc4',
+      design: '#45aaf2',
+      engineering: '#feca57'
+    };
+
+    function updateSkillColors() {
+      skillItems.forEach(item => {
+        const category = item.getAttribute('data-category');
+        if (category && skillCategories[category]) {
+          item.style.backgroundColor = skillCategories[category];
+        }
+      });
+    }
+
+    updateSkillColors();
+
+    // You can easily update categories and colors by modifying the skillCategories object
+    // For example:
+    // skillCategories.newCategory = '#newColor';
+    // updateSkillColors();
+  </script>
 </body>
 </html>
