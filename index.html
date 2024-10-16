@@ -33,9 +33,16 @@
       box-sizing: border-box;
     }
 
+    html, body {
+      overflow: auto;
+      height: 100%;
+      overscroll-behavior: contain;
+    }
+
     html {
       scroll-behavior: smooth;
       scroll-padding-top: 70px;
+      height: -webkit-fill-available;
     }
 
     body {
@@ -45,6 +52,9 @@
       transition: background-color 0.3s, color 0.3s;
       line-height: 1.6;
       font-size: clamp(16px, 2.5vw, 18px);
+      overflow-y: scroll;
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
     }
 
     .skip-to-content {
@@ -207,47 +217,50 @@
     }
 
     .project-image-gallery {
-      position: relative;
       width: 100%;
       height: 300px;
-      overflow: hidden;
-      border-radius: 10px;
+      overflow-x: scroll;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      display: flex;
+      flex-wrap: nowrap;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
       margin-bottom: 20px;
     }
 
+    .project-image-gallery::-webkit-scrollbar {
+      display: none;
+    }
+
     .project-image {
-      position: absolute;
-      top: 0;
-      left: 0;
+      flex: 0 0 auto;
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transition: opacity 0.3s ease-in-out;
     }
 
-    .project-image:not(:first-child) {
-      opacity: 0;
+    .project.no-image {
+      height: auto;
+      padding-top: 10px;
     }
 
-    .image-nav {
-      position: absolute;
-      bottom: 10px;
-      left: 50%;
-      transform: translateX(-50%);
+    .project-image-gallery {
       display: flex;
-      gap: 5px;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 10px;
+      -webkit-overflow-scrolling: touch;
     }
 
-    .image-nav-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background-color: rgba(255, 255, 255, 0.5);
-      cursor: pointer;
+    .project-image {
+      flex: 0 0 auto;
+      border-radius: 10px;
+      object-fit: cover;
     }
 
-    .image-nav-dot.active {
-      background-color: var(--primary-color);
+    .hidden {
+      display: none !important;
     }
 
     .skills-list {
@@ -394,10 +407,13 @@
         font-size: 0.8rem;
       }
     }
+
+    .project, .skill-item {
+      will-change: transform;
+    }
   </style>
 </head>
 <body>
-
   <button class="hamburger" onclick="toggleSidebar()" aria-label="Toggle navigation menu" aria-expanded="false">
     <div></div>
     <div></div>
@@ -448,7 +464,6 @@
           <img src="docs/assets/img/Project photos/RFAmpProgressImg.png" alt="RF Amplifier Progress Image" class="project-image" loading="lazy">
           <img src="docs/assets/img/Project photos/RFAmpSetup.jpg" alt="RF Amplifier Setup" class="project-image" loading="lazy">
           <img src="docs/assets/img/Project photos/RFPCB.png" alt="RF PCB" class="project-image" loading="lazy">
-          <div class="image-nav"></div>
         </div>
         <h3>RF Amplifier</h3>
         <p>Designed and built a high-fidelity RF amplifier for communication systems, involving circuit simulation and PCB design.</p>
@@ -458,7 +473,6 @@
         <div class="project-image-gallery">
           <img src="docs/assets/img/Project photos/RetropieFront.jpg" alt="Raspberry Pi Handheld Console Front" class="project-image" loading="lazy">
           <img src="docs/assets/img/Project photos/RetropieBack.jpg" alt="Raspberry Pi Handheld Console Back" class="project-image" loading="lazy">
-          <div class="image-nav"></div>
         </div>
         <h3>Raspberry Pi Handheld Console</h3>
         <p>A custom-built handheld console with retro gaming controls. Demonstrates skills in embedded systems, circuit design, and software development.</p>
@@ -467,7 +481,6 @@
       <div class="project">
         <div class="project-image-gallery">
           <img src="docs/assets/img/Project photos/dogTreatDispenser.png" alt="Dog Treat Dispenser" class="project-image" loading="lazy">
-          <div class="image-nav"></div>
         </div>
         <h3>Dog Treat Dispenser</h3>
         <p>A smart dispenser that rewards your pet automatically or via remote control. Showcases IoT development and mechanical design.</p>
@@ -477,7 +490,6 @@
         <div class="project-image-gallery">
           <img src="docs/assets/img/Project photos/ebike1.jpg" alt="Electric Bike Retrofit 1" class="project-image" loading="lazy">
           <img src="docs/assets/img/Project photos/ebike2.jpg" alt="Electric Bike Retrofit 2" class="project-image" loading="lazy">
-          <div class="image-nav"></div>
         </div>
         <h3>Electric Bike Retrofit</h3>
         <p>A senior project focusing on retrofitting an e-bike with electric braking, highlighting electric motor design and testing.</p>
@@ -487,7 +499,6 @@
         <div class="project-image-gallery">
           <img src="docs/assets/img/Project photos/flexiPCB.jpg" alt="Flexible PCB" class="project-image" loading="lazy">
           <img src="docs/assets/img/Project photos/VNA.jpg" alt="VNA" class="project-image" loading="lazy">
-          <div class="image-nav"></div>
         </div>
         <h3>Flexible PCB Design</h3>
         <p>Explored the design and implementation of flexible printed circuit boards, pushing the boundaries of traditional PCB manufacturing.</p>
@@ -666,73 +677,10 @@
       });
     });
 
-    // Updated Image gallery functionality
-    function setupImageGalleries() {
-      const galleries = document.querySelectorAll('.project-image-gallery');
-      galleries.forEach(gallery => {
-        const images = gallery.querySelectorAll('.project-image');
-        const imageNav = gallery.querySelector('.image-nav');
-        
-        images.forEach((_, index) => {
-          const dot = document.createElement('div');
-          dot.classList.add('image-nav-dot');
-          dot.addEventListener('click', () => showImage(gallery, index));
-          imageNav.appendChild(dot);
-        });
-        
-        let touchStartX = 0;
-        let touchEndX = 0;
-
-        gallery.addEventListener('touchstart', (e) => {
-          touchStartX = e.changedTouches[0].screenX;
-        }, { passive: true });
-
-        gallery.addEventListener('touchend', (e) => {
-          touchEndX = e.changedTouches[0].screenX;
-          handleSwipe(gallery);
-        }, { passive: true });
-
-        // Set initial image
-        showImage(gallery, 0);
-      });
-    }
-
-    function showImage(gallery, index) {
-      const images = gallery.querySelectorAll('.project-image');
-      const dots = gallery.querySelectorAll('.image-nav-dot');
-      
-      images.forEach((img, i) => {
-        img.style.opacity = i === index ? '1' : '0';
-      });
-      
-      dots.forEach((dot, i) => {
-        dot.classList.toggle('active', i === index);
-      });
-    }
-
-    function handleSwipe(gallery) {
-      const images = gallery.querySelectorAll('.project-image');
-      const currentIndex = Array.from(images).findIndex(img => img.style.opacity === '1' || img.style.opacity === '');
-      const swipeThreshold = 50;
-      
-      if (touchEndX < touchStartX - swipeThreshold) {
-        // Swipe left, show next image
-        showImage(gallery, (currentIndex + 1) % images.length);
-      } else if (touchEndX > touchStartX + swipeThreshold) {
-        // Swipe right, show previous image
-        showImage(gallery, (currentIndex - 1 + images.length) % images.length);
-      }
-    }
-
-    // Setup image galleries on page load
-    window.addEventListener('load', setupImageGalleries);
-
     // Fallback for broken images
     document.querySelectorAll('img').forEach(img => {
       img.onerror = function() {
-        this.src = 'https://via.placeholder.com/400x300?text=Image+Not+Found';
-        this.alt = 'Image not found';
-        this.classList.add('broken-image');
+        this.classList.add('hidden');
       };
     });
   </script>
