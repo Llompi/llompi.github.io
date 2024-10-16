@@ -174,9 +174,9 @@
       margin-bottom: 15px;
       line-height: 1.6;
     }
-    
+
     #about p {
-    text-align: center;
+      text-align: center;
     }
 
     .theme-toggle {
@@ -497,7 +497,7 @@
     <section id="skills">
       <h2>Skills & Programs</h2>
       <div id="skill-filters">
-        <button class="skill-filter" data-filter="all">All</button>
+        <button class="skill-filter active" data-filter="all">All</button>
         <button class="skill-filter" data-filter="hardware">Hardware</button>
         <button class="skill-filter" data-filter="software">Software</button>
         <button class="skill-filter" data-filter="design">Design</button>
@@ -538,190 +538,203 @@
   </main>
 
   <script>
-  function toggleSidebar() {
-    const sidebar = document.querySelector('.sidebar');
-    const hamburger = document.querySelector('.hamburger');
-    sidebar.classList.toggle('open');
-    hamburger.classList.toggle('active');
-    hamburger.setAttribute('aria-expanded', sidebar.classList.contains('open'));
-  }
-
-  function closeSidebar() {
-    const sidebar = document.querySelector('.sidebar');
-    const hamburger = document.querySelector('.hamburger');
-    sidebar.classList.remove('open');
-    hamburger.classList.remove('active');
-    hamburger.setAttribute('aria-expanded', 'false');
-  }
-
-  const toggleButton = document.getElementById('theme-toggle');
-  const icon = toggleButton.querySelector('i');
-
-  function setTheme(isDark) {
-    document.body.classList.toggle('dark-mode', isDark);
-    icon.classList.toggle('fa-moon', !isDark);
-    icon.classList.toggle('fa-sun', isDark);
-    localStorage.setItem('darkMode', isDark);
-  }
-
-  toggleButton.addEventListener('click', () => {
-    const isDark = !document.body.classList.contains('dark-mode');
-    setTheme(isDark);
-  });
-
-  // Dark mode persistence
-  window.addEventListener('load', () => {
-    const savedDarkMode = localStorage.getItem('darkMode');
-    if (savedDarkMode !== null) {
-      setTheme(savedDarkMode === 'true');
-    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      setTheme(true);
+    function toggleSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      const hamburger = document.querySelector('.hamburger');
+      sidebar.classList.toggle('open');
+      hamburger.classList.toggle('active');
+      hamburger.setAttribute('aria-expanded', sidebar.classList.contains('open'));
     }
-  });
 
-  // Intersection Observer for lazy loading sections
-  const sectionObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        sectionObserver.unobserve(entry.target);
+    function closeSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      const hamburger = document.querySelector('.hamburger');
+      sidebar.classList.remove('open');
+      hamburger.classList.remove('active');
+      hamburger.setAttribute('aria-expanded', 'false');
+    }
+
+    const toggleButton = document.getElementById('theme-toggle');
+    const icon = toggleButton.querySelector('i');
+
+    function setTheme(isDark) {
+      document.body.classList.toggle('dark-mode', isDark);
+      icon.classList.toggle('fa-moon', !isDark);
+      icon.classList.toggle('fa-sun', isDark);
+      localStorage.setItem('darkMode', isDark);
+    }
+
+    toggleButton.addEventListener('click', () => {
+      const isDark = !document.body.classList.contains('dark-mode');
+      setTheme(isDark);
+    });
+
+    // Dark mode persistence
+    window.addEventListener('load', () => {
+      const savedDarkMode = localStorage.getItem('darkMode');
+      if (savedDarkMode !== null) {
+        setTheme(savedDarkMode === 'true');
+      } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        setTheme(true);
       }
     });
-  }, { threshold: 0.1 });
 
-  document.querySelectorAll('section').forEach(section => {
-    sectionObserver.observe(section);
-  });
-
-  // Skill tags animation
-  const skillsSection = document.querySelector('#skills');
-  const skillItems = document.querySelectorAll('.skill-item');
-
-  const skillObserver = new IntersectionObserver((entries) => {
-    if (entries[0].isIntersecting) {
-      skillItems.forEach((item, index) => {
-        setTimeout(() => {
-          item.style.opacity = 1;
-          item.style.transform = 'translateY(0)';
-        }, index * 50);
-      });
-      skillObserver.unobserve(skillsSection);
-    }
-  }, { threshold: 0.5 });
-
-  skillObserver.observe(skillsSection);
-
-  // Skill filtering
-  const skillFilters = document.querySelectorAll('.skill-filter');
-  skillFilters.forEach(filter => {
-    filter.addEventListener('click', () => {
-      const category = filter.getAttribute('data-filter');
-      skillFilters.forEach(f => f.classList.remove('active'));
-      filter.classList.add('active');
-      
-      skillItems.forEach(item => {
-        if (category === 'all' || item.getAttribute('data-category') === category) {
-          item.classList.remove('hidden');
-        } else {
-          item.classList.add('hidden');
+    // Intersection Observer for lazy loading sections
+    const sectionObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          sectionObserver.unobserve(entry.target);
         }
       });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('section').forEach(section => {
+      sectionObserver.observe(section);
     });
-  });
 
-  // Keyboard navigation for sidebar
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      closeSidebar();
-    }
-  });
+    // Skill tags animation
+    const skillsSection = document.querySelector('#skills');
+    const skillItems = document.querySelectorAll('.skill-item');
 
-  // Trap focus within sidebar when open
-  const sidebar = document.querySelector('.sidebar');
-  const sidebarLinks = sidebar.querySelectorAll('a');
-  const firstSidebarLink = sidebarLinks[0];
-  const lastSidebarLink = sidebarLinks[sidebarLinks.length - 1];
+    const skillObserver = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        skillItems.forEach((item, index) => {
+          setTimeout(() => {
+            item.style.opacity = 1;
+            item.style.transform = 'translateY(0)';
+          }, index * 50);
+        });
+        skillObserver.unobserve(skillsSection);
+      }
+    }, { threshold: 0.5 });
 
-  lastSidebarLink.addEventListener('keydown', (e) => {
-    if (e.key === 'Tab' && !e.shiftKey) {
-      e.preventDefault();
-      firstSidebarLink.focus();
-    }
-  });
+    skillObserver.observe(skillsSection);
 
-  firstSidebarLink.addEventListener('keydown', (e) => {
-    if (e.key === 'Tab' && e.shiftKey) {
-      e.preventDefault();
-      lastSidebarLink.focus();
-    }
-  });
-
-  // Smooth scrolling for navigation links
-  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-      e.preventDefault();
-      document.querySelector(this.getAttribute('href')).scrollIntoView({
-        behavior: 'smooth'
+    // Skill filtering
+    const skillFilters = document.querySelectorAll('.skill-filter');
+    skillFilters.forEach(filter => {
+      filter.addEventListener('click', () => {
+        const category = filter.getAttribute('data-filter');
+        skillFilters.forEach(f => f.classList.remove('active'));
+        filter.classList.add('active');
+        
+        skillItems.forEach(item => {
+          if (category === 'all' || item.getAttribute('data-category') === category) {
+            item.classList.remove('hidden');
+          } else {
+            item.classList.add('hidden');
+          }
+        });
       });
     });
-  });
 
-  // Updated Image gallery functionality
-  function setupImageGalleries() {
-    const galleries = document.querySelectorAll('.project-image-gallery');
-    galleries.forEach(gallery => {
-      const images = gallery.querySelectorAll('.project-image');
-      
-      let touchStartX = 0;
-      let touchEndX = 0;
-
-      gallery.addEventListener('touchstart', (e) => {
-        touchStartX = e.changedTouches[0].screenX;
-      }, { passive: true });
-
-      gallery.addEventListener('touchend', (e) => {
-        touchEndX = e.changedTouches[0].screenX;
-        handleSwipe(gallery);
-      }, { passive: true });
-
-      // Set initial image
-      showImage(gallery, 0);
+    // Keyboard navigation for sidebar
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeSidebar();
+      }
     });
-  }
 
-  function showImage(gallery, index) {
-    const images = gallery.querySelectorAll('.project-image');
-    
-    images.forEach((img, i) => {
-      img.style.opacity = i === index ? '1' : '0';
+    // Trap focus within sidebar when open
+    const sidebar = document.querySelector('.sidebar');
+    const sidebarLinks = sidebar.querySelectorAll('a');
+    const firstSidebarLink = sidebarLinks[0];
+    const lastSidebarLink = sidebarLinks[sidebarLinks.length - 1];
+
+    lastSidebarLink.addEventListener('keydown', (e) => {
+      if (e.key === 'Tab' && !e.shiftKey) {
+        e.preventDefault();
+        firstSidebarLink.focus();
+      }
     });
-  }
 
-  function handleSwipe(gallery) {
-    const images = gallery.querySelectorAll('.project-image');
-    const currentIndex = Array.from(images).findIndex(img => img.style.opacity === '1' || img.style.opacity === '');
-    const swipeThreshold = 50;
-    
-    if (touchEndX < touchStartX - swipeThreshold) {
-      // Swipe left, show next image
-      showImage(gallery, (currentIndex + 1) % images.length);
-    } else if (touchEndX > touchStartX + swipeThreshold) {
-      // Swipe right, show previous image
-      showImage(gallery, (currentIndex - 1 + images.length) % images.length);
+    firstSidebarLink.addEventListener('keydown', (e) => {
+      if (e.key === 'Tab' && e.shiftKey) {
+        e.preventDefault();
+        lastSidebarLink.focus();
+      }
+    });
+
+    // Smooth scrolling for navigation links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        document.querySelector(this.getAttribute('href')).scrollIntoView({
+          behavior: 'smooth'
+        });
+      });
+    });
+
+    // Updated Image gallery functionality
+    function setupImageGalleries() {
+      const galleries = document.querySelectorAll('.project-image-gallery');
+      galleries.forEach(gallery => {
+        const images = gallery.querySelectorAll('.project-image');
+        const imageNav = gallery.querySelector('.image-nav');
+        
+        images.forEach((_, index) => {
+          const dot = document.createElement('div');
+          dot.classList.add('image-nav-dot');
+          dot.addEventListener('click', () => showImage(gallery, index));
+          imageNav.appendChild(dot);
+        });
+        
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        gallery.addEventListener('touchstart', (e) => {
+          touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+
+        gallery.addEventListener('touchend', (e) => {
+          touchEndX = e.changedTouches[0].screenX;
+          handleSwipe(gallery);
+        }, { passive: true });
+
+        // Set initial image
+        showImage(gallery, 0);
+      });
     }
-  }
 
-  // Setup image galleries on page load
-  window.addEventListener('load', setupImageGalleries);
+    function showImage(gallery, index) {
+      const images = gallery.querySelectorAll('.project-image');
+      const dots = gallery.querySelectorAll('.image-nav-dot');
+      
+      images.forEach((img, i) => {
+        img.style.opacity = i === index ? '1' : '0';
+      });
+      
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === index);
+      });
+    }
 
-  // Fallback for broken images
-  document.querySelectorAll('img').forEach(img => {
-    img.onerror = function() {
-      this.src = 'https://via.placeholder.com/400x300?text=Image+Not+Found';
-      this.alt = 'Image not found';
-      this.classList.add('broken-image');
-    };
-  });
-</script>
+    function handleSwipe(gallery) {
+      const images = gallery.querySelectorAll('.project-image');
+      const currentIndex = Array.from(images).findIndex(img => img.style.opacity === '1' || img.style.opacity === '');
+      const swipeThreshold = 50;
+      
+      if (touchEndX < touchStartX - swipeThreshold) {
+        // Swipe left, show next image
+        showImage(gallery, (currentIndex + 1) % images.length);
+      } else if (touchEndX > touchStartX + swipeThreshold) {
+        // Swipe right, show previous image
+        showImage(gallery, (currentIndex - 1 + images.length) % images.length);
+      }
+    }
+
+    // Setup image galleries on page load
+    window.addEventListener('load', setupImageGalleries);
+
+    // Fallback for broken images
+    document.querySelectorAll('img').forEach(img => {
+      img.onerror = function() {
+        this.src = 'https://via.placeholder.com/400x300?text=Image+Not+Found';
+        this.alt = 'Image not found';
+        this.classList.add('broken-image');
+      };
+    });
+  </script>
 </body>
 </html>
