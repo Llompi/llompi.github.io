@@ -291,15 +291,11 @@
 
                 <div class="flex justify-center md:justify-start space-x-8 mt-10">
                     <div class="text-center">
-                        <div class="text-3xl font-bold text-purple-400">50+</div>
+                        <div class="text-3xl font-bold text-purple-400">10+</div>
                         <div class="text-gray-400">Projects</div>
                     </div>
                     <div class="text-center">
-                        <div class="text-3xl font-bold text-purple-400">12</div>
-                        <div class="text-gray-400">Patents</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-3xl font-bold text-purple-400">8+</div>
+                        <div class="text-3xl font-bold text-purple-400">4+</div>
                         <div class="text-gray-400">Years Experience</div>
                     </div>
                 </div>
@@ -1050,13 +1046,16 @@
              const totalItems = items.length;
 
              // Set initial state if not already set
-             if (!carouselInner.dataset.initialized) {
+             // Check dataset only if you need to prevent re-initialization,
+             // otherwise, just setting the state is fine.
+             // if (!carouselInner.dataset.initialized) {
                  carouselInner.style.transform = `translateX(0%)`;
                  indicators.forEach((ind, i) => ind.classList.toggle('active', i === 0));
                  carouselInner.dataset.currentIndex = 0;
-                 carouselInner.dataset.initialized = 'true';
-             }
+             //    carouselInner.dataset.initialized = 'true';
+             // }
         }
+
 
         function updateCarousel(carouselId, newIndex) {
             const modal = document.getElementById(`${carouselId}-modal`);
@@ -1116,15 +1115,15 @@
 
                     // Filter skill items
                     skillItems.forEach(item => {
-                        if (category === 'all' || item.getAttribute('data-category') === category) {
-                             // Use timeout to allow CSS transition
-                             setTimeout(() => {
-                                item.classList.remove('hidden', 'opacity-0', 'scale-80', 'w-0', 'p-0', '-ml-2'); // Remove all hiding styles
-                                item.classList.add('opacity-100', 'scale-100'); // Ensure visible styles are set
-                            }, 10); // Small delay
+                        const itemCategory = item.getAttribute('data-category');
+                        if (category === 'all' || itemCategory === category) {
+                            // Make visible: remove hidden styles
+                            item.classList.remove('hidden', 'opacity-0', 'scale-80', 'w-0', 'p-0', '-ml-2');
+                            item.classList.add('opacity-100', 'scale-100'); // Ensure visible styles are set
                          } else {
-                            item.classList.add('hidden', 'opacity-0', 'scale-80', 'w-0', 'p-0', '-ml-2'); // Add all hiding styles
-                             item.classList.remove('opacity-100', 'scale-100');
+                            // Make hidden: add hidden styles
+                            item.classList.add('hidden', 'opacity-0', 'scale-80', 'w-0', 'p-0', '-ml-2');
+                            item.classList.remove('opacity-100', 'scale-100');
                         }
                     });
                 });
@@ -1142,14 +1141,17 @@
                 // Check if the skills section is intersecting
                  if (entries[0].isIntersecting) {
                      skillItems.forEach((item, index) => {
-                         // Apply animation with a delay based on index
-                         setTimeout(() => {
-                            item.style.transitionDelay = `${index * 50}ms`; // Add transition delay inline
-                             item.classList.remove('opacity-0', 'translate-y-5');
-                            item.classList.add('opacity-100', 'translate-y-0');
-                        }, 50); // Base delay before starting animations
+                         // Only animate if it hasn't been animated already (check for opacity-0)
+                         if(item.classList.contains('opacity-0')) {
+                             // Apply animation with a delay based on index
+                             setTimeout(() => {
+                                 item.style.transitionDelay = `${index * 50}ms`; // Add transition delay inline
+                                 item.classList.remove('opacity-0', 'translate-y-5');
+                                 item.classList.add('opacity-100', 'translate-y-0');
+                            }, 50); // Base delay before starting animations
+                         }
                      });
-                     // Stop observing once animation is triggered
+                     // Stop observing once the initial animation is triggered
                     observer.unobserve(skillsSection);
                  }
             }, {
