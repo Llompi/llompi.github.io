@@ -92,6 +92,8 @@
             overflow-y: auto;
             padding-top: 5vh; /* Add some padding */
             padding-bottom: 5vh;
+            opacity: 0; /* Start hidden for fade-in */
+            transition: opacity 0.3s ease-out; /* Fade transition */
         }
 
         .modal-content {
@@ -126,6 +128,7 @@
             overflow: hidden;
             border-radius: 8px;
             margin-bottom: 20px;
+            background-color: rgba(0,0,0,0.2); /* BG for image loading */
         }
 
         .carousel-inner {
@@ -143,8 +146,6 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            /* Add a slight overlay for text visibility if needed later */
-            /* filter: brightness(0.9); */
         }
 
         .carousel-control {
@@ -210,19 +211,39 @@
             transition: transform 0.3s ease, opacity 0.5s ease, box-shadow 0.3s ease;
             cursor: default; /* Indicate they are not clickable like filter buttons */
         }
-        /* Add category colors using data attributes (Tailwind classes applied in HTML) */
-        /* We use Tailwind classes directly now */
 
         /* For the entrance animation */
         .skill-item.hidden {
             opacity: 0 !important;
             transform: scale(0.8) !important; /* Example different hide animation */
             pointer-events: none;
-            width: 0; /* Collapse when hidden */
-            padding-left: 0;
-            padding-right: 0;
-            margin-left: -10px; /* Adjust margin to prevent jump */
-            overflow: hidden;
+            width: 0 !important; /* Collapse when hidden */
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            margin-left: -10px !important; /* Adjust margin to prevent jump */
+            overflow: hidden !important;
+            /* Important needed to override transition */
+        }
+
+        /* Style for the click hint */
+        .click-hint i {
+            /* Optional: Add a subtle background/glow to make it pop */
+            background-color: rgba(26, 26, 46, 0.6); /* Dark semi-transparent bg */
+            padding: 5px;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(173, 0, 255, 0.5); /* Purple glow */
+            display: inline-block; /* Needed for padding/border-radius */
+        }
+
+        /* Adjust floating animation if needed, maybe make it slightly different */
+        .click-hint.floating {
+             animation: floatingHint 5s ease-in-out infinite;
+        }
+
+        @keyframes floatingHint {
+            0% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-6px) scale(1.05); } /* Slightly smaller float */
+            100% { transform: translateY(0px) scale(1); }
         }
 
     </style>
@@ -316,22 +337,26 @@
     <section id="projects" class="py-24 px-4 sm:px-6 lg:px-8 bg-gray-900 bg-opacity-60"> <div class="max-w-7xl mx-auto">
             <h2 class="text-4xl font-bold mb-16 text-center text-gradient">Featured Projects</h2>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10"> <div class="project-card rounded-xl p-6 floating" style="animation-delay: 0s;" onclick="openProjectModal('project1')">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10"> <div class="project-card relative rounded-xl p-6 floating" style="animation-delay: 0s;" onclick="openProjectModal('project1')">
                     <div class="h-48 bg-gradient-to-r from-red-500 to-orange-500 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
                          <img src="docs/assets/img/Project photos/RFAmp.jpg" alt="RF Amplifier Preview" class="w-full h-full object-cover">
-                         </div>
+                    </div>
                     <h3 class="text-xl md:text-2xl font-bold mb-2">RF Amplifier</h3>
                     <p class="text-gray-300 mb-4 text-sm md:text-base">High-fidelity RF amplifier for communication systems, involving circuit simulation and PCB design.</p>
-                    <div class="flex flex-wrap gap-2 mt-auto"> <span class="skill-badge px-3 py-1 bg-red-800 bg-opacity-70 rounded-full text-xs md:text-sm">Hardware</span>
+                    <div class="flex flex-wrap gap-2 mt-auto">
+                        <span class="skill-badge px-3 py-1 bg-red-800 bg-opacity-70 rounded-full text-xs md:text-sm">Hardware</span>
                         <span class="skill-badge px-3 py-1 bg-blue-800 bg-opacity-70 rounded-full text-xs md:text-sm">PCB Design</span>
                         <span class="skill-badge px-3 py-1 bg-yellow-800 bg-opacity-70 rounded-full text-xs md:text-sm">Simulation</span>
                     </div>
+                    <div class="click-hint absolute top-3 right-3 text-purple-300 text-lg opacity-0 transition-opacity duration-500 ease-out pointer-events-none floating" style="animation-delay: 0.2s;">
+                        <i class="fas fa-search-plus shadow-lg"></i>
+                    </div>
                 </div>
 
-                <div class="project-card rounded-xl p-6 floating" style="animation-delay: 0.3s;" onclick="openProjectModal('project2')">
+                <div class="project-card relative rounded-xl p-6 floating" style="animation-delay: 0.3s;" onclick="openProjectModal('project2')">
                      <div class="h-48 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
                         <img src="docs/assets/img/Project photos/RetropieFront.jpg" alt="Handheld Console Preview" class="w-full h-full object-cover">
-                        </div>
+                    </div>
                     <h3 class="text-xl md:text-2xl font-bold mb-2">Raspberry Pi Handheld Console</h3>
                     <p class="text-gray-300 mb-4 text-sm md:text-base">Custom-built handheld console using Raspberry Pi for retro gaming. Skills: embedded systems, circuit design, 3D printing.</p>
                      <div class="flex flex-wrap gap-2 mt-auto">
@@ -340,11 +365,15 @@
                         <span class="skill-badge px-3 py-1 bg-green-800 bg-opacity-70 rounded-full text-xs md:text-sm">Embedded Systems</span>
                         <span class="skill-badge px-3 py-1 bg-blue-800 bg-opacity-70 rounded-full text-xs md:text-sm">3D Printing</span>
                     </div>
+                    <div class="click-hint absolute top-3 right-3 text-purple-300 text-lg opacity-0 transition-opacity duration-500 ease-out pointer-events-none floating" style="animation-delay: 0.2s;">
+                        <i class="fas fa-search-plus shadow-lg"></i>
+                    </div>
                 </div>
 
-                <div class="project-card rounded-xl p-6 floating" style="animation-delay: 0.6s;" onclick="openProjectModal('project3')">
+                <div class="project-card relative rounded-xl p-6 floating" style="animation-delay: 0.6s;" onclick="openProjectModal('project3')">
                      <div class="h-48 bg-gradient-to-r from-green-500 to-lime-500 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
-                        <img src="docs/assets/img/Project photos/dogTreatDispenser.png" alt="Dog Treat Dispenser Preview" class="w-full h-full object-contain p-4"> </div>
+                        <img src="docs/assets/img/Project photos/dogTreatDispenser.png" alt="Dog Treat Dispenser Preview" class="w-full h-full object-contain p-4">
+                    </div>
                     <h3 class="text-xl md:text-2xl font-bold mb-2">IoT Dog Treat Dispenser</h3>
                     <p class="text-gray-300 mb-4 text-sm md:text-base">Smart dispenser rewarding pets automatically or via remote control. Showcases IoT development and mechanical design.</p>
                     <div class="flex flex-wrap gap-2 mt-auto">
@@ -352,17 +381,22 @@
                         <span class="skill-badge px-3 py-1 bg-red-800 bg-opacity-70 rounded-full text-xs md:text-sm">Hardware</span>
                         <span class="skill-badge px-3 py-1 bg-blue-800 bg-opacity-70 rounded-full text-xs md:text-sm">Mechanical Design</span>
                     </div>
-                </div>
+                    <div class="click-hint absolute top-3 right-3 text-purple-300 text-lg opacity-0 transition-opacity duration-500 ease-out pointer-events-none floating" style="animation-delay: 0.2s;">
+                        <i class="fas fa-search-plus shadow-lg"></i>
+                    </div>
+                 </div>
             </div>
 
-            <div class="mt-20 mb-12 relative h-96 md:h-[500px] project-card p-1 rounded-2xl overflow-hidden"> <div id="project-model-1" class="w-full h-full rounded-xl overflow-hidden bg-gradient-to-br from-gray-800 to-gray-900"></div> <div class="absolute bottom-0 left-0 right-0 p-4 md:p-6 bg-black bg-opacity-70 backdrop-blur-sm">
+            <div class="mt-20 mb-12 relative h-96 md:h-[500px] project-card p-1 rounded-2xl overflow-hidden">
+                <div id="project-model-1" class="w-full h-full rounded-xl overflow-hidden bg-gradient-to-br from-gray-800 to-gray-900"></div>
+                <div class="absolute bottom-0 left-0 right-0 p-4 md:p-6 bg-black bg-opacity-70 backdrop-blur-sm">
                     <h3 class="text-lg md:text-xl font-bold">Interactive 3D Model: Robotic Arm</h3>
                     <p class="text-gray-300 text-sm md:text-base">Drag to rotate, scroll to zoom. Example assembly concept.</p>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mt-10">
-                <div class="project-card rounded-xl p-6 floating" style="animation-delay: 0s;" onclick="openProjectModal('project4')">
+                <div class="project-card relative rounded-xl p-6 floating" style="animation-delay: 0s;" onclick="openProjectModal('project4')">
                     <div class="h-48 bg-gradient-to-r from-yellow-500 to-amber-500 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
                          <img src="docs/assets/img/Project photos/ebike1.jpg" alt="E-Bike Retrofit Preview" class="w-full h-full object-cover">
                     </div>
@@ -373,8 +407,11 @@
                         <span class="skill-badge px-3 py-1 bg-red-800 bg-opacity-70 rounded-full text-xs md:text-sm">Motors</span>
                         <span class="skill-badge px-3 py-1 bg-green-800 bg-opacity-70 rounded-full text-xs md:text-sm">Testing</span>
                     </div>
+                    <div class="click-hint absolute top-3 right-3 text-purple-300 text-lg opacity-0 transition-opacity duration-500 ease-out pointer-events-none floating" style="animation-delay: 0.2s;">
+                        <i class="fas fa-search-plus shadow-lg"></i>
+                    </div>
                 </div>
-                <div class="project-card rounded-xl p-6 floating" style="animation-delay: 0.3s;" onclick="openProjectModal('project5')">
+                <div class="project-card relative rounded-xl p-6 floating" style="animation-delay: 0.3s;" onclick="openProjectModal('project5')">
                     <div class="h-48 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
                         <img src="docs/assets/img/Project photos/flexiPCB.jpg" alt="Flexible PCB Preview" class="w-full h-full object-cover">
                     </div>
@@ -385,9 +422,11 @@
                          <span class="skill-badge px-3 py-1 bg-purple-800 bg-opacity-70 rounded-full text-xs md:text-sm">Advanced Materials</span>
                         <span class="skill-badge px-3 py-1 bg-red-800 bg-opacity-70 rounded-full text-xs md:text-sm">Hardware</span>
                     </div>
-                </div>
-                 <div class="project-card rounded-xl p-6 floating" style="animation-delay: 0.6s;" onclick="/* openProjectModal('project6') */ alert('More project details coming soon!');">
-                    <div class="h-48 bg-gradient-to-r from-teal-500 to-emerald-500 rounded-lg mb-4 flex items-center justify-center">
+                    <div class="click-hint absolute top-3 right-3 text-purple-300 text-lg opacity-0 transition-opacity duration-500 ease-out pointer-events-none floating" style="animation-delay: 0.2s;">
+                        <i class="fas fa-search-plus shadow-lg"></i>
+                    </div>
+                 </div>
+                 <div class="project-card rounded-xl p-6 floating" style="animation-delay: 0.6s;" onclick="alert('More project details coming soon!');"> <div class="h-48 bg-gradient-to-r from-teal-500 to-emerald-500 rounded-lg mb-4 flex items-center justify-center">
                          <i class="fas fa-plus text-6xl text-white opacity-70"></i>
                     </div>
                     <h3 class="text-xl md:text-2xl font-bold mb-2">Future Project</h3>
@@ -412,7 +451,7 @@
         </div>
 
         <div class="skills-list flex flex-wrap justify-center gap-4">
-             <span class="skill-item px-4 py-2 rounded-full text-sm font-semibold opacity-0 transform translate-y-5 bg-red-500 text-white" data-category="hardware">PCB Design</span>
+            <span class="skill-item px-4 py-2 rounded-full text-sm font-semibold opacity-0 transform translate-y-5 bg-red-500 text-white" data-category="hardware">PCB Design</span>
             <span class="skill-item px-4 py-2 rounded-full text-sm font-semibold opacity-0 transform translate-y-5 bg-red-500 text-white" data-category="hardware">Electric Motor Construction</span>
             <span class="skill-item px-4 py-2 rounded-full text-sm font-semibold opacity-0 transform translate-y-5 bg-cyan-600 text-white" data-category="software">Ansys</span>
             <span class="skill-item px-4 py-2 rounded-full text-sm font-semibold opacity-0 transform translate-y-5 bg-cyan-600 text-white" data-category="software">Fusion 360 (Eagle)</span>
@@ -435,8 +474,7 @@
             <span class="skill-item px-4 py-2 rounded-full text-sm font-semibold opacity-0 transform translate-y-5 bg-yellow-500 text-gray-900" data-category="engineering">Usability Testing</span>
             <span class="skill-item px-4 py-2 rounded-full text-sm font-semibold opacity-0 transform translate-y-5 bg-yellow-500 text-gray-900" data-category="engineering">Product Commercialization</span>
         </div>
-
-         </section>
+    </section>
 
     <section id="contact" class="py-24 px-4 sm:px-6 lg:px-8 bg-gray-900 bg-opacity-60">
         <div class="max-w-7xl mx-auto">
@@ -486,12 +524,11 @@
                                 <a href="https://github.com/llompi" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-gray-600 transition">
                                      <i class="fab fa-github"></i>
                                 </a>
-                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-
-                </div>
+            </div>
         </div>
     </section>
 
@@ -503,14 +540,15 @@
                 </div>
 
                 <div class="flex space-x-6">
-                     <a href="#" onclick="openModal('privacy')" class="text-gray-400 hover:text-white transition text-sm">Privacy Policy</a>
-                    <a href="#" onclick="openModal('terms')" class="text-gray-400 hover:text-white transition text-sm">Terms of Service</a>
-                    <a href="#" onclick="openModal('sitemap')" class="text-gray-400 hover:text-white transition text-sm">Sitemap</a>
+                     <a href="#" onclick="openModal('privacy'); return false;" class="text-gray-400 hover:text-white transition text-sm">Privacy Policy</a>
+                    <a href="#" onclick="openModal('terms'); return false;" class="text-gray-400 hover:text-white transition text-sm">Terms of Service</a>
+                    <a href="#" onclick="openModal('sitemap'); return false;" class="text-gray-400 hover:text-white transition text-sm">Sitemap</a>
                 </div>
             </div>
 
             <div class="mt-10 pt-6 border-t border-gray-800 text-center text-gray-500 text-sm">
-                 &copy; 2025 Joan Llompart. All rights reserved. </div>
+                &copy; <span id="current-year">2025</span> Joan Llompart. All rights reserved.
+            </div>
         </div>
     </footer>
 
@@ -518,14 +556,13 @@
         <div class="modal-content">
             <span class="close-modal" onclick="closeModal('project1')">&times;</span>
             <h2 class="text-3xl font-bold mb-6 text-gradient">RF Amplifier</h2>
-
             <div class="carousel">
                 <div class="carousel-inner">
-                     <div class="carousel-item"><img src="docs/assets/img/Project photos/RFAmp.jpg" alt="RF Amplifier 1"></div>
-                    <div class="carousel-item"><img src="docs/assets/img/Project photos/RFAmpPCB.jpg" alt="RF Amplifier PCB"></div>
-                    <div class="carousel-item"><img src="docs/assets/img/Project photos/RFAmpProgress.jpg" alt="RF Amplifier Progress"></div>
-                     <div class="carousel-item"><img src="docs/assets/img/Project photos/RFAmpSetup.jpg" alt="RF Amplifier Setup"></div>
-                     <div class="carousel-item"><img src="docs/assets/img/Project photos/RFPCB.png" alt="RF PCB Layout"></div>
+                    <div class="carousel-item"><img src="docs/assets/img/Project photos/RFAmp.jpg" alt="RF Amplifier 1" loading="lazy"></div>
+                    <div class="carousel-item"><img src="docs/assets/img/Project photos/RFAmpPCB.jpg" alt="RF Amplifier PCB" loading="lazy"></div>
+                    <div class="carousel-item"><img src="docs/assets/img/Project photos/RFAmpProgress.jpg" alt="RF Amplifier Progress" loading="lazy"></div>
+                    <div class="carousel-item"><img src="docs/assets/img/Project photos/RFAmpSetup.jpg" alt="RF Amplifier Setup" loading="lazy"></div>
+                    <div class="carousel-item"><img src="docs/assets/img/Project photos/RFPCB.png" alt="RF PCB Layout" loading="lazy"></div>
                 </div>
                 <button class="carousel-control prev" onclick="prevSlide('project1')">&#10094;</button>
                 <button class="carousel-control next" onclick="nextSlide('project1')">&#10095;</button>
@@ -537,8 +574,7 @@
                      <span class="carousel-indicator" onclick="goToSlide('project1', 4)"></span>
                  </div>
             </div>
-
-             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
                 <div>
                     <h3 class="text-xl font-bold mb-3 text-purple-300">Project Details</h3>
                     <p class="text-gray-300 text-sm">Designed and built a high-fidelity RF amplifier for communication systems. Focused on achieving specific gain and bandwidth targets while maintaining signal integrity. Involved schematic design, component selection, simulation, PCB layout following RF best practices, assembly, and testing.</p>
@@ -546,10 +582,10 @@
                 <div>
                     <h3 class="text-xl font-bold mb-3 text-purple-300">Technologies Used</h3>
                     <ul class="space-y-2 text-sm">
-                        <li class="flex items-center"><span class="w-2 h-2 bg-purple-400 rounded-full mr-2"></span><span>Circuit Simulation (e.g., ADS, SPICE)</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-purple-400 rounded-full mr-2"></span><span>Circuit Simulation (ADS/SPICE)</span></li>
                         <li class="flex items-center"><span class="w-2 h-2 bg-purple-400 rounded-full mr-2"></span><span>PCB Design (KiCAD/Fusion 360)</span></li>
-                        <li class="flex items-center"><span class="w-2 h-2 bg-purple-400 rounded-full mr-2"></span><span>RF Testing Equipment (VNA, Spectrum Analyzer)</span></li>
-                        <li class="flex items-center"><span class="w-2 h-2 bg-purple-400 rounded-full mr-2"></span><span>Soldering (SMD & Through-hole)</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-purple-400 rounded-full mr-2"></span><span>RF Test Equipment (VNA, SA)</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-purple-400 rounded-full mr-2"></span><span>Soldering (SMD & THT)</span></li>
                     </ul>
                 </div>
                 <div>
@@ -557,7 +593,7 @@
                     <ul class="space-y-2 text-sm">
                         <li class="flex items-center"><span class="w-2 h-2 bg-blue-400 rounded-full mr-2"></span><span>Target Gain: X dB</span></li>
                         <li class="flex items-center"><span class="w-2 h-2 bg-blue-400 rounded-full mr-2"></span><span>Bandwidth: Y MHz - Z MHz</span></li>
-                        <li class="flex items-center"><span class="w-2 h-2 bg-blue-400 rounded-full mr-2"></span><span>Impedance Matching (50 Ohm)</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-blue-400 rounded-full mr-2"></span><span>50 Ohm Impedance Matching</span></li>
                         <li class="flex items-center"><span class="w-2 h-2 bg-blue-400 rounded-full mr-2"></span><span>Low Noise Figure (Optional)</span></li>
                     </ul>
                 </div>
@@ -569,11 +605,10 @@
         <div class="modal-content">
             <span class="close-modal" onclick="closeModal('project2')">&times;</span>
             <h2 class="text-3xl font-bold mb-6 text-gradient">Raspberry Pi Handheld Console</h2>
-
              <div class="carousel">
                 <div class="carousel-inner">
-                    <div class="carousel-item"><img src="docs/assets/img/Project photos/RetropieFront.jpg" alt="Handheld Console Front"></div>
-                    <div class="carousel-item"><img src="docs/assets/img/Project photos/RetropieBack.jpg" alt="Handheld Console Back"></div>
+                    <div class="carousel-item"><img src="docs/assets/img/Project photos/RetropieFront.jpg" alt="Handheld Console Front" loading="lazy"></div>
+                    <div class="carousel-item"><img src="docs/assets/img/Project photos/RetropieBack.jpg" alt="Handheld Console Back" loading="lazy"></div>
                     </div>
                 <button class="carousel-control prev" onclick="prevSlide('project2')">&#10094;</button>
                 <button class="carousel-control next" onclick="nextSlide('project2')">&#10095;</button>
@@ -582,8 +617,7 @@
                     <span class="carousel-indicator" onclick="goToSlide('project2', 1)"></span>
                 </div>
             </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
                 <div>
                     <h3 class="text-xl font-bold mb-3 text-purple-300">Project Details</h3>
                     <p class="text-gray-300 text-sm">A custom-designed and built handheld gaming console powered by a Raspberry Pi. Features integrated controls, display, audio, and power management system in a 3D printed enclosure. Runs retro gaming emulation software (e.g., RetroPie/Lakka).</p>
@@ -592,10 +626,10 @@
                     <h3 class="text-xl font-bold mb-3 text-purple-300">Technologies Used</h3>
                     <ul class="space-y-2 text-sm">
                         <li class="flex items-center"><span class="w-2 h-2 bg-purple-400 rounded-full mr-2"></span><span>Raspberry Pi (Zero/3/4)</span></li>
-                         <li class="flex items-center"><span class="w-2 h-2 bg-purple-400 rounded-full mr-2"></span><span>Linux / RetroPie</span></li>
-                         <li class="flex items-center"><span class="w-2 h-2 bg-purple-400 rounded-full mr-2"></span><span>Custom PCB (Optional) / Wiring</span></li>
+                         <li class="flex items-center"><span class="w-2 h-2 bg-purple-400 rounded-full mr-2"></span><span>Linux / RetroPie / Lakka</span></li>
+                         <li class="flex items-center"><span class="w-2 h-2 bg-purple-400 rounded-full mr-2"></span><span>Custom PCB / Wiring</span></li>
                          <li class="flex items-center"><span class="w-2 h-2 bg-purple-400 rounded-full mr-2"></span><span>CAD (Fusion 360) & 3D Printing</span></li>
-                         <li class="flex items-center"><span class="w-2 h-2 bg-purple-400 rounded-full mr-2"></span><span>Power Management (LiPo Battery)</span></li>
+                         <li class="flex items-center"><span class="w-2 h-2 bg-purple-400 rounded-full mr-2"></span><span>Power Management (LiPo)</span></li>
                     </ul>
                 </div>
                 <div>
@@ -603,7 +637,7 @@
                     <ul class="space-y-2 text-sm">
                         <li class="flex items-center"><span class="w-2 h-2 bg-blue-400 rounded-full mr-2"></span><span>Portable Retro Gaming</span></li>
                         <li class="flex items-center"><span class="w-2 h-2 bg-blue-400 rounded-full mr-2"></span><span>Integrated LCD Display</span></li>
-                        <li class="flex items-center"><span class="w-2 h-2 bg-blue-400 rounded-full mr-2"></span><span>Full Gaming Controls (D-Pad, Buttons)</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-blue-400 rounded-full mr-2"></span><span>Full Gaming Controls</span></li>
                         <li class="flex items-center"><span class="w-2 h-2 bg-blue-400 rounded-full mr-2"></span><span>Rechargeable Battery</span></li>
                         <li class="flex items-center"><span class="w-2 h-2 bg-blue-400 rounded-full mr-2"></span><span>Custom Ergonomic Case</span></li>
                     </ul>
@@ -611,6 +645,142 @@
             </div>
         </div>
     </div>
+
+    <div id="project3-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('project3')">&times;</span>
+            <h2 class="text-3xl font-bold mb-6 text-gradient">IoT Dog Treat Dispenser</h2>
+             <div class="carousel">
+                <div class="carousel-inner">
+                    <div class="carousel-item"><img src="docs/assets/img/Project photos/dogTreatDispenser.png" alt="Dog Treat Dispenser Main" loading="lazy"></div>
+                    <div class="carousel-item"><img src="docs/assets/img/Project photos/dogTreatDispenser.png" alt="Dog Treat Dispenser Detail (Placeholder)" loading="lazy"></div>
+                </div>
+                <button class="carousel-control prev" onclick="prevSlide('project3')">&#10094;</button>
+                <button class="carousel-control next" onclick="nextSlide('project3')">&#10095;</button>
+                <div class="carousel-indicators">
+                    <span class="carousel-indicator active" onclick="goToSlide('project3', 0)"></span>
+                    <span class="carousel-indicator" onclick="goToSlide('project3', 1)"></span>
+                </div>
+            </div>
+             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                <div>
+                    <h3 class="text-xl font-bold mb-3 text-purple-300">Project Details</h3>
+                    <p class="text-gray-300 text-sm">Developed an Internet-of-Things enabled device to dispense dog treats remotely or on a schedule. Involved mechanical design for the dispensing mechanism, hardware integration with a microcontroller, and software for connectivity and control.</p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-3 text-purple-300">Technologies Used</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li class="flex items-center"><span class="w-2 h-2 bg-purple-400 rounded-full mr-2"></span><span>ESP32/ESP8266 Microcontroller</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-purple-400 rounded-full mr-2"></span><span>Servo Motor / Auger Mechanism</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-purple-400 rounded-full mr-2"></span><span>CAD & 3D Printing (Enclosure)</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-purple-400 rounded-full mr-2"></span><span>MQTT / WiFi Communication</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-purple-400 rounded-full mr-2"></span><span>Mobile App Framework (Optional)</span></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-3 text-purple-300">Key Features</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li class="flex items-center"><span class="w-2 h-2 bg-blue-400 rounded-full mr-2"></span><span>Remote Treat Dispensing</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-blue-400 rounded-full mr-2"></span><span>Scheduled Feeding Times</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-blue-400 rounded-full mr-2"></span><span>Adjustable Portion Control</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-blue-400 rounded-full mr-2"></span><span>Web/App Interface</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-blue-400 rounded-full mr-2"></span><span>Low Treat Level Sensor (Optional)</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="project4-modal" class="modal">
+         <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('project4')">&times;</span>
+            <h2 class="text-3xl font-bold mb-6 text-gradient">Electric Bike Retrofit</h2>
+             <div class="carousel">
+                <div class="carousel-inner">
+                    <div class="carousel-item"><img src="docs/assets/img/Project photos/ebike1.jpg" alt="E-Bike Retrofit Side View" loading="lazy"></div>
+                    <div class="carousel-item"><img src="docs/assets/img/Project photos/ebike2.jpg" alt="E-Bike Retrofit Motor Detail" loading="lazy"></div>
+                    </div>
+                <button class="carousel-control prev" onclick="prevSlide('project4')">&#10094;</button>
+                <button class="carousel-control next" onclick="nextSlide('project4')">&#10095;</button>
+                <div class="carousel-indicators">
+                    <span class="carousel-indicator active" onclick="goToSlide('project4', 0)"></span>
+                    <span class="carousel-indicator" onclick="goToSlide('project4', 1)"></span>
+                </div>
+            </div>
+             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                <div>
+                    <h3 class="text-xl font-bold mb-3 text-purple-300">Project Details</h3>
+                    <p class="text-gray-300 text-sm">A senior design project focused on converting a standard bicycle into an electric bike. Key aspects included selecting an appropriate motor and battery system, integrating controls, and implementing electric regenerative braking for improved efficiency and range.</p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-3 text-purple-300">Technologies Used</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li class="flex items-center"><span class="w-2 h-2 bg-purple-400 rounded-full mr-2"></span><span>BLDC Hub Motor / Mid-Drive Motor</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-purple-400 rounded-full mr-2"></span><span>Motor Controller (e.g., VESC)</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-purple-400 rounded-full mr-2"></span><span>Lithium-Ion Battery Pack & BMS</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-purple-400 rounded-full mr-2"></span><span>Throttle / Pedal Assist Sensor (PAS)</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-purple-400 rounded-full mr-2"></span><span>Microcontroller (for custom logic)</span></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-3 text-purple-300">Key Features</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li class="flex items-center"><span class="w-2 h-2 bg-blue-400 rounded-full mr-2"></span><span>Electric Power Assist</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-blue-400 rounded-full mr-2"></span><span>Regenerative Braking System</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-blue-400 rounded-full mr-2"></span><span>Variable Assist Levels</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-blue-400 rounded-full mr-2"></span><span>Battery Monitoring Display</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-blue-400 rounded-full mr-2"></span><span>Integration with Existing Bike Frame</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="project5-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('project5')">&times;</span>
+            <h2 class="text-3xl font-bold mb-6 text-gradient">Flexible PCB Design</h2>
+             <div class="carousel">
+                <div class="carousel-inner">
+                    <div class="carousel-item"><img src="docs/assets/img/Project photos/flexiPCB.jpg" alt="Flexible PCB Example" loading="lazy"></div>
+                    <div class="carousel-item"><img src="docs/assets/img/Project photos/VNA.jpg" alt="VNA Testing Setup" loading="lazy"></div>
+                    </div>
+                <button class="carousel-control prev" onclick="prevSlide('project5')">&#10094;</button>
+                <button class="carousel-control next" onclick="nextSlide('project5')">&#10095;</button>
+                <div class="carousel-indicators">
+                    <span class="carousel-indicator active" onclick="goToSlide('project5', 0)"></span>
+                    <span class="carousel-indicator" onclick="goToSlide('project5', 1)"></span>
+                </div>
+            </div>
+             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                <div>
+                    <h3 class="text-xl font-bold mb-3 text-purple-300">Project Details</h3>
+                    <p class="text-gray-300 text-sm">Exploration and practical application of flexible printed circuit board (FPC) design principles. Investigated material selection (Polyimide), stack-up design, trace routing for flexibility, and manufacturing considerations specific to FPCs for use in compact or dynamic applications.</p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-3 text-purple-300">Technologies Used</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li class="flex items-center"><span class="w-2 h-2 bg-purple-400 rounded-full mr-2"></span><span>PCB Design Software (Flex/Rigid-Flex)</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-purple-400 rounded-full mr-2"></span><span>Polyimide (Kapton) Substrates</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-purple-400 rounded-full mr-2"></span><span>Adhesiveless Construction</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-purple-400 rounded-full mr-2"></span><span>Stiffeners & Coverlay Design</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-purple-400 rounded-full mr-2"></span><span>FPC Manufacturing Processes</span></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-3 text-purple-300">Key Features</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li class="flex items-center"><span class="w-2 h-2 bg-blue-400 rounded-full mr-2"></span><span>Defined Bend Radius Compliance</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-blue-400 rounded-full mr-2"></span><span>Dynamic or Static Flex Application</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-blue-400 rounded-full mr-2"></span><span>Space Saving / 3D Interconnects</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-blue-400 rounded-full mr-2"></span><span>Specific Layer Stackup</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-blue-400 rounded-full mr-2"></span><span>Component Placement Rules for Flex</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <div id="privacy-modal" class="modal">
         <div class="modal-content">
@@ -667,8 +837,8 @@
                 <div>
                     <h3 class="text-xl font-bold mb-3 text-purple-300">Legal</h3>
                     <ul class="space-y-2">
-                        <li><a href="#" class="text-gray-300 hover:text-purple-300 transition" onclick="openModal('privacy'); closeModal('sitemap')">Privacy Policy</a></li>
-                        <li><a href="#" class="text-gray-300 hover:text-purple-300 transition" onclick="openModal('terms'); closeModal('sitemap')">Terms of Service</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-purple-300 transition" onclick="openModal('privacy'); closeModal('sitemap'); return false;">Privacy Policy</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-purple-300 transition" onclick="openModal('terms'); closeModal('sitemap'); return false;">Terms of Service</a></li>
                     </ul>
                 </div>
                  <div>
@@ -695,9 +865,17 @@
             initProjectModel1(); // Initialize the robotic arm model
             setupSkillFiltering(); // Setup listeners for skill filters
             observeSkillsSection(); // Setup Intersection Observer for skills animation
-            // NOTE: The Gear System model (initProjectModel2) is NOT included as requested.
+            showAndHideHints(); // Initialize the temporary click hints
+            setCurrentYear(); // Set copyright year
             // NOTE: Initialize carousels when modals are opened (see openProjectModal)
         });
+
+        function setCurrentYear() {
+            const yearSpan = document.getElementById('current-year');
+            if (yearSpan) {
+                yearSpan.textContent = new Date().getFullYear();
+            }
+        }
 
         // --- 3D Background Scene ---
         function init3DBackgroundScene() {
@@ -744,8 +922,8 @@
 
         function createFloatingGeometries() {
              const geometryTypes = [
-                () => new THREE.IcosahedronGeometry(2.5, 0), // Smaller size
-                () => new THREE.TorusKnotGeometry(2, 0.6, 100, 16), // Smaller size
+                () => new THREE.IcosahedronGeometry(2.5, 0),
+                () => new THREE.TorusKnotGeometry(2, 0.6, 100, 16),
                 () => new THREE.OctahedronGeometry(2.5, 0),
                  () => new THREE.TorusGeometry(2.5, 0.8, 16, 32),
                  () => new THREE.DodecahedronGeometry(2.5, 0),
@@ -754,30 +932,23 @@
                  new THREE.MeshPhongMaterial({ color: 0x00dbde, shininess: 50, specular: 0x222222, transparent: true, opacity: 0.8 }),
                  new THREE.MeshPhongMaterial({ color: 0xfc00ff, shininess: 50, specular: 0x222222, transparent: true, opacity: 0.8 }),
                  new THREE.MeshPhongMaterial({ color: 0xffffff, shininess: 30, specular: 0x111111, transparent: true, opacity: 0.7 }),
-                 new THREE.MeshStandardMaterial({ color: 0x6fa8dc, roughness: 0.4, metalness: 0.1, transparent: true, opacity: 0.75 }) // Example Standard Material
+                 new THREE.MeshStandardMaterial({ color: 0x6fa8dc, roughness: 0.4, metalness: 0.1, transparent: true, opacity: 0.75 })
              ];
 
             for (let i = 0; i < 10; i++) { // Fewer objects
                 const geometry = geometryTypes[i % geometryTypes.length]();
-                const material = materials[i % materials.length].clone(); // Clone material
+                const material = materials[i % materials.length].clone();
                 const mesh = new THREE.Mesh(geometry, material);
-
-                const range = 50; // Increased range
-                mesh.position.set(
-                    (Math.random() - 0.5) * range,
-                    (Math.random() - 0.5) * range,
-                    (Math.random() - 0.5) * range
-                 );
-                 mesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
-                const scale = 0.6 + Math.random() * 0.6; // Smaller scale variation
+                const range = 50;
+                mesh.position.set((Math.random() - 0.5) * range, (Math.random() - 0.5) * range, (Math.random() - 0.5) * range);
+                mesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+                const scale = 0.6 + Math.random() * 0.6;
                 mesh.scale.set(scale, scale, scale);
-
                 mesh.userData = {
-                    rotationSpeed: { x: (Math.random() - 0.5) * 0.005, y: (Math.random() - 0.5) * 0.005 }, // Slower rotation
-                     direction: new THREE.Vector3((Math.random()-0.5), (Math.random()-0.5), (Math.random()-0.5)).normalize(),
-                     speed: 0.01 + Math.random() * 0.02 // Slower movement
+                    rotationSpeed: { x: (Math.random() - 0.5) * 0.005, y: (Math.random() - 0.5) * 0.005 },
+                    direction: new THREE.Vector3((Math.random()-0.5), (Math.random()-0.5), (Math.random()-0.5)).normalize(),
+                    speed: 0.01 + Math.random() * 0.02
                  };
-
                 scene.add(mesh);
                 backgroundModels.push(mesh);
             }
@@ -789,78 +960,68 @@
                 camera.updateProjectionMatrix();
                 renderer.setSize(window.innerWidth, window.innerHeight);
             }
-            // Also resize project models if they are visible/initialized
-             // Optional: Add resize handling for project1Renderer if needed
              if (project1Renderer && project1Camera && document.getElementById('project-model-1')) {
                  const container = document.getElementById('project-model-1');
                  const width = container.clientWidth;
                  const height = container.clientHeight;
-                 project1Camera.aspect = width / height;
-                 project1Camera.updateProjectionMatrix();
-                 project1Renderer.setSize(width, height);
+                 if (width > 0 && height > 0) {
+                     project1Camera.aspect = width / height;
+                     project1Camera.updateProjectionMatrix();
+                     project1Renderer.setSize(width, height);
+                 }
              }
         }
 
         function animateBackground() {
             requestAnimationFrame(animateBackground);
-             const delta = 0.05; // Simple delta time simulation
-
              backgroundModels.forEach(model => {
                 model.rotation.x += model.userData.rotationSpeed.x;
                 model.rotation.y += model.userData.rotationSpeed.y;
-
                  model.position.addScaledVector(model.userData.direction, model.userData.speed);
-
-                // Simple boundary check
                 const boundary = 35;
                 if (Math.abs(model.position.x) > boundary || Math.abs(model.position.y) > boundary || Math.abs(model.position.z) > boundary) {
-                    // Reflect direction (simple bounce)
                      if(Math.abs(model.position.x) > boundary) model.userData.direction.x *= -1;
                      if(Math.abs(model.position.y) > boundary) model.userData.direction.y *= -1;
                      if(Math.abs(model.position.z) > boundary) model.userData.direction.z *= -1;
-
-                     // Nudge back inside boundary slightly to prevent sticking
                      model.position.clampScalar(-boundary + 1, boundary - 1);
                  }
              });
-
-            controls.update(); // Required if enableDamping or autoRotate=true
+            controls.update();
             renderer.render(scene, camera);
         }
 
 
         // --- Interactive Project Model 1 (Robotic Arm) ---
         let project1Scene, project1Camera, project1Renderer, project1Controls;
+        let project1AnimationFrameId = null;
 
         function initProjectModel1() {
             const container = document.getElementById('project-model-1');
-            if (!container || container.querySelector('canvas')) return; // Don't re-initialize
+            if (!container || container.querySelector('canvas')) return;
 
             const width = container.clientWidth;
             const height = container.clientHeight;
+            if (width === 0 || height === 0) return;
 
             project1Scene = new THREE.Scene();
-            project1Scene.background = null; // Transparent background
+            project1Scene.background = null;
 
-            project1Camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000); // Adjusted FOV
-            project1Camera.position.set(0, 10, 20); // Adjusted camera position
+            project1Camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+            project1Camera.position.set(0, 10, 20);
 
             project1Renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             project1Renderer.setSize(width, height);
             project1Renderer.setPixelRatio(window.devicePixelRatio);
             container.appendChild(project1Renderer.domElement);
 
-            // Lights
-            project1Scene.add(new THREE.AmbientLight(0x666666)); // Softer ambient
+            project1Scene.add(new THREE.AmbientLight(0x666666));
             const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
             dirLight.position.set(5, 10, 7);
             project1Scene.add(dirLight);
-            const dirLight2 = new THREE.DirectionalLight(0xffffff, 0.3); // Backlight
+            const dirLight2 = new THREE.DirectionalLight(0xffffff, 0.3);
             dirLight2.position.set(-5, -5, -7);
             project1Scene.add(dirLight2);
 
-
-            // Simple robotic arm components
             const baseMat = new THREE.MeshStandardMaterial({ color: 0x444455, metalness: 0.6, roughness: 0.4 });
             const armMat = new THREE.MeshStandardMaterial({ color: 0x777788, metalness: 0.5, roughness: 0.5 });
             const jointMat = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, metalness: 0.7, roughness: 0.3 });
@@ -870,74 +1031,61 @@
             base.position.y = 0.75;
             project1Scene.add(base);
 
-            // Pivot point for arm 1
             const pivot1 = new THREE.Group();
-            pivot1.position.y = 1.5; // On top of base
-            base.add(pivot1); // Add pivot to base
-
+            pivot1.position.y = 1.5;
+            base.add(pivot1);
             const arm1 = new THREE.Mesh(new THREE.BoxGeometry(1.2, 6, 1.2), armMat);
-            arm1.position.y = 3; // Center arm vertically relative to pivot
+            arm1.position.y = 3;
             pivot1.add(arm1);
-
             const joint = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 32), jointMat);
-            joint.position.y = 6; // Position relative to pivot1
-            pivot1.add(joint); // Add joint to the same pivot
+            joint.position.y = 6;
+            pivot1.add(joint);
 
-            // Pivot point for arm 2
             const pivot2 = new THREE.Group();
-            pivot2.position.y = 0; // Position relative to joint center
-            joint.add(pivot2); // Add pivot to joint
-
+            pivot2.position.y = 0;
+            joint.add(pivot2);
             const arm2 = new THREE.Mesh(new THREE.BoxGeometry(1, 5, 1), armMat);
-            arm2.position.y = 2.5; // Center arm vertically relative to pivot2
+            arm2.position.y = 2.5;
             pivot2.add(arm2);
-
             const gripperBase = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.8, 1.5), jointMat);
-            gripperBase.position.y = 5; // Position relative to pivot2
+            gripperBase.position.y = 5;
             pivot2.add(gripperBase);
-
-            // Gripper parts (relative to gripperBase)
             const gripper1 = new THREE.Mesh(new THREE.BoxGeometry(0.4, 1.5, 0.3), gripperMat);
-            gripper1.position.set(0.5, 0.4, 0); // Positioned to the side
+            gripper1.position.set(0.5, 0.4, 0);
             gripperBase.add(gripper1);
-
             const gripper2 = new THREE.Mesh(new THREE.BoxGeometry(0.4, 1.5, 0.3), gripperMat);
-            gripper2.position.set(-0.5, 0.4, 0); // Positioned to the other side
+            gripper2.position.set(-0.5, 0.4, 0);
             gripperBase.add(gripper2);
 
-            // Controls
             project1Controls = new THREE.OrbitControls(project1Camera, project1Renderer.domElement);
             project1Controls.enableDamping = true;
             project1Controls.dampingFactor = 0.05;
-            project1Controls.target.set(0, 5, 0); // Aim controls at mid-arm
+            project1Controls.target.set(0, 5, 0);
             project1Controls.update();
 
-
-            // Store references for animation
             project1Scene.userData.pivot1 = pivot1;
             project1Scene.userData.pivot2 = pivot2;
             project1Scene.userData.gripper1 = gripper1;
             project1Scene.userData.gripper2 = gripper2;
             project1Scene.userData.time = 0;
+            project1Scene.userData.needsRender = true;
 
-            animateProject1(); // Start animation loop only for this model
+            animateProject1();
         }
 
         function animateProject1() {
-             if (!project1Scene || !project1Renderer) return; // Stop if disposed
-
-             requestAnimationFrame(animateProject1);
-
-             project1Scene.userData.time += 0.015; // Slightly faster animation
-
-             // Simple animation for the robotic arm pivots and grippers
+             if (!project1Scene || !project1Renderer || !project1Scene.userData.needsRender) {
+                project1AnimationFrameId = null;
+                 return;
+            }
+             project1AnimationFrameId = requestAnimationFrame(animateProject1);
+             project1Scene.userData.time += 0.015;
              project1Scene.userData.pivot1.rotation.y = Math.sin(project1Scene.userData.time * 0.5) * 0.7;
-             project1Scene.userData.pivot2.rotation.x = Math.sin(project1Scene.userData.time * 0.7) * 0.5 + 0.2; // Tilt forward slightly
+             project1Scene.userData.pivot2.rotation.x = Math.sin(project1Scene.userData.time * 0.7) * 0.5 + 0.2;
              const gripperMovement = Math.sin(project1Scene.userData.time * 1.5) * 0.2;
              project1Scene.userData.gripper1.position.x = 0.5 + gripperMovement;
              project1Scene.userData.gripper2.position.x = -0.5 - gripperMovement;
-
-             project1Controls.update(); // Required for damping
+             project1Controls.update();
              project1Renderer.render(project1Scene, project1Camera);
         }
 
@@ -947,22 +1095,17 @@
             document.querySelectorAll('a[href^="#"]').forEach(anchor => {
                 anchor.addEventListener('click', function (e) {
                     const hrefAttribute = this.getAttribute('href');
-                    // Check if it's a real anchor link and not just '#'
-                    if (hrefAttribute && hrefAttribute.length > 1 && hrefAttribute.startsWith('#')) {
+                    if (hrefAttribute && hrefAttribute.length > 1 && hrefAttribute.startsWith('#') && !this.onclick) {
                         const targetElement = document.querySelector(hrefAttribute);
                         if (targetElement) {
                             e.preventDefault();
-                            targetElement.scrollIntoView({
-                                behavior: 'smooth'
-                            });
-                            // Close mobile menu if open after clicking a link
+                            targetElement.scrollIntoView({ behavior: 'smooth' });
                              const mobileMenu = document.getElementById('mobile-menu');
                              if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
                                 mobileMenu.classList.add('hidden');
                             }
                         }
                      }
-                     // If it's just href="#" or onclick handles it (like modals), allow default/other handlers
                 });
             });
         }
@@ -970,11 +1113,8 @@
         function initMobileMenu() {
             const menuButton = document.getElementById('mobile-menu-button');
             const mobileMenu = document.getElementById('mobile-menu');
-
             if (menuButton && mobileMenu) {
-                menuButton.addEventListener('click', () => {
-                    mobileMenu.classList.toggle('hidden');
-                });
+                menuButton.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
             }
         }
 
@@ -983,49 +1123,40 @@
             const modal = document.getElementById(modalId + '-modal');
             if (modal) {
                  modal.style.display = 'block';
-                 document.body.style.overflow = 'hidden'; // Prevent background scrolling
-                 // Optional: Add fade-in animation class
-                 // modal.classList.add('fade-in');
+                 document.body.style.overflow = 'hidden';
+                 setTimeout(() => modal.classList.add('opacity-100'), 10);
              }
         }
 
         function closeModal(modalId) {
              const modal = document.getElementById(modalId + '-modal');
              if (modal) {
-                 modal.style.display = 'none';
-                 document.body.style.overflow = 'auto'; // Restore background scrolling
-                 // Optional: Remove animation class if added
-                 // modal.classList.remove('fade-in');
-
-                 // Stop carousel auto-play if implemented
+                 modal.classList.remove('opacity-100');
+                 setTimeout(() => {
+                     modal.style.display = 'none';
+                     document.body.style.overflow = 'auto';
+                 }, 300); // Match CSS transition duration
              }
         }
 
         function openProjectModal(projectId) {
             openModal(projectId);
-            // Initialize carousel specific to this project modal when it opens
             initCarousel(projectId);
         }
 
-        // Close modal when clicking outside content
         window.addEventListener('click', function(event) {
-            const openModals = document.querySelectorAll('.modal');
-            openModals.forEach(modal => {
+            document.querySelectorAll('.modal').forEach(modal => {
                 if (event.target === modal && modal.style.display === 'block') {
-                     const modalId = modal.id.replace('-modal', '');
-                     closeModal(modalId);
+                     closeModal(modal.id.replace('-modal', ''));
                  }
             });
         });
 
-         // Close modal with Escape key
          window.addEventListener('keydown', function(event) {
              if (event.key === 'Escape') {
-                const openModals = document.querySelectorAll('.modal');
-                 openModals.forEach(modal => {
+                document.querySelectorAll('.modal').forEach(modal => {
                      if (modal.style.display === 'block') {
-                         const modalId = modal.id.replace('-modal', '');
-                         closeModal(modalId);
+                         closeModal(modal.id.replace('-modal', ''));
                      }
                  });
              }
@@ -1039,23 +1170,12 @@
              const carouselInner = modal.querySelector('.carousel-inner');
              const items = modal.querySelectorAll('.carousel-item');
              const indicators = modal.querySelectorAll('.carousel-indicator');
-
-             if (!carouselInner || items.length === 0) return; // No carousel or items
-
-             let currentIndex = 0;
-             const totalItems = items.length;
-
-             // Set initial state if not already set
-             // Check dataset only if you need to prevent re-initialization,
-             // otherwise, just setting the state is fine.
-             // if (!carouselInner.dataset.initialized) {
-                 carouselInner.style.transform = `translateX(0%)`;
-                 indicators.forEach((ind, i) => ind.classList.toggle('active', i === 0));
-                 carouselInner.dataset.currentIndex = 0;
-             //    carouselInner.dataset.initialized = 'true';
-             // }
+             if (!carouselInner || items.length === 0) return;
+             const currentIndex = 0;
+             carouselInner.style.transform = `translateX(0%)`;
+             indicators.forEach((ind, i) => ind.classList.toggle('active', i === currentIndex));
+             carouselInner.dataset.currentIndex = currentIndex;
         }
-
 
         function updateCarousel(carouselId, newIndex) {
             const modal = document.getElementById(`${carouselId}-modal`);
@@ -1064,17 +1184,11 @@
             const indicators = modal.querySelectorAll('.carousel-indicator');
             const items = modal.querySelectorAll('.carousel-item');
              if (!carouselInner || items.length === 0) return;
-
             const totalItems = items.length;
-             // Ensure index is within bounds
              newIndex = (newIndex + totalItems) % totalItems;
-
              carouselInner.style.transform = `translateX(-${newIndex * 100}%)`;
              carouselInner.dataset.currentIndex = newIndex;
-
-            indicators.forEach((indicator, index) => {
-                indicator.classList.toggle('active', index === newIndex);
-            });
+            indicators.forEach((indicator, index) => indicator.classList.toggle('active', index === newIndex));
         }
 
         function prevSlide(carouselId) {
@@ -1099,7 +1213,7 @@
             updateCarousel(carouselId, index);
         }
 
-        // --- Skills Section Filtering & Animation (From your original code) ---
+        // --- Skills Section Filtering & Animation ---
 
         function setupSkillFiltering() {
             const skillFilters = document.querySelectorAll('.skill-filter');
@@ -1108,22 +1222,27 @@
             skillFilters.forEach(filter => {
                 filter.addEventListener('click', () => {
                     const category = filter.getAttribute('data-filter');
+                    skillFilters.forEach(f => f.classList.remove('active', 'bg-pink-500', 'border-pink-500'));
+                    filter.classList.add('active', 'bg-pink-500', 'border-pink-500');
 
-                    // Update active filter button state
-                    skillFilters.forEach(f => f.classList.remove('active', 'bg-pink-500', 'border-pink-500')); // Remove specific active styles
-                    filter.classList.add('active', 'bg-pink-500', 'border-pink-500'); // Add specific active styles
-
-                    // Filter skill items
                     skillItems.forEach(item => {
                         const itemCategory = item.getAttribute('data-category');
-                        if (category === 'all' || itemCategory === category) {
-                            // Make visible: remove hidden styles
+                        const isTarget = category === 'all' || itemCategory === category;
+                        const isVisible = !item.classList.contains('opacity-0'); // Simplified check
+
+                        if (isTarget && !isVisible) {
+                            // Make visible
                             item.classList.remove('hidden', 'opacity-0', 'scale-80', 'w-0', 'p-0', '-ml-2');
-                            item.classList.add('opacity-100', 'scale-100'); // Ensure visible styles are set
-                         } else {
-                            // Make hidden: add hidden styles
-                            item.classList.add('hidden', 'opacity-0', 'scale-80', 'w-0', 'p-0', '-ml-2');
+                            item.classList.add('opacity-100', 'scale-100');
+                         } else if (!isTarget && isVisible) {
+                            // Make hidden
                             item.classList.remove('opacity-100', 'scale-100');
+                            item.classList.add('opacity-0', 'scale-80');
+                            setTimeout(() => {
+                                if (!item.classList.contains('opacity-100')) { // Check again in case state changed quickly
+                                     item.classList.add('hidden', 'w-0', 'p-0', '-ml-2');
+                                }
+                             }, 300); // Delay hiding based on transition duration
                         }
                     });
                 });
@@ -1134,31 +1253,36 @@
         function observeSkillsSection() {
             const skillsSection = document.querySelector('#skills');
             const skillItems = document.querySelectorAll('.skills-list .skill-item');
-
              if (!skillsSection || skillItems.length === 0) return;
 
              const skillObserver = new IntersectionObserver((entries, observer) => {
-                // Check if the skills section is intersecting
                  if (entries[0].isIntersecting) {
                      skillItems.forEach((item, index) => {
-                         // Only animate if it hasn't been animated already (check for opacity-0)
                          if(item.classList.contains('opacity-0')) {
-                             // Apply animation with a delay based on index
                              setTimeout(() => {
-                                 item.style.transitionDelay = `${index * 50}ms`; // Add transition delay inline
+                                 item.style.transitionDelay = `${index * 50}ms`;
                                  item.classList.remove('opacity-0', 'translate-y-5');
                                  item.classList.add('opacity-100', 'translate-y-0');
-                            }, 50); // Base delay before starting animations
+                            }, 50);
                          }
                      });
-                     // Stop observing once the initial animation is triggered
                     observer.unobserve(skillsSection);
                  }
-            }, {
-                 threshold: 0.3 // Trigger when 30% of the section is visible
-             });
-
+            }, { threshold: 0.3 });
             skillObserver.observe(skillsSection);
+        }
+
+        // --- Temporary Click Hint Logic ---
+        function showAndHideHints() {
+            const hints = document.querySelectorAll('.click-hint');
+            if (hints.length > 0) {
+                const fadeInTimeout = setTimeout(() => {
+                    hints.forEach(hint => hint.classList.add('opacity-100'));
+                }, 1500);
+                const fadeOutTimeout = setTimeout(() => {
+                    hints.forEach(hint => hint.classList.remove('opacity-100'));
+                }, 9000);
+            }
         }
 
     </script>
