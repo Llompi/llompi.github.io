@@ -1,0 +1,121 @@
+/* Resume PDF Styles */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.4;
+  margin: 0;
+  padding: 20px;
+  font-size: 11pt;
+  color: #333;
+  background: white;
+}
+
+/* Headers */
+h1 {
+  font-size: 24pt;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 8px 0;
+  border-bottom: 3px solid #6366f1;
+  padding-bottom: 8px;
+}
+
+h2 {
+  font-size: 14pt;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin: 20px 0 8px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 4px;
+}
+
+h3 {
+  font-size: 12pt;
+  font-weight: 600;
+  color: #4b5563;
+  margin: 12px 0 4px 0;
+}
+
+/* Contact Information */
+p:first-of-type {
+  font-size: 10pt;
+  color: #6b7280;
+  margin: 4px 0 16px 0;
+  line-height: 1.6;
+}
+
+/* Lists */
+ul {
+  margin: 8px 0;
+  padding-left: 16px;
+}
+
+li {
+  margin: 3px 0;
+  line-height: 1.3;
+}
+
+/* Bold text styling */
+strong {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+/* Emphasis */
+em {
+  font-style: italic;
+  color: #6366f1;
+  font-weight: 500;
+}
+
+/* Code and technical terms */
+code {
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  background-color: #f3f4f6;
+  padding: 1px 4px;
+  border-radius: 2px;
+  font-size: 9pt;
+}
+
+/* Professional experience sections */
+h3 + p {
+  margin-top: 2px;
+  font-size: 10pt;
+  color: #6b7280;
+}
+
+/* Key achievements and bullet points */
+li strong {
+  color: #6366f1;
+}
+
+/* Page breaks */
+@media print {
+  h2 {
+    page-break-after: avoid;
+  }
+  
+  h3 {
+    page-break-after: avoid;
+  }
+  
+  ul {
+    page-break-inside: avoid;
+  }
+}
+
+/* Professional summary */
+h2:first-of-type + p {
+  font-size: 11pt;
+  line-height: 1.5;
+  margin: 8px 0 16px 0;
+  color: #374151;
+}
