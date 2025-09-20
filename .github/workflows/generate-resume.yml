@@ -1,0 +1,68 @@
+name: Generate Resume PDF
+
+on:
+  push:
+    branches: [ main, website-upgrades ]
+    paths: 
+      - 'resume/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'resume/**'
+  workflow_dispatch:
+
+jobs:
+  generate-pdf:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Install dependencies
+      run: |
+        npm install -g @marp-team/marp-cli
+        npm install -g markdown-pdf
+        
+    - name: Install Puppeteer
+      run: |
+        npm install -g puppeteer
+        
+    - name: Generate PDF from Markdown
+      run: |
+        mkdir -p resume/output
+        
+        # Generate standard PDF
+        npx markdown-pdf resume/resume.md -o resume/output/Joan_Llompart_Resume.pdf \
+          --paper-format=A4 \
+          --paper-border=2cm \
+          --css-path=resume/styles/resume-pdf.css || true
+          
+        # Generate compact PDF (fallback method)
+        pandoc resume/resume.md -o resume/output/Joan_Llompart_Resume_Compact.pdf \
+          --pdf-engine=weasyprint \
+          --css=resume/styles/resume-pdf.css \
+          --variable geometry:margin=1in || true
+          
+        # Generate HTML version
+        pandoc resume/resume.md -o resume/output/resume.html \
+          --standalone \
+          --css=resume/styles/resume-web.css \
+          --metadata title="Joan Llompart - Resume" || true
+        
+        # List generated files
+        ls -la resume/output/
+        
+    - name: Commit generated files
+      if: github.event_name == 'push'
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add resume/output/
+        git diff --staged --quiet || git commit -m "Auto-generate resume PDF and HTML versions"
+        git push origin ${{ github.ref_name }} || true
