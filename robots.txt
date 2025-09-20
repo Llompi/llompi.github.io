@@ -1,0 +1,37 @@
+# Robots.txt for llompi.github.io
+# Optimized for search engine crawling and indexing
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://llompi.github.io/sitemap.xml
+
+# Disallow crawling of certain directories
+Disallow: /.github/
+Disallow: /scripts/
+Disallow: /.idea/
+Disallow: /node_modules/
+Disallow: /.git/
+Disallow: /react-version/node_modules/
+
+# Allow access to important files
+Allow: /resume/
+Allow: /docs/
+Allow: /resume/output/
+
+# Crawl delay (optional, helps with server load)
+Crawl-delay: 1
+
+# Specific instructions for major search engines
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Slurp
+Allow: /
+Crawl-delay: 1
