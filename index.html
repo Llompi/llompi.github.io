@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="description" content="Joan Llompart - Electrical Engineer Portfolio showcasing innovative projects and skills in hardware, software, and design">
     <title>Joan Llompart | Electrical Engineer Portfolio</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -20,6 +20,18 @@
             --clr-bg: #331700;        /* very dark brown */
             --clr-bg-light: #4A2C17;  /* lighter brown */
             --clr-glass: rgba(255, 154, 0, 0.1);
+            --safe-area-inset-top: env(safe-area-inset-top, 0);
+            --safe-area-inset-bottom: env(safe-area-inset-bottom, 0);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
         }
 
         body {
@@ -28,6 +40,8 @@
             color: #f5f5f5;
             scrollbar-width: thin;
             scrollbar-color: rgba(255, 154, 0, 0.5) rgba(51, 23, 0, 0.8);
+            padding-top: var(--safe-area-inset-top);
+            padding-bottom: var(--safe-area-inset-bottom);
         }
 
         body::-webkit-scrollbar {
@@ -40,6 +54,17 @@
             background-color: rgba(255, 154, 0, 0.5);
             border-radius: 10px;
             border: 2px solid rgba(51, 23, 0, 0.8);
+        }
+
+        /* iPhone notch and safe area handling */
+        @supports(padding: max(0px)) {
+            .safe-top {
+                padding-top: max(var(--safe-area-inset-top), 16px);
+            }
+            
+            .safe-bottom {
+                padding-bottom: max(var(--safe-area-inset-bottom), 16px);
+            }
         }
 
         /* Glassmorphism utility */
@@ -118,12 +143,13 @@
             background: var(--clr-glass);
         }
 
-        /* Navigation with glassmorphism */
+        /* Navigation with glassmorphism and safe area */
         nav {
             background: rgba(255, 255, 255, 0.15);
             border: 1px solid rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(16px) saturate(180%);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+            padding-top: var(--safe-area-inset-top);
         }
 
         /* Modal styles with glassmorphism */
@@ -137,10 +163,14 @@
             background-color: rgba(51, 23, 0, 0.85);
             z-index: 1000;
             overflow-y: auto;
-            padding-top: 5vh;
-            padding-bottom: 5vh;
+            padding-top: max(5vh, var(--safe-area-inset-top));
+            padding-bottom: max(5vh, var(--safe-area-inset-bottom));
             opacity: 0;
             transition: opacity 0.3s ease-out;
+        }
+
+        .modal.show {
+            opacity: 1;
         }
 
         .modal-content {
@@ -164,6 +194,7 @@
             cursor: pointer;
             color: var(--clr-end);
             transition: color 0.3s ease;
+            z-index: 10;
         }
         .close-modal:hover {
             color: var(--clr-accent);
@@ -201,73 +232,75 @@
                 0 20px 40px rgba(0, 0, 0, 0.3);
         }
 
-        /* Mobile responsiveness for glassmorphism */
-        @media (max-width: 768px) {
-            .glass, .glass-warm {
-                backdrop-filter: blur(12px) saturate(150%);
-            }
-        }
-
-        /* Reduced motion preferences */
-        @media (prefers-reduced-motion: reduce) {
-            #intro-video {
-                display: none;
-            }
-            #home {
-                background: linear-gradient(135deg, var(--clr-start) 0%, var(--clr-end) 100%);
-            }
-        }
-
-        /* Carousel styles */
-        .carousel {
+        /* Enhanced Carousel Styles - Threads-like */
+        .enhanced-carousel {
             position: relative;
             width: 100%;
             height: 400px;
             overflow: hidden;
-            border-radius: 8px;
+            border-radius: 12px;
             margin-bottom: 20px;
             background-color: rgba(0,0,0,0.2);
+            touch-action: pan-x;
+            -webkit-overflow-scrolling: touch;
         }
 
-        .carousel-inner {
+        .enhanced-carousel-container {
             display: flex;
-            transition: transform 0.5s ease;
+            width: 100%;
             height: 100%;
+            transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            will-change: transform;
         }
 
-        .carousel-item {
+        .enhanced-carousel-slide {
             min-width: 100%;
             height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            user-select: none;
         }
 
-        .carousel-item img {
+        .enhanced-carousel-slide img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            pointer-events: none;
         }
 
-        .carousel-control {
+        .enhanced-carousel-nav {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
             background: var(--clr-glass);
             color: white;
             border: none;
-            padding: 10px 15px;
+            padding: 12px 16px;
             cursor: pointer;
             border-radius: 50%;
             z-index: 10;
-            transition: background 0.3s ease;
+            transition: all 0.3s ease;
             backdrop-filter: blur(10px);
+            opacity: 0;
+            pointer-events: none;
         }
-        .carousel-control:hover {
+
+        .enhanced-carousel:hover .enhanced-carousel-nav {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .enhanced-carousel-nav:hover {
             background: rgba(255, 154, 0, 0.3);
+            transform: translateY(-50%) scale(1.1);
         }
 
-        .carousel-control.prev { left: 15px; }
-        .carousel-control.next { right: 15px; }
+        .enhanced-carousel-nav.prev { left: 16px; }
+        .enhanced-carousel-nav.next { right: 16px; }
 
-        .carousel-indicators {
+        .enhanced-carousel-indicators {
             position: absolute;
             bottom: 20px;
             left: 50%;
@@ -277,17 +310,42 @@
             z-index: 10;
         }
 
-        .carousel-indicator {
-            width: 12px;
-            height: 12px;
+        .enhanced-carousel-dot {
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.4);
             cursor: pointer;
-            transition: background 0.3s;
+            transition: all 0.3s ease;
+            transform: scale(1);
         }
 
-        .carousel-indicator.active {
+        .enhanced-carousel-dot.active {
             background: var(--clr-end);
+            transform: scale(1.2);
+            box-shadow: 0 0 10px rgba(255, 95, 109, 0.6);
+        }
+
+        .enhanced-carousel-dot:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.7);
+            transform: scale(1.1);
+        }
+
+        /* Mobile responsiveness for glassmorphism */
+        @media (max-width: 768px) {
+            .glass, .glass-warm {
+                backdrop-filter: blur(12px) saturate(150%);
+            }
+            
+            .enhanced-carousel-nav {
+                opacity: 1;
+                pointer-events: auto;
+                padding: 8px 12px;
+            }
+            
+            .enhanced-carousel-indicators {
+                bottom: 12px;
+            }
         }
 
         /* Skills section styling */
@@ -344,20 +402,74 @@
             100% { transform: translateY(0px) scale(1); }
         }
 
-        /* Footer glassmorphism */
+        /* Footer glassmorphism with safe area */
         footer {
             background: var(--clr-glass);
             border: 1px solid rgba(255, 179, 71, 0.3);
             backdrop-filter: blur(20px) saturate(200%);
             box-shadow: 0 8px 32px rgba(255, 154, 0, 0.15);
+            padding-bottom: var(--safe-area-inset-bottom);
         }
 
+        /* Robotic Arm Control Improvements */
+        .arm-controls {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .arm-control-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            color: white;
+        }
+
+        .arm-control-btn.animate {
+            background: linear-gradient(135deg, #FF6B35, #F7931E);
+        }
+
+        .arm-control-btn.animate:hover {
+            background: linear-gradient(135deg, #E55A2B, #E0841A);
+            transform: translateY(-1px);
+        }
+
+        .arm-control-btn.animate.active {
+            background: linear-gradient(135deg, #DC143C, #B22222);
+        }
+
+        .arm-control-btn.reset {
+            background: rgba(108, 117, 125, 0.8);
+        }
+
+        .arm-control-btn.reset:hover {
+            background: rgba(90, 98, 104, 0.9);
+            transform: translateY(-1px);
+        }
+
+        /* Reduced motion preferences */
+        @media (prefers-reduced-motion: reduce) {
+            #intro-video {
+                display: none;
+            }
+            #home {
+                background: linear-gradient(135deg, var(--clr-start) 0%, var(--clr-end) 100%);
+            }
+            .floating {
+                animation: none;
+            }
+        }
     </style>
 </head>
 <body class="text-gray-100">
     <div id="canvas-container"></div>
 
-    <nav class="fixed w-full z-50 shadow-lg">
+    <nav class="fixed w-full z-50 shadow-lg safe-top">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <div class="flex items-center">
@@ -393,7 +505,7 @@
     </nav>
 
     <!-- Updated hero section with video background -->
-    <section id="home" class="relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-20 overflow-hidden">
+    <section id="home" class="relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-20 overflow-hidden safe-top">
         <!-- Looping video background -->
         <video id="intro-video" 
                src="assets/videos/gemini_generated_video_E4CFA12B.mp4" 
@@ -514,10 +626,10 @@
                 <div id="project-model-1" class="w-full h-full rounded-xl overflow-hidden bg-gradient-to-br from-orange-800 to-red-900"></div>
                 <div class="absolute bottom-0 left-0 right-0 p-4 md:p-6 glass-warm">
                     <h3 class="text-lg md:text-xl font-bold">Interactive 3D Model: Advanced Robotic Arm</h3>
-                    <p class="text-gray-300 text-sm md:text-base">Drag to rotate, scroll to zoom. Full 6-DOF robotic arm with realistic joints and actuators.</p>
-                    <div class="flex gap-4 mt-2">
-                        <button id="arm-animate" class="px-3 py-1 bg-orange-600 hover:bg-orange-700 rounded text-xs transition-colors">Animate</button>
-                        <button id="arm-reset" class="px-3 py-1 bg-gray-600 hover:bg-gray-700 rounded text-xs transition-colors">Reset</button>
+                    <p class="text-gray-300 text-sm md:text-base mb-2">Drag to rotate, scroll to zoom. Full 6-DOF robotic arm with realistic joints and actuators.</p>
+                    <div class="arm-controls">
+                        <button id="arm-animate" class="arm-control-btn animate">Animate</button>
+                        <button id="arm-reset" class="arm-control-btn reset">Reset</button>
                     </div>
                 </div>
             </div>
@@ -619,7 +731,7 @@
         </div>
     </section>
 
-    <footer class="py-10 px-4 sm:px-6 lg:px-8 mt-12">
+    <footer class="py-10 px-4 sm:px-6 lg:px-8 mt-12 safe-bottom">
         <div class="max-w-7xl mx-auto">
             <div class="flex flex-col md:flex-row justify-between items-center">
                 <div class="mb-6 md:mb-0 text-center md:text-left">
@@ -640,28 +752,22 @@
         </div>
     </footer>
 
-    <!-- Project Modals with updated warm colors -->
+    <!-- Project Modals with Enhanced Carousel -->
     <div id="project1-modal" class="modal">
         <div class="modal-content">
             <span class="close-modal" onclick="closeModal('project1')">&times;</span>
             <h2 class="text-3xl font-bold mb-6 text-gradient">RF Amplifier</h2>
-            <div class="carousel">
-                <div class="carousel-inner">
-                    <div class="carousel-item"><img src="docs/assets/img/Project photos/RFAmp.jpg" alt="RF Amplifier 1" loading="lazy"></div>
-                    <div class="carousel-item"><img src="docs/assets/img/Project photos/RFAmpPCB.jpg" alt="RF Amplifier PCB" loading="lazy"></div>
-                    <div class="carousel-item"><img src="docs/assets/img/Project photos/RFAmpProgress.jpg" alt="RF Amplifier Progress" loading="lazy"></div>
-                    <div class="carousel-item"><img src="docs/assets/img/Project photos/RFAmpSetup.jpg" alt="RF Amplifier Setup" loading="lazy"></div>
-                    <div class="carousel-item"><img src="docs/assets/img/Project photos/RFPCB.png" alt="RF PCB Layout" loading="lazy"></div>
+            <div class="enhanced-carousel" id="project1-carousel">
+                <div class="enhanced-carousel-container">
+                    <div class="enhanced-carousel-slide"><img src="docs/assets/img/Project photos/RFAmp.jpg" alt="RF Amplifier 1" loading="lazy"></div>
+                    <div class="enhanced-carousel-slide"><img src="docs/assets/img/Project photos/RFAmpPCB.jpg" alt="RF Amplifier PCB" loading="lazy"></div>
+                    <div class="enhanced-carousel-slide"><img src="docs/assets/img/Project photos/RFAmpProgress.jpg" alt="RF Amplifier Progress" loading="lazy"></div>
+                    <div class="enhanced-carousel-slide"><img src="docs/assets/img/Project photos/RFAmpSetup.jpg" alt="RF Amplifier Setup" loading="lazy"></div>
+                    <div class="enhanced-carousel-slide"><img src="docs/assets/img/Project photos/RFPCB.png" alt="RF PCB Layout" loading="lazy"></div>
                 </div>
-                <button class="carousel-control prev" onclick="prevSlide('project1')">&#10094;</button>
-                <button class="carousel-control next" onclick="nextSlide('project1')">&#10095;</button>
-                <div class="carousel-indicators">
-                     <span class="carousel-indicator active" onclick="goToSlide('project1', 0)"></span>
-                     <span class="carousel-indicator" onclick="goToSlide('project1', 1)"></span>
-                     <span class="carousel-indicator" onclick="goToSlide('project1', 2)"></span>
-                     <span class="carousel-indicator" onclick="goToSlide('project1', 3)"></span>
-                     <span class="carousel-indicator" onclick="goToSlide('project1', 4)"></span>
-                 </div>
+                <button class="enhanced-carousel-nav prev" onclick="prevEnhancedSlide('project1')">&#10094;</button>
+                <button class="enhanced-carousel-nav next" onclick="nextEnhancedSlide('project1')">&#10095;</button>
+                <div class="enhanced-carousel-indicators" id="project1-indicators"></div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
                 <div>
@@ -690,626 +796,82 @@
         </div>
     </div>
 
-    <!-- Additional modals and scripts with warm color updates -->
-    <script>
-        // --- Global Variables ---
-        let scene, camera, renderer, controls;
-        let backgroundModels = [];
-        let reflectorObjects = [];
-        
-        // Enhanced robotic arm variables
-        let roboticArmGroup;
-        let armSegments = [];
-        let armAnimationId = null;
-        let isAnimating = false;
+    <!-- Additional Project Modals -->
+    <div id="project2-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('project2')">&times;</span>
+            <h2 class="text-3xl font-bold mb-6 text-gradient">Raspberry Pi Handheld Console</h2>
+            <div class="enhanced-carousel" id="project2-carousel">
+                <div class="enhanced-carousel-container">
+                    <div class="enhanced-carousel-slide"><img src="docs/assets/img/Project photos/RetropieFront.jpg" alt="Console Front" loading="lazy"></div>
+                </div>
+                <div class="enhanced-carousel-indicators" id="project2-indicators"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                <div>
+                    <h3 class="text-xl font-bold mb-3 text-warm">Project Details</h3>
+                    <p class="text-gray-300 text-sm">Built a custom handheld gaming console using Raspberry Pi 4, featuring retro game emulation, custom PCB design for controls, and 3D printed enclosure with ergonomic design.</p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-3 text-warm">Technologies Used</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li class="flex items-center"><span class="w-2 h-2 bg-cyan-400 rounded-full mr-2"></span><span>Raspberry Pi 4</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-cyan-400 rounded-full mr-2"></span><span>RetroPie OS</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-cyan-400 rounded-full mr-2"></span><span>3D Printing (PLA)</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-cyan-400 rounded-full mr-2"></span><span>Custom PCB Design</span></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-3 text-warm">Key Features</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li class="flex items-center"><span class="w-2 h-2 bg-blue-400 rounded-full mr-2"></span><span>5" IPS Display</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-blue-400 rounded-full mr-2"></span><span>6 Hour Battery Life</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-blue-400 rounded-full mr-2"></span><span>Multi-System Emulation</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-blue-400 rounded-full mr-2"></span><span>USB-C Charging</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        // --- Initialization ---
-        document.addEventListener('DOMContentLoaded', () => {
-            init3DBackgroundScene();
-            initSmoothScrolling();
-            initMobileMenu();
-            initEnhancedProjectModel1();
-            setupSkillFiltering();
-            observeSkillsSection();
-            showAndHideHints();
-            setCurrentYear();
-        });
+    <div id="project3-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('project3')">&times;</span>
+            <h2 class="text-3xl font-bold mb-6 text-gradient">IoT Dog Treat Dispenser</h2>
+            <div class="enhanced-carousel" id="project3-carousel">
+                <div class="enhanced-carousel-container">
+                    <div class="enhanced-carousel-slide"><img src="docs/assets/img/Project photos/dogTreatDispenser.png" alt="Dog Treat Dispenser" loading="lazy"></div>
+                </div>
+                <div class="enhanced-carousel-indicators" id="project3-indicators"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                <div>
+                    <h3 class="text-xl font-bold mb-3 text-warm">Project Details</h3>
+                    <p class="text-gray-300 text-sm">IoT-enabled pet treat dispenser with mobile app control, scheduled feeding, and camera integration for remote monitoring and interaction with pets.</p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-3 text-warm">Technologies Used</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li class="flex items-center"><span class="w-2 h-2 bg-green-400 rounded-full mr-2"></span><span>ESP32 Microcontroller</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-green-400 rounded-full mr-2"></span><span>Wi-Fi Connectivity</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-green-400 rounded-full mr-2"></span><span>Mobile App (React Native)</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-green-400 rounded-full mr-2"></span><span>3D Printed Housing</span></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-3 text-warm">Key Features</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li class="flex items-center"><span class="w-2 h-2 bg-lime-400 rounded-full mr-2"></span><span>Remote Dispensing</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-lime-400 rounded-full mr-2"></span><span>Scheduled Feeding</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-lime-400 rounded-full mr-2"></span><span>Portion Control</span></li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-lime-400 rounded-full mr-2"></span><span>Low Treat Alerts</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        function setCurrentYear() {
-            const yearSpan = document.getElementById('current-year');
-            if (yearSpan) {
-                yearSpan.textContent = new Date().getFullYear();
-            }
-        }
-
-        // --- 3D Background Scene with Warm Colors and Reflector Effects ---
-        function init3DBackgroundScene() {
-            const container = document.getElementById('canvas-container');
-            if (!container) return;
-
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x331700);
-            scene.fog = new THREE.FogExp2(0x4A2C17, 0.002);
-
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.z = 25;
-
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
-            renderer.shadowMap.enabled = true;
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-            container.appendChild(renderer.domElement);
-
-            controls = new THREE.OrbitControls(camera, renderer.domElement);
-            controls.enableZoom = false;
-            controls.enablePan = false;
-            controls.enableDamping = true;
-            controls.dampingFactor = 0.03;
-            controls.autoRotate = true;
-            controls.autoRotateSpeed = 0.2;
-
-            // Warm lighting
-            scene.add(new THREE.AmbientLight(0x331700, 0.4));
-            const dirLight = new THREE.DirectionalLight(0xFF9A00, 0.8);
-            dirLight.position.set(5, 5, 5);
-            dirLight.castShadow = true;
-            scene.add(dirLight);
-            
-            const pointLight1 = new THREE.PointLight(0xFF5F6D, 0.6, 80);
-            pointLight1.position.set(-10, 10, 10);
-            scene.add(pointLight1);
-            
-            const pointLight2 = new THREE.PointLight(0xFFB347, 0.6, 80);
-            pointLight2.position.set(10, -10, -10);
-            scene.add(pointLight2);
-
-            createFloatingGeometries();
-            createReflectiveElements();
-
-            window.addEventListener('resize', onWindowResize);
-            animateBackground();
-        }
-
-        function createFloatingGeometries() {
-            const geometryTypes = [
-                () => new THREE.IcosahedronGeometry(2.5, 0),
-                () => new THREE.TorusKnotGeometry(2, 0.6, 100, 16),
-                () => new THREE.OctahedronGeometry(2.5, 0),
-                () => new THREE.TorusGeometry(2.5, 0.8, 16, 32),
-                () => new THREE.DodecahedronGeometry(2.5, 0),
-            ];
-            
-            const materials = [
-                new THREE.MeshPhongMaterial({ 
-                    color: 0xFF9A00, 
-                    shininess: 100, 
-                    specular: 0x444444, 
-                    transparent: true, 
-                    opacity: 0.7,
-                    emissive: 0xFF4500,
-                    emissiveIntensity: 0.1
-                }),
-                new THREE.MeshPhongMaterial({ 
-                    color: 0xFF5F6D, 
-                    shininess: 100, 
-                    specular: 0x444444, 
-                    transparent: true, 
-                    opacity: 0.7,
-                    emissive: 0xFF1744,
-                    emissiveIntensity: 0.1
-                }),
-                new THREE.MeshPhongMaterial({ 
-                    color: 0xFFB347, 
-                    shininess: 80, 
-                    specular: 0x333333, 
-                    transparent: true, 
-                    opacity: 0.6,
-                    emissive: 0xFFAB40,
-                    emissiveIntensity: 0.05
-                }),
-                new THREE.MeshStandardMaterial({ 
-                    color: 0xFF8A65, 
-                    roughness: 0.3, 
-                    metalness: 0.2, 
-                    transparent: true, 
-                    opacity: 0.75,
-                    emissive: 0xE64A19,
-                    emissiveIntensity: 0.1
-                })
-            ];
-
-            for (let i = 0; i < 8; i++) {
-                const geometry = geometryTypes[i % geometryTypes.length]();
-                const material = materials[i % materials.length].clone();
-                const mesh = new THREE.Mesh(geometry, material);
-                const range = 50;
-                mesh.position.set(
-                    (Math.random() - 0.5) * range, 
-                    (Math.random() - 0.5) * range, 
-                    (Math.random() - 0.5) * range
-                );
-                mesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
-                const scale = 0.6 + Math.random() * 0.6;
-                mesh.scale.set(scale, scale, scale);
-                mesh.castShadow = true;
-                mesh.receiveShadow = true;
-                mesh.userData = {
-                    rotationSpeed: { 
-                        x: (Math.random() - 0.5) * 0.008, 
-                        y: (Math.random() - 0.5) * 0.008 
-                    },
-                    direction: new THREE.Vector3(
-                        (Math.random()-0.5), 
-                        (Math.random()-0.5), 
-                        (Math.random()-0.5)
-                    ).normalize(),
-                    speed: 0.01 + Math.random() * 0.02,
-                    pulsePhase: Math.random() * Math.PI * 2
-                };
-                scene.add(mesh);
-                backgroundModels.push(mesh);
-            }
-        }
-
-        function createReflectiveElements() {
-            // Create reflective floor with fallback
-            try {
-                const floorGeometry = new THREE.PlaneGeometry(100, 100);
-                if (THREE.Reflector) {
-                    const floorMirror = new THREE.Reflector(floorGeometry, {
-                        clipBias: 0.003,
-                        textureWidth: window.innerWidth * window.devicePixelRatio,
-                        textureHeight: window.innerHeight * window.devicePixelRatio,
-                        color: 0x332211,
-                        recursion: 1
-                    });
-                    floorMirror.position.y = -20;
-                    floorMirror.rotateX(-Math.PI / 2);
-                    scene.add(floorMirror);
-                    reflectorObjects.push(floorMirror);
-                } else {
-                    throw new Error('Reflector not available');
-                }
-            } catch (error) {
-                console.log('Reflector not available, using standard material');
-                const floorGeometry = new THREE.PlaneGeometry(100, 100);
-                const floorMaterial = new THREE.MeshLambertMaterial({ 
-                    color: 0x4A2C17, 
-                    transparent: true, 
-                    opacity: 0.3 
-                });
-                const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-                floor.position.y = -20;
-                floor.rotateX(-Math.PI / 2);
-                scene.add(floor);
-            }
-        }
-
-        function animateBackground() {
-            requestAnimationFrame(animateBackground);
-            
-            const time = Date.now() * 0.001;
-            
-            backgroundModels.forEach((model, index) => {
-                model.rotation.x += model.userData.rotationSpeed.x;
-                model.rotation.y += model.userData.rotationSpeed.y;
-                model.position.addScaledVector(model.userData.direction, model.userData.speed);
-                
-                // Add pulsing effect
-                const pulse = Math.sin(time + model.userData.pulsePhase) * 0.1 + 0.9;
-                model.material.opacity = pulse * 0.7;
-                
-                const boundary = 35;
-                if (Math.abs(model.position.x) > boundary || Math.abs(model.position.y) > boundary || Math.abs(model.position.z) > boundary) {
-                    if(Math.abs(model.position.x) > boundary) model.userData.direction.x *= -1;
-                    if(Math.abs(model.position.y) > boundary) model.userData.direction.y *= -1;
-                    if(Math.abs(model.position.z) > boundary) model.userData.direction.z *= -1;
-                    model.position.clampScalar(-boundary + 1, boundary - 1);
-                }
-            });
-            
-            controls.update();
-            renderer.render(scene, camera);
-        }
-
-        function onWindowResize() {
-            if (camera && renderer) {
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
-            }
-        }
-
-        function initSmoothScrolling() {
-            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                anchor.addEventListener('click', function (e) {
-                    const hrefAttribute = this.getAttribute('href');
-                    if (hrefAttribute && hrefAttribute.length > 1 && hrefAttribute.startsWith('#') && !this.onclick) {
-                        const targetElement = document.querySelector(hrefAttribute);
-                        if (targetElement) {
-                            e.preventDefault();
-                            targetElement.scrollIntoView({ behavior: 'smooth' });
-                            const mobileMenu = document.getElementById('mobile-menu');
-                            if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
-                                mobileMenu.classList.add('hidden');
-                            }
-                        }
-                    }
-                });
-            });
-        }
-
-        function initMobileMenu() {
-            const menuButton = document.getElementById('mobile-menu-button');
-            const mobileMenu = document.getElementById('mobile-menu');
-            if (menuButton && mobileMenu) {
-                menuButton.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
-            }
-        }
-
-        // Enhanced Robotic Arm Model
-        function initEnhancedProjectModel1() {
-            const container = document.getElementById('project-model-1');
-            if (!container) return;
-
-            const width = container.clientWidth;
-            const height = container.clientHeight;
-            if (width === 0 || height === 0) return;
-
-            const project1Scene = new THREE.Scene();
-            const project1Camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
-            project1Camera.position.set(15, 15, 25);
-
-            const project1Renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            project1Renderer.setSize(width, height);
-            project1Renderer.shadowMap.enabled = true;
-            project1Renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-            container.appendChild(project1Renderer.domElement);
-
-            // Enhanced lighting for better visibility
-            project1Scene.add(new THREE.AmbientLight(0x4A2C17, 0.6));
-            
-            const dirLight = new THREE.DirectionalLight(0xFF9A00, 1.2);
-            dirLight.position.set(10, 15, 10);
-            dirLight.castShadow = true;
-            dirLight.shadow.mapSize.width = 2048;
-            dirLight.shadow.mapSize.height = 2048;
-            project1Scene.add(dirLight);
-            
-            const pointLight = new THREE.PointLight(0xFFB347, 0.8, 100);
-            pointLight.position.set(-10, 10, 10);
-            project1Scene.add(pointLight);
-
-            // Create enhanced materials
-            const baseMat = new THREE.MeshStandardMaterial({ 
-                color: 0x2C1810, 
-                metalness: 0.8, 
-                roughness: 0.3,
-                emissive: 0x1A0F08,
-                emissiveIntensity: 0.1
-            });
-            
-            const armMat = new THREE.MeshStandardMaterial({ 
-                color: 0xFF8A65, 
-                metalness: 0.6, 
-                roughness: 0.4,
-                emissive: 0xB8693A,
-                emissiveIntensity: 0.05
-            });
-            
-            const jointMat = new THREE.MeshStandardMaterial({ 
-                color: 0x4A2C17, 
-                metalness: 0.9, 
-                roughness: 0.2,
-                emissive: 0x2A1C0F,
-                emissiveIntensity: 0.08
-            });
-            
-            const endEffectorMat = new THREE.MeshStandardMaterial({ 
-                color: 0xFF5F6D, 
-                metalness: 0.7, 
-                roughness: 0.3,
-                emissive: 0xB8434C,
-                emissiveIntensity: 0.1
-            });
-
-            // Create robotic arm group
-            roboticArmGroup = new THREE.Group();
-            armSegments = [];
-
-            // Base platform (larger and more detailed)
-            const baseGeometry = new THREE.CylinderGeometry(4, 5, 2, 16);
-            const base = new THREE.Mesh(baseGeometry, baseMat);
-            base.position.y = 1;
-            base.castShadow = true;
-            base.receiveShadow = true;
-            roboticArmGroup.add(base);
-
-            // Base rotation joint
-            const baseJointGeometry = new THREE.CylinderGeometry(1.5, 1.5, 1, 16);
-            const baseJoint = new THREE.Mesh(baseJointGeometry, jointMat);
-            baseJoint.position.y = 2.5;
-            baseJoint.castShadow = true;
-            roboticArmGroup.add(baseJoint);
-            armSegments.push({ mesh: baseJoint, axis: 'y', speed: 0.01 });
-
-            // First arm segment (shoulder to elbow)
-            const arm1Geometry = new THREE.BoxGeometry(1.5, 8, 1.5);
-            const arm1 = new THREE.Mesh(arm1Geometry, armMat);
-            arm1.position.set(0, 7, 0);
-            arm1.castShadow = true;
-            roboticArmGroup.add(arm1);
-            armSegments.push({ mesh: arm1, axis: 'z', speed: 0.008 });
-
-            // Elbow joint
-            const elbowJointGeometry = new THREE.SphereGeometry(1.2, 16, 16);
-            const elbowJoint = new THREE.Mesh(elbowJointGeometry, jointMat);
-            elbowJoint.position.set(0, 11, 0);
-            elbowJoint.castShadow = true;
-            roboticArmGroup.add(elbowJoint);
-            armSegments.push({ mesh: elbowJoint, axis: 'x', speed: 0.012 });
-
-            // Second arm segment (elbow to wrist)
-            const arm2Geometry = new THREE.BoxGeometry(1.2, 6, 1.2);
-            const arm2 = new THREE.Mesh(arm2Geometry, armMat);
-            arm2.position.set(0, 14, 0);
-            arm2.castShadow = true;
-            roboticArmGroup.add(arm2);
-            armSegments.push({ mesh: arm2, axis: 'z', speed: -0.010 });
-
-            // Wrist joint
-            const wristJointGeometry = new THREE.CylinderGeometry(0.8, 0.8, 1.5, 12);
-            const wristJoint = new THREE.Mesh(wristJointGeometry, jointMat);
-            wristJoint.position.set(0, 17.5, 0);
-            wristJoint.castShadow = true;
-            roboticArmGroup.add(wristJoint);
-            armSegments.push({ mesh: wristJoint, axis: 'y', speed: 0.015 });
-
-            // End effector/gripper
-            const gripperBaseGeometry = new THREE.BoxGeometry(1, 2, 1);
-            const gripperBase = new THREE.Mesh(gripperBaseGeometry, endEffectorMat);
-            gripperBase.position.set(0, 19, 0);
-            gripperBase.castShadow = true;
-            roboticArmGroup.add(gripperBase);
-
-            // Gripper fingers
-            const fingerGeometry = new THREE.BoxGeometry(0.3, 1.5, 0.8);
-            const finger1 = new THREE.Mesh(fingerGeometry, endEffectorMat);
-            finger1.position.set(0.7, 19, 0);
-            finger1.castShadow = true;
-            roboticArmGroup.add(finger1);
-            armSegments.push({ mesh: finger1, axis: 'x', speed: 0.020 });
-
-            const finger2 = new THREE.Mesh(fingerGeometry, endEffectorMat);
-            finger2.position.set(-0.7, 19, 0);
-            finger2.castShadow = true;
-            roboticArmGroup.add(finger2);
-            armSegments.push({ mesh: finger2, axis: 'x', speed: -0.020 });
-
-            // Additional details - hydraulic cylinders
-            for(let i = 0; i < 3; i++) {
-                const cylinderGeometry = new THREE.CylinderGeometry(0.2, 0.2, 2, 8);
-                const cylinder = new THREE.Mesh(cylinderGeometry, jointMat);
-                cylinder.position.set(
-                    Math.cos(i * 2.09) * 2, 
-                    4 + i * 3, 
-                    Math.sin(i * 2.09) * 2
-                );
-                cylinder.castShadow = true;
-                roboticArmGroup.add(cylinder);
-            }
-
-            // Add cables/wiring
-            const cableGeometry = new THREE.TorusGeometry(0.1, 0.03, 8, 16);
-            const cableMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
-            for(let i = 0; i < 5; i++) {
-                const cable = new THREE.Mesh(cableGeometry, cableMat);
-                cable.position.set(1.2, 5 + i * 2.5, 0);
-                cable.rotation.x = Math.PI / 2;
-                roboticArmGroup.add(cable);
-            }
-
-            project1Scene.add(roboticArmGroup);
-
-            // Ground plane for shadows
-            const groundGeometry = new THREE.PlaneGeometry(50, 50);
-            const groundMaterial = new THREE.MeshLambertMaterial({ 
-                color: 0x1A0F08, 
-                transparent: true, 
-                opacity: 0.8 
-            });
-            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-            ground.rotation.x = -Math.PI / 2;
-            ground.position.y = -1;
-            ground.receiveShadow = true;
-            project1Scene.add(ground);
-
-            const project1Controls = new THREE.OrbitControls(project1Camera, project1Renderer.domElement);
-            project1Controls.target.set(0, 10, 0);
-            project1Controls.enableDamping = true;
-            project1Controls.dampingFactor = 0.1;
-            project1Controls.update();
-
-            // Animation function
-            function animateRoboticArm() {
-                requestAnimationFrame(animateRoboticArm);
-                
-                if (isAnimating) {
-                    const time = Date.now() * 0.001;
-                    armSegments.forEach((segment, index) => {
-                        const amplitude = 0.3 + (index * 0.1);
-                        const frequency = segment.speed;
-                        const rotation = Math.sin(time * frequency) * amplitude;
-                        
-                        if (segment.axis === 'x') {
-                            segment.mesh.rotation.x = rotation;
-                        } else if (segment.axis === 'y') {
-                            segment.mesh.rotation.y = rotation;
-                        } else if (segment.axis === 'z') {
-                            segment.mesh.rotation.z = rotation;
-                        }
-                    });
-                }
-                
-                project1Controls.update();
-                project1Renderer.render(project1Scene, project1Camera);
-            }
-            
-            animateRoboticArm();
-
-            // Control buttons
-            const animateBtn = document.getElementById('arm-animate');
-            const resetBtn = document.getElementById('arm-reset');
-            
-            if (animateBtn) {
-                animateBtn.addEventListener('click', () => {
-                    isAnimating = !isAnimating;
-                    animateBtn.textContent = isAnimating ? 'Stop' : 'Animate';
-                    animateBtn.className = isAnimating ? 
-                        'px-3 py-1 bg-red-600 hover:bg-red-700 rounded text-xs transition-colors' : 
-                        'px-3 py-1 bg-orange-600 hover:bg-orange-700 rounded text-xs transition-colors';
-                });
-            }
-            
-            if (resetBtn) {
-                resetBtn.addEventListener('click', () => {
-                    isAnimating = false;
-                    if (animateBtn) {
-                        animateBtn.textContent = 'Animate';
-                        animateBtn.className = 'px-3 py-1 bg-orange-600 hover:bg-orange-700 rounded text-xs transition-colors';
-                    }
-                    
-                    // Reset all rotations
-                    armSegments.forEach(segment => {
-                        segment.mesh.rotation.set(0, 0, 0);
-                    });
-                    
-                    // Reset camera position
-                    project1Controls.reset();
-                });
-            }
-
-            // Handle window resize for this specific renderer
-            window.addEventListener('resize', () => {
-                const newWidth = container.clientWidth;
-                const newHeight = container.clientHeight;
-                if (newWidth > 0 && newHeight > 0) {
-                    project1Camera.aspect = newWidth / newHeight;
-                    project1Camera.updateProjectionMatrix();
-                    project1Renderer.setSize(newWidth, newHeight);
-                }
-            });
-        }
-
-        // Modal functionality
-        function openModal(modalId) {
-            const modal = document.getElementById(modalId + '-modal');
-            if (modal) {
-                modal.style.display = 'block';
-                document.body.style.overflow = 'hidden';
-                setTimeout(() => modal.classList.add('opacity-100'), 10);
-            }
-        }
-
-        function closeModal(modalId) {
-            const modal = document.getElementById(modalId + '-modal');
-            if (modal) {
-                modal.classList.remove('opacity-100');
-                setTimeout(() => {
-                    modal.style.display = 'none';
-                    document.body.style.overflow = 'auto';
-                }, 300);
-            }
-        }
-
-        function openProjectModal(projectId) {
-            openModal(projectId);
-            initCarousel(projectId);
-        }
-
-        function setupSkillFiltering() {
-            const skillFilters = document.querySelectorAll('.skill-filter');
-            const skillItems = document.querySelectorAll('.skills-list .skill-item');
-
-            skillFilters.forEach(filter => {
-                filter.addEventListener('click', () => {
-                    const category = filter.getAttribute('data-filter');
-                    skillFilters.forEach(f => f.classList.remove('active'));
-                    filter.classList.add('active');
-
-                    skillItems.forEach(item => {
-                        const itemCategory = item.getAttribute('data-category');
-                        const isTarget = category === 'all' || itemCategory === category;
-                        const isVisible = !item.classList.contains('opacity-0');
-
-                        if (isTarget && !isVisible) {
-                            item.classList.remove('hidden', 'opacity-0', 'scale-80', 'w-0', 'p-0', '-ml-2');
-                            item.classList.add('opacity-100', 'scale-100');
-                        } else if (!isTarget && isVisible) {
-                            item.classList.remove('opacity-100', 'scale-100');
-                            item.classList.add('opacity-0', 'scale-80');
-                            setTimeout(() => {
-                                if (!item.classList.contains('opacity-100')) {
-                                    item.classList.add('hidden', 'w-0', 'p-0', '-ml-2');
-                                }
-                            }, 300);
-                        }
-                    });
-                });
-            });
-        }
-
-        function observeSkillsSection() {
-            const skillsSection = document.querySelector('#skills');
-            const skillItems = document.querySelectorAll('.skills-list .skill-item');
-            if (!skillsSection || skillItems.length === 0) return;
-
-            const skillObserver = new IntersectionObserver((entries, observer) => {
-                if (entries[0].isIntersecting) {
-                    skillItems.forEach((item, index) => {
-                        if(item.classList.contains('opacity-0')) {
-                            setTimeout(() => {
-                                item.style.transitionDelay = `${index * 50}ms`;
-                                item.classList.remove('opacity-0', 'translate-y-5');
-                                item.classList.add('opacity-100', 'translate-y-0');
-                            }, 50);
-                        }
-                    });
-                    observer.unobserve(skillsSection);
-                }
-            }, { threshold: 0.3 });
-            skillObserver.observe(skillsSection);
-        }
-
-        function showAndHideHints() {
-            const hints = document.querySelectorAll('.click-hint');
-            if (hints.length > 0) {
-                setTimeout(() => {
-                    hints.forEach(hint => hint.classList.add('opacity-100'));
-                }, 1500);
-                setTimeout(() => {
-                    hints.forEach(hint => hint.classList.remove('opacity-100'));
-                }, 9000);
-            }
-        }
-
-        // Carousel functionality (existing code would continue here)
-        function initCarousel(projectId) {
-            // Carousel implementation
-        }
-
-        function nextSlide(projectId) {
-            // Next slide implementation
-        }
-
-        function prevSlide(projectId) {
-            // Previous slide implementation
-        }
-
-        function goToSlide(projectId, index) {
-            // Go to slide implementation
-        }
-    </script>
+    <!-- Enhanced JavaScript -->
+    <script src="enhanced-portfolio.js"></script>
 </body>
 </html>
