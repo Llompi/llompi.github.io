@@ -1,15 +1,18 @@
-// Enhanced Portfolio JavaScript with Touch Gestures and Fixed Robotic Arm
+// Enhanced Portfolio JavaScript with Professional Robotic Arm Implementation
 
 // Global Variables
 let scene, camera, renderer, controls;
 let backgroundModels = [];
 let reflectorObjects = [];
 
-// Enhanced robotic arm variables
+// Professional robotic arm variables
 let roboticArmGroup;
-let armSegments = [];
+let armJoints = [];
 let armAnimationId = null;
 let isAnimating = false;
+let targetAngles = [];
+let currentAngles = [];
+let animationPhase = 0;
 
 // Enhanced carousel instances
 const carouselInstances = new Map();
@@ -270,7 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
     init3DBackgroundScene();
     initSmoothScrolling();
     initMobileMenu();
-    initEnhancedProjectModel1();
+    initProfessionalRoboticArm();
     setupSkillFiltering();
     observeSkillsSection();
     showAndHideHints();
@@ -527,220 +530,429 @@ function initMobileMenu() {
     }
 }
 
-// Fixed Enhanced Robotic Arm Model
-function initEnhancedProjectModel1() {
+// Professional 6-DOF Robotic Arm Implementation
+function initProfessionalRoboticArm() {
     const container = document.getElementById('project-model-1');
     if (!container) return;
 
     const width = container.clientWidth;
     const height = container.clientHeight;
     if (width === 0 || height === 0) {
-        // Retry after a short delay if container isn't ready
-        setTimeout(() => initEnhancedProjectModel1(), 100);
+        setTimeout(() => initProfessionalRoboticArm(), 100);
         return;
     }
 
-    const project1Scene = new THREE.Scene();
-    const project1Camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
-    project1Camera.position.set(15, 15, 25);
+    // Create dedicated scene for robotic arm
+    const armScene = new THREE.Scene();
+    armScene.background = new THREE.Color(0x1a1a1a);
+    
+    const armCamera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
+    armCamera.position.set(20, 15, 20);
+    
+    const armRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    armRenderer.setSize(width, height);
+    armRenderer.shadowMap.enabled = true;
+    armRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    armRenderer.setClearColor(0x000000, 0);
+    container.appendChild(armRenderer.domElement);
 
-    const project1Renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    project1Renderer.setSize(width, height);
-    project1Renderer.shadowMap.enabled = true;
-    project1Renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    project1Renderer.setClearColor(0x000000, 0);
-    container.appendChild(project1Renderer.domElement);
+    // Professional lighting setup
+    const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+    armScene.add(ambientLight);
+    
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.0);
+    keyLight.position.set(15, 20, 10);
+    keyLight.castShadow = true;
+    keyLight.shadow.mapSize.width = 2048;
+    keyLight.shadow.mapSize.height = 2048;
+    keyLight.shadow.camera.near = 0.1;
+    keyLight.shadow.camera.far = 50;
+    keyLight.shadow.camera.left = -20;
+    keyLight.shadow.camera.right = 20;
+    keyLight.shadow.camera.top = 20;
+    keyLight.shadow.camera.bottom = -20;
+    armScene.add(keyLight);
+    
+    const fillLight = new THREE.DirectionalLight(0xFF9A00, 0.4);
+    fillLight.position.set(-10, 10, 5);
+    armScene.add(fillLight);
+    
+    const rimLight = new THREE.PointLight(0xFFB347, 0.6, 50);
+    rimLight.position.set(0, 15, -10);
+    armScene.add(rimLight);
 
-    // Enhanced lighting for better visibility
-    project1Scene.add(new THREE.AmbientLight(0x4A2C17, 0.6));
-    
-    const dirLight = new THREE.DirectionalLight(0xFF9A00, 1.2);
-    dirLight.position.set(10, 15, 10);
-    dirLight.castShadow = true;
-    dirLight.shadow.mapSize.width = 1024;
-    dirLight.shadow.mapSize.height = 1024;
-    project1Scene.add(dirLight);
-    
-    const pointLight = new THREE.PointLight(0xFFB347, 0.8, 100);
-    pointLight.position.set(-10, 10, 10);
-    project1Scene.add(pointLight);
+    // Create professional materials
+    const materials = {
+        base: new THREE.MeshStandardMaterial({
+            color: 0x2c2c2c,
+            metalness: 0.8,
+            roughness: 0.2,
+            envMapIntensity: 1.0
+        }),
+        joint: new THREE.MeshStandardMaterial({
+            color: 0x444444,
+            metalness: 0.9,
+            roughness: 0.1,
+            envMapIntensity: 1.2
+        }),
+        link: new THREE.MeshStandardMaterial({
+            color: 0xFF6B35,
+            metalness: 0.3,
+            roughness: 0.4,
+            envMapIntensity: 0.8
+        }),
+        endEffector: new THREE.MeshStandardMaterial({
+            color: 0xFF3030,
+            metalness: 0.7,
+            roughness: 0.3,
+            envMapIntensity: 1.0
+        })
+    };
 
-    // Create enhanced materials
-    const baseMat = new THREE.MeshStandardMaterial({ 
-        color: 0x2C1810, 
-        metalness: 0.8, 
-        roughness: 0.3,
-        emissive: 0x1A0F08,
-        emissiveIntensity: 0.1
-    });
-    
-    const armMat = new THREE.MeshStandardMaterial({ 
-        color: 0xFF8A65, 
-        metalness: 0.6, 
-        roughness: 0.4,
-        emissive: 0xB8693A,
-        emissiveIntensity: 0.05
-    });
-    
-    const jointMat = new THREE.MeshStandardMaterial({ 
-        color: 0x4A2C17, 
-        metalness: 0.9, 
-        roughness: 0.2,
-        emissive: 0x2A1C0F,
-        emissiveIntensity: 0.08
-    });
-    
-    const endEffectorMat = new THREE.MeshStandardMaterial({ 
-        color: 0xFF5F6D, 
-        metalness: 0.7, 
-        roughness: 0.3,
-        emissive: 0xB8434C,
-        emissiveIntensity: 0.1
-    });
-
-    // Create robotic arm group
+    // Initialize arm structure
     roboticArmGroup = new THREE.Group();
-    armSegments = [];
+    armJoints = [];
+    currentAngles = [0, 0, 0, 0, 0, 0];
+    targetAngles = [0, 0, 0, 0, 0, 0];
 
-    // Base platform
-    const baseGeometry = new THREE.CylinderGeometry(4, 5, 2, 16);
-    const base = new THREE.Mesh(baseGeometry, baseMat);
-    base.position.y = 1;
-    base.castShadow = true;
-    base.receiveShadow = true;
-    roboticArmGroup.add(base);
+    // Build robotic arm with proper hierarchy
+    buildRoboticArmStructure(materials);
+    
+    armScene.add(roboticArmGroup);
 
-    // Base rotation joint
-    const baseJointGeometry = new THREE.CylinderGeometry(1.5, 1.5, 1, 16);
-    const baseJoint = new THREE.Mesh(baseJointGeometry, jointMat);
-    baseJoint.position.y = 2.5;
-    baseJoint.castShadow = true;
-    roboticArmGroup.add(baseJoint);
-    armSegments.push({ mesh: baseJoint, axis: 'y', speed: 1.0, baseRotation: 0 });
+    // Create work environment
+    createWorkEnvironment(armScene, materials);
 
-    // First arm segment
-    const arm1Geometry = new THREE.BoxGeometry(1.5, 8, 1.5);
-    const arm1 = new THREE.Mesh(arm1Geometry, armMat);
-    arm1.position.set(0, 7, 0);
-    arm1.castShadow = true;
-    roboticArmGroup.add(arm1);
-    armSegments.push({ mesh: arm1, axis: 'z', speed: 0.8, baseRotation: 0 });
+    // Setup controls
+    const armControls = new THREE.OrbitControls(armCamera, armRenderer.domElement);
+    armControls.target.set(0, 8, 0);
+    armControls.enableDamping = true;
+    armControls.dampingFactor = 0.05;
+    armControls.minDistance = 10;
+    armControls.maxDistance = 50;
+    armControls.maxPolarAngle = Math.PI * 0.8;
+    armControls.update();
 
-    // Elbow joint
-    const elbowJointGeometry = new THREE.SphereGeometry(1.2, 16, 16);
-    const elbowJoint = new THREE.Mesh(elbowJointGeometry, jointMat);
-    elbowJoint.position.set(0, 11, 0);
-    elbowJoint.castShadow = true;
-    roboticArmGroup.add(elbowJoint);
-    armSegments.push({ mesh: elbowJoint, axis: 'x', speed: 1.2, baseRotation: 0 });
-
-    // Second arm segment
-    const arm2Geometry = new THREE.BoxGeometry(1.2, 6, 1.2);
-    const arm2 = new THREE.Mesh(arm2Geometry, armMat);
-    arm2.position.set(0, 14, 0);
-    arm2.castShadow = true;
-    roboticArmGroup.add(arm2);
-    armSegments.push({ mesh: arm2, axis: 'z', speed: -1.0, baseRotation: 0 });
-
-    // Wrist joint
-    const wristJointGeometry = new THREE.CylinderGeometry(0.8, 0.8, 1.5, 12);
-    const wristJoint = new THREE.Mesh(wristJointGeometry, jointMat);
-    wristJoint.position.set(0, 17.5, 0);
-    wristJoint.castShadow = true;
-    roboticArmGroup.add(wristJoint);
-    armSegments.push({ mesh: wristJoint, axis: 'y', speed: 1.5, baseRotation: 0 });
-
-    // End effector/gripper
-    const gripperBaseGeometry = new THREE.BoxGeometry(1, 2, 1);
-    const gripperBase = new THREE.Mesh(gripperBaseGeometry, endEffectorMat);
-    gripperBase.position.set(0, 19, 0);
-    gripperBase.castShadow = true;
-    roboticArmGroup.add(gripperBase);
-
-    // Gripper fingers
-    const fingerGeometry = new THREE.BoxGeometry(0.3, 1.5, 0.8);
-    const finger1 = new THREE.Mesh(fingerGeometry, endEffectorMat);
-    finger1.position.set(0.7, 19, 0);
-    finger1.castShadow = true;
-    roboticArmGroup.add(finger1);
-    armSegments.push({ mesh: finger1, axis: 'x', speed: 2.0, baseRotation: 0 });
-
-    const finger2 = new THREE.Mesh(fingerGeometry, endEffectorMat);
-    finger2.position.set(-0.7, 19, 0);
-    finger2.castShadow = true;
-    roboticArmGroup.add(finger2);
-    armSegments.push({ mesh: finger2, axis: 'x', speed: -2.0, baseRotation: 0 });
-
-    // Additional details
-    for(let i = 0; i < 3; i++) {
-        const cylinderGeometry = new THREE.CylinderGeometry(0.2, 0.2, 2, 8);
-        const cylinder = new THREE.Mesh(cylinderGeometry, jointMat);
-        cylinder.position.set(
-            Math.cos(i * 2.09) * 2, 
-            4 + i * 3, 
-            Math.sin(i * 2.09) * 2
-        );
-        cylinder.castShadow = true;
-        roboticArmGroup.add(cylinder);
-    }
-
-    project1Scene.add(roboticArmGroup);
-
-    // Ground plane
-    const groundGeometry = new THREE.PlaneGeometry(50, 50);
-    const groundMaterial = new THREE.MeshLambertMaterial({ 
-        color: 0x1A0F08, 
-        transparent: true, 
-        opacity: 0.8 
-    });
-    const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-    ground.rotation.x = -Math.PI / 2;
-    ground.position.y = -1;
-    ground.receiveShadow = true;
-    project1Scene.add(ground);
-
-    const project1Controls = new THREE.OrbitControls(project1Camera, project1Renderer.domElement);
-    project1Controls.target.set(0, 10, 0);
-    project1Controls.enableDamping = true;
-    project1Controls.dampingFactor = 0.1;
-    project1Controls.update();
-
-    // Animation function
-    function animateRoboticArm() {
-        requestAnimationFrame(animateRoboticArm);
+    // Animation loop
+    function animateArm() {
+        requestAnimationFrame(animateArm);
         
         if (isAnimating) {
-            const time = Date.now() * 0.001;
-            armSegments.forEach((segment, index) => {
-                const amplitude = 0.3 + (index * 0.05);
-                const frequency = segment.speed * 0.01;
-                const rotation = Math.sin(time * frequency) * amplitude;
-                
-                if (segment.axis === 'x') {
-                    segment.mesh.rotation.x = rotation;
-                } else if (segment.axis === 'y') {
-                    segment.mesh.rotation.y = rotation;
-                } else if (segment.axis === 'z') {
-                    segment.mesh.rotation.z = rotation;
-                }
-            });
+            updateRobotAnimation();
         }
         
-        project1Controls.update();
-        project1Renderer.render(project1Scene, project1Camera);
+        armControls.update();
+        armRenderer.render(armScene, armCamera);
     }
     
-    animateRoboticArm();
+    animateArm();
 
-    // Control buttons with improved functionality
+    // Setup control buttons
+    setupArmControls();
+
+    // Handle window resize
+    const resizeObserver = new ResizeObserver(entries => {
+        for (let entry of entries) {
+            const { width: newWidth, height: newHeight } = entry.contentRect;
+            if (newWidth > 0 && newHeight > 0) {
+                armCamera.aspect = newWidth / newHeight;
+                armCamera.updateProjectionMatrix();
+                armRenderer.setSize(newWidth, newHeight);
+            }
+        }
+    });
+    
+    resizeObserver.observe(container);
+}
+
+function buildRoboticArmStructure(materials) {
+    // Base platform
+    const baseGeometry = new THREE.CylinderGeometry(3, 4, 1.5, 16);
+    const baseMesh = new THREE.Mesh(baseGeometry, materials.base);
+    baseMesh.position.y = 0.75;
+    baseMesh.castShadow = true;
+    baseMesh.receiveShadow = true;
+    roboticArmGroup.add(baseMesh);
+
+    // Joint 1 (Base rotation) - Waist
+    const joint1Group = new THREE.Group();
+    joint1Group.position.set(0, 1.5, 0);
+    
+    const joint1Geometry = new THREE.CylinderGeometry(1.2, 1.2, 2, 12);
+    const joint1Mesh = new THREE.Mesh(joint1Geometry, materials.joint);
+    joint1Mesh.castShadow = true;
+    joint1Group.add(joint1Mesh);
+    
+    roboticArmGroup.add(joint1Group);
+    armJoints.push({ group: joint1Group, axis: 'y', limits: [-Math.PI, Math.PI] });
+
+    // Link 1 (Shoulder to elbow)
+    const link1Group = new THREE.Group();
+    link1Group.position.set(0, 2, 0);
+    
+    const link1Geometry = new THREE.BoxGeometry(1.5, 6, 1.5);
+    const link1Mesh = new THREE.Mesh(link1Geometry, materials.link);
+    link1Mesh.position.y = 3;
+    link1Mesh.castShadow = true;
+    link1Group.add(link1Mesh);
+    
+    joint1Group.add(link1Group);
+    armJoints.push({ group: link1Group, axis: 'z', limits: [-Math.PI/2, Math.PI/2] });
+
+    // Joint 2 (Elbow)
+    const joint2Group = new THREE.Group();
+    joint2Group.position.set(0, 6, 0);
+    
+    const joint2Geometry = new THREE.SphereGeometry(1, 12, 8);
+    const joint2Mesh = new THREE.Mesh(joint2Geometry, materials.joint);
+    joint2Mesh.castShadow = true;
+    joint2Group.add(joint2Mesh);
+    
+    link1Group.add(joint2Group);
+
+    // Link 2 (Elbow to wrist)
+    const link2Group = new THREE.Group();
+    link2Group.position.set(0, 1, 0);
+    
+    const link2Geometry = new THREE.BoxGeometry(1.2, 5, 1.2);
+    const link2Mesh = new THREE.Mesh(link2Geometry, materials.link);
+    link2Mesh.position.y = 2.5;
+    link2Mesh.castShadow = true;
+    link2Group.add(link2Mesh);
+    
+    joint2Group.add(link2Group);
+    armJoints.push({ group: link2Group, axis: 'z', limits: [-Math.PI/3, Math.PI/3] });
+
+    // Joint 3 (Wrist roll)
+    const joint3Group = new THREE.Group();
+    joint3Group.position.set(0, 5, 0);
+    
+    const joint3Geometry = new THREE.CylinderGeometry(0.6, 0.6, 1.5, 10);
+    const joint3Mesh = new THREE.Mesh(joint3Geometry, materials.joint);
+    joint3Mesh.castShadow = true;
+    joint3Group.add(joint3Mesh);
+    
+    link2Group.add(joint3Group);
+    armJoints.push({ group: joint3Group, axis: 'y', limits: [-Math.PI, Math.PI] });
+
+    // Joint 4 (Wrist pitch)
+    const joint4Group = new THREE.Group();
+    joint4Group.position.set(0, 1, 0);
+    
+    const joint4Geometry = new THREE.BoxGeometry(1.5, 0.8, 1.5);
+    const joint4Mesh = new THREE.Mesh(joint4Geometry, materials.joint);
+    joint4Mesh.castShadow = true;
+    joint4Group.add(joint4Mesh);
+    
+    joint3Group.add(joint4Group);
+    armJoints.push({ group: joint4Group, axis: 'x', limits: [-Math.PI/2, Math.PI/2] });
+
+    // Joint 5 (Wrist yaw)
+    const joint5Group = new THREE.Group();
+    joint5Group.position.set(0, 0.5, 0);
+    
+    const joint5Geometry = new THREE.CylinderGeometry(0.4, 0.4, 1, 8);
+    const joint5Mesh = new THREE.Mesh(joint5Geometry, materials.joint);
+    joint5Mesh.castShadow = true;
+    joint5Group.add(joint5Mesh);
+    
+    joint4Group.add(joint5Group);
+    armJoints.push({ group: joint5Group, axis: 'z', limits: [-Math.PI/2, Math.PI/2] });
+
+    // End effector (Gripper)
+    const endEffectorGroup = new THREE.Group();
+    endEffectorGroup.position.set(0, 1, 0);
+    
+    // Gripper base
+    const gripperBaseGeometry = new THREE.BoxGeometry(1.2, 1.5, 0.8);
+    const gripperBaseMesh = new THREE.Mesh(gripperBaseGeometry, materials.endEffector);
+    gripperBaseMesh.castShadow = true;
+    endEffectorGroup.add(gripperBaseMesh);
+    
+    // Gripper fingers
+    const fingerGeometry = new THREE.BoxGeometry(0.2, 1, 0.6);
+    const finger1 = new THREE.Mesh(fingerGeometry, materials.endEffector);
+    finger1.position.set(0.4, 0, 0);
+    finger1.castShadow = true;
+    endEffectorGroup.add(finger1);
+    
+    const finger2 = new THREE.Mesh(fingerGeometry, materials.endEffector);
+    finger2.position.set(-0.4, 0, 0);
+    finger2.castShadow = true;
+    endEffectorGroup.add(finger2);
+    
+    joint5Group.add(endEffectorGroup);
+
+    // Add visual enhancements
+    addVisualEnhancements(roboticArmGroup, materials);
+}
+
+function addVisualEnhancements(armGroup, materials) {
+    // Add hydraulic cylinders
+    for (let i = 0; i < 3; i++) {
+        const cylinderGeometry = new THREE.CylinderGeometry(0.15, 0.15, 2, 8);
+        const cylinder = new THREE.Mesh(cylinderGeometry, materials.joint);
+        cylinder.position.set(
+            Math.cos(i * 2.09) * 1.5,
+            3 + i * 2,
+            Math.sin(i * 2.09) * 1.5
+        );
+        cylinder.castShadow = true;
+        armGroup.add(cylinder);
+    }
+
+    // Add cable conduits
+    for (let i = 0; i < 4; i++) {
+        const conduitGeometry = new THREE.CylinderGeometry(0.08, 0.08, 8, 6);
+        const conduit = new THREE.Mesh(conduitGeometry, new THREE.MeshStandardMaterial({
+            color: 0x333333,
+            metalness: 0.2,
+            roughness: 0.8
+        }));
+        conduit.position.set(
+            0.8 * Math.cos(i * Math.PI / 2),
+            6,
+            0.8 * Math.sin(i * Math.PI / 2)
+        );
+        conduit.castShadow = true;
+        armGroup.add(conduit);
+    }
+}
+
+function createWorkEnvironment(scene, materials) {
+    // Work surface
+    const surfaceGeometry = new THREE.BoxGeometry(20, 0.5, 20);
+    const surfaceMaterial = new THREE.MeshStandardMaterial({
+        color: 0x666666,
+        metalness: 0.1,
+        roughness: 0.9
+    });
+    const surface = new THREE.Mesh(surfaceGeometry, surfaceMaterial);
+    surface.position.y = -0.5;
+    surface.receiveShadow = true;
+    scene.add(surface);
+
+    // Work pieces
+    const workPieceGeometry = new THREE.BoxGeometry(1, 1, 1);
+    const workPieceMaterial = new THREE.MeshStandardMaterial({
+        color: 0x4CAF50,
+        metalness: 0.3,
+        roughness: 0.7
+    });
+    
+    const workPiece1 = new THREE.Mesh(workPieceGeometry, workPieceMaterial);
+    workPiece1.position.set(5, 0.5, 3);
+    workPiece1.castShadow = true;
+    workPiece1.receiveShadow = true;
+    scene.add(workPiece1);
+    
+    const workPiece2 = new THREE.Mesh(workPieceGeometry, workPieceMaterial.clone());
+    workPiece2.material.color.setHex(0x2196F3);
+    workPiece2.position.set(-4, 0.5, -2);
+    workPiece2.castShadow = true;
+    workPiece2.receiveShadow = true;
+    scene.add(workPiece2);
+
+    // Safety barriers
+    const barrierGeometry = new THREE.BoxGeometry(0.2, 3, 8);
+    const barrierMaterial = new THREE.MeshStandardMaterial({
+        color: 0xFFEB3B,
+        metalness: 0.1,
+        roughness: 0.9
+    });
+    
+    const barrier1 = new THREE.Mesh(barrierGeometry, barrierMaterial);
+    barrier1.position.set(8, 1.5, 0);
+    barrier1.castShadow = true;
+    scene.add(barrier1);
+    
+    const barrier2 = new THREE.Mesh(barrierGeometry, barrierMaterial);
+    barrier2.position.set(-8, 1.5, 0);
+    barrier2.castShadow = true;
+    scene.add(barrier2);
+}
+
+function updateRobotAnimation() {
+    const time = Date.now() * 0.001;
+    animationPhase += 0.02;
+
+    // Define different animation sequences
+    const sequences = [
+        // Pick and place sequence
+        {
+            duration: 8,
+            keyframes: [
+                { time: 0, angles: [0, 0, 0, 0, 0, 0] },
+                { time: 2, angles: [Math.PI/4, -Math.PI/6, Math.PI/8, Math.PI/4, -Math.PI/6, 0] },
+                { time: 4, angles: [Math.PI/2, -Math.PI/4, Math.PI/4, Math.PI/2, -Math.PI/3, 0] },
+                { time: 6, angles: [-Math.PI/4, Math.PI/6, -Math.PI/8, -Math.PI/4, Math.PI/6, 0] },
+                { time: 8, angles: [0, 0, 0, 0, 0, 0] }
+            ]
+        },
+        // Welding sequence
+        {
+            duration: 6,
+            keyframes: [
+                { time: 0, angles: [0, 0, 0, 0, 0, 0] },
+                { time: 1.5, angles: [Math.PI/6, -Math.PI/3, Math.PI/6, Math.PI/3, 0, Math.PI/8] },
+                { time: 3, angles: [Math.PI/3, -Math.PI/2, Math.PI/3, Math.PI/6, Math.PI/4, -Math.PI/8] },
+                { time: 4.5, angles: [-Math.PI/6, Math.PI/3, -Math.PI/6, -Math.PI/3, 0, Math.PI/8] },
+                { time: 6, angles: [0, 0, 0, 0, 0, 0] }
+            ]
+        }
+    ];
+
+    const currentSequence = sequences[Math.floor(animationPhase / 10) % sequences.length];
+    const sequenceTime = (animationPhase % 10) * (currentSequence.duration / 10);
+
+    // Interpolate between keyframes
+    for (let i = 0; i < currentSequence.keyframes.length - 1; i++) {
+        const keyframe1 = currentSequence.keyframes[i];
+        const keyframe2 = currentSequence.keyframes[i + 1];
+        
+        if (sequenceTime >= keyframe1.time && sequenceTime <= keyframe2.time) {
+            const t = (sequenceTime - keyframe1.time) / (keyframe2.time - keyframe1.time);
+            const smoothT = t * t * (3 - 2 * t); // Smooth step interpolation
+            
+            for (let j = 0; j < 6; j++) {
+                targetAngles[j] = keyframe1.angles[j] + (keyframe2.angles[j] - keyframe1.angles[j]) * smoothT;
+            }
+            break;
+        }
+    }
+
+    // Smooth movement towards target angles
+    for (let i = 0; i < armJoints.length; i++) {
+        const joint = armJoints[i];
+        const targetAngle = Math.max(joint.limits[0], Math.min(joint.limits[1], targetAngles[i]));
+        
+        // Smooth interpolation
+        currentAngles[i] += (targetAngle - currentAngles[i]) * 0.05;
+        
+        // Apply rotation
+        if (joint.axis === 'x') {
+            joint.group.rotation.x = currentAngles[i];
+        } else if (joint.axis === 'y') {
+            joint.group.rotation.y = currentAngles[i];
+        } else if (joint.axis === 'z') {
+            joint.group.rotation.z = currentAngles[i];
+        }
+    }
+}
+
+function setupArmControls() {
     const animateBtn = document.getElementById('arm-animate');
     const resetBtn = document.getElementById('arm-reset');
     
     if (animateBtn) {
         animateBtn.addEventListener('click', () => {
             isAnimating = !isAnimating;
-            animateBtn.textContent = isAnimating ? 'Stop' : 'Animate';
+            animateBtn.textContent = isAnimating ? 'Stop Animation' : 'Start Animation';
             animateBtn.classList.toggle('active', isAnimating);
+            
+            if (isAnimating) {
+                animationPhase = 0;
+            }
         });
     }
     
@@ -748,58 +960,45 @@ function initEnhancedProjectModel1() {
         resetBtn.addEventListener('click', () => {
             isAnimating = false;
             if (animateBtn) {
-                animateBtn.textContent = 'Animate';
+                animateBtn.textContent = 'Start Animation';
                 animateBtn.classList.remove('active');
             }
             
-            // Reset all rotations smoothly
-            armSegments.forEach(segment => {
-                // Store current rotation
-                const currentRotation = {
-                    x: segment.mesh.rotation.x,
-                    y: segment.mesh.rotation.y,
-                    z: segment.mesh.rotation.z
-                };
+            // Reset all joints to home position
+            targetAngles.fill(0);
+            animationPhase = 0;
+            
+            // Smooth reset animation
+            const resetDuration = 2000;
+            const startTime = Date.now();
+            const startAngles = [...currentAngles];
+            
+            function performReset() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / resetDuration, 1);
+                const easeProgress = 1 - Math.pow(1 - progress, 3);
                 
-                // Animate to zero
-                const duration = 1000; // 1 second
-                const startTime = Date.now();
-                
-                function resetAnimation() {
-                    const elapsed = Date.now() - startTime;
-                    const progress = Math.min(elapsed / duration, 1);
-                    const easeProgress = 1 - Math.pow(1 - progress, 3); // Ease out cubic
+                for (let i = 0; i < armJoints.length; i++) {
+                    currentAngles[i] = startAngles[i] * (1 - easeProgress);
                     
-                    segment.mesh.rotation.x = currentRotation.x * (1 - easeProgress);
-                    segment.mesh.rotation.y = currentRotation.y * (1 - easeProgress);
-                    segment.mesh.rotation.z = currentRotation.z * (1 - easeProgress);
-                    
-                    if (progress < 1) {
-                        requestAnimationFrame(resetAnimation);
+                    const joint = armJoints[i];
+                    if (joint.axis === 'x') {
+                        joint.group.rotation.x = currentAngles[i];
+                    } else if (joint.axis === 'y') {
+                        joint.group.rotation.y = currentAngles[i];
+                    } else if (joint.axis === 'z') {
+                        joint.group.rotation.z = currentAngles[i];
                     }
                 }
                 
-                resetAnimation();
-            });
+                if (progress < 1) {
+                    requestAnimationFrame(performReset);
+                }
+            }
             
-            // Reset camera position
-            project1Controls.reset();
+            performReset();
         });
     }
-
-    // Handle window resize
-    const resizeObserver = new ResizeObserver(entries => {
-        for (let entry of entries) {
-            const { width: newWidth, height: newHeight } = entry.contentRect;
-            if (newWidth > 0 && newHeight > 0) {
-                project1Camera.aspect = newWidth / newHeight;
-                project1Camera.updateProjectionMatrix();
-                project1Renderer.setSize(newWidth, newHeight);
-            }
-        }
-    });
-    
-    resizeObserver.observe(container);
 }
 
 // Modal functionality with enhanced carousel support
