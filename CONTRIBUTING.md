@@ -2,9 +2,12 @@
 
 Thank you for your interest in contributing to this portfolio website project! This repository serves as both a personal portfolio and a demonstration of modern web development practices.
 
+> **⚠️ CI/CD Status:** The automated CI/CD workflows are currently paused while we focus on the portfolio revamp. Manual testing and review processes are in place during this period.
+
 ## 🎆 Welcome Contributors
 
 Contributions are welcome! Whether you're:
+
 - Suggesting improvements to the design
 - Reporting bugs or issues
 - Proposing new features
@@ -64,38 +67,30 @@ Contributions are welcome! Whether you're:
 We follow [Conventional Commits](https://www.conventionalcommits.org/) specification:
 
 ```
-type(scope): description
+type(scope): subject
 
-Examples:
-feat(ui): add dark mode toggle
-fix(carousel): resolve swipe gesture on mobile
-docs(readme): update installation instructions
-style(css): improve responsive layout
-refactor(js): optimize 3D rendering performance
-test(unit): add carousel component tests
-chore(deps): update three.js to latest version
+body (optional)
+
+footer (optional)
 ```
 
 **Types:**
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation changes
-- `style`: Code style changes (formatting, missing semicolons)
-- `refactor`: Code changes that neither fix bugs nor add features
-- `test`: Adding or modifying tests
-- `chore`: Maintenance tasks, dependency updates
+- `style`: Code style changes (formatting, no code change)
+- `refactor`: Code refactoring
+- `test`: Adding or updating tests
+- `chore`: Maintenance tasks
 
-### Branch Naming
+**Examples:**
+```bash
+feat(ui): add smooth scroll to navigation
+fix(responsive): correct layout on mobile devices
+docs(readme): update installation instructions
+```
 
-- `feature/feature-name` - New features
-- `fix/bug-description` - Bug fixes
-- `docs/documentation-update` - Documentation
-- `refactor/component-name` - Code refactoring
-- `test/test-description` - Testing improvements
-
-## 🔄 Development Workflow
-
-### Making Changes
+## 🔀 Pull Request Process
 
 1. **Create a feature branch**
    ```bash
@@ -103,65 +98,90 @@ chore(deps): update three.js to latest version
    ```
 
 2. **Make your changes**
-   - Write clean, well-commented code
-   - Test your changes thoroughly
-   - Ensure responsive design works on mobile
+   - Write clean, documented code
+   - Test thoroughly on different browsers
+   - Ensure responsive design works
 
-3. **Test locally**
-   - Verify all functionality works
-   - Check console for errors
-   - Test on different browsers if possible
-
-4. **Commit your changes**
+3. **Commit your changes**
    ```bash
    git add .
-   git commit -m "feat(component): add new feature description"
+   git commit -m "feat: add your feature description"
    ```
 
-5. **Push to your fork**
+4. **Push to your fork**
    ```bash
    git push origin feature/your-feature-name
    ```
 
-6. **Create Pull Request**
-   - Go to GitHub and create a PR from your branch to `revamp`
-   - Provide clear description of changes
+5. **Open a Pull Request**
+   - Go to the original repository
+   - Click "New Pull Request"
+   - Select your feature branch
+   - Fill in the PR template
    - Link any related issues
 
-### Pull Request Guidelines
+### PR Description Template
 
-- **Title**: Clear, descriptive title
-- **Description**: Explain what changes you made and why
-- **Screenshots**: Include before/after screenshots for UI changes
-- **Testing**: Describe how you tested the changes
-- **Breaking Changes**: Note any breaking changes
+```markdown
+## Description
+Brief description of changes
 
-## 🐛 Bug Reports
+## Type of Change
+- [ ] Bug fix
+- [ ] New feature
+- [ ] Documentation update
+- [ ] Code refactoring
 
-When reporting bugs, please include:
+## Testing
+Describe testing performed:
+- [ ] Chrome
+- [ ] Firefox
+- [ ] Safari
+- [ ] Mobile devices
 
-- **Browser and version**
-- **Operating system**
-- **Steps to reproduce**
-- **Expected behavior**
-- **Actual behavior**
-- **Screenshots or console errors**
+## Screenshots (if applicable)
+Add screenshots here
 
-## 🌟 Feature Requests
+## Related Issues
+Fixes #issue_number
+```
 
-For feature requests:
+## 🧪 Testing Guidelines
 
-- **Use case**: Describe the problem you're trying to solve
-- **Proposed solution**: Your idea for implementing the feature
-- **Alternatives**: Other solutions you've considered
-- **Screenshots/mockups**: Visual representations if applicable
+### Manual Testing Checklist
 
-## 📅 Areas for Contribution
+- [ ] All pages load correctly
+- [ ] Navigation works smoothly
+- [ ] Forms validate properly
+- [ ] Responsive design works (mobile, tablet, desktop)
+- [ ] Cross-browser compatibility
+- [ ] Accessibility (keyboard navigation, screen readers)
+- [ ] Performance (load times, animations)
+- [ ] No console errors
 
-### High Priority
-- **Performance optimization** - Reduce bundle size, improve loading times
-- **Accessibility improvements** - WCAG compliance, screen reader support
-- **Mobile experience** - Touch gestures, responsive design refinements
+### Browser Testing
+
+Test on:
+- Chrome (latest)
+- Firefox (latest)
+- Safari (latest)
+- Edge (latest)
+- Mobile browsers (iOS Safari, Chrome Mobile)
+
+### Responsive Testing
+
+Test breakpoints:
+- Mobile: 375px - 639px
+- Tablet: 640px - 1023px
+- Desktop: 1024px+
+
+## 📦 Project Priorities
+
+### High Priority (Current Focus)
+- **Portfolio revamp** - Main redesign and content updates
+- **Responsive design** - Mobile-first approach
+- **Performance optimization** - Fast load times
+- **Accessibility** - WCAG 2.1 AA compliance
 - **SEO optimization** - Meta tags, structured data, sitemap
 
 ### Medium Priority
@@ -178,11 +198,13 @@ For feature requests:
 
 ## 📋 Code Review Process
 
-1. **Automated checks** must pass (when CI/CD is implemented)
+1. **~~Automated checks~~** *(Currently paused - manual review only)*
 2. **Manual review** by project maintainer
 3. **Testing verification** on different devices/browsers
 4. **Feedback incorporation** if changes are requested
 5. **Merge** when approved
+
+> **Note:** While CI/CD workflows are paused, all PRs will undergo thorough manual testing and review. Contributors are expected to test their changes locally across multiple browsers and devices before submitting.
 
 ## 🔒 Security
 
@@ -203,7 +225,6 @@ If you discover a security vulnerability, please:
 ## 🙏 Recognition
 
 All contributors will be:
-
 - Listed in project credits
 - Acknowledged in release notes
 - Given public recognition for their contributions
@@ -211,7 +232,6 @@ All contributors will be:
 ## ❓ Questions
 
 Have questions? Feel free to:
-
 - Open a GitHub Discussion
 - Create an issue with the `question` label
 - Reach out via email: Joan.llbab@gmail.com
