@@ -10,6 +10,8 @@
 
 This repository serves as both a portfolio showcase and a comprehensive demonstration of modern web development workflows using GitHub's powerful collaboration and automation features.
 
+> **⚠️ Note on CI/CD:** The CI/CD implementation is currently paused while prioritizing the portfolio revamp. Automated workflows will be restored once the main redesign is complete.
+
 ### ✨ Features
 
 - **Modern Design**: Minimalistic, clean interface with dark mode support
@@ -17,14 +19,14 @@ This repository serves as both a portfolio showcase and a comprehensive demonstr
 - **Interactive Elements**: Smooth animations and 3D hover effects
 - **Performance Optimized**: 90+ Lighthouse scores across all metrics
 - **Accessible**: WCAG 2.1 AA compliant
-- **CI/CD Pipeline**: Automated testing, building, and deployment
+- **CI/CD Pipeline**: ⏸️ *Temporarily paused - focus on portfolio revamp*
 
 ## 🛠️ Tech Stack
 
 - **Frontend**: HTML5, CSS3, Vanilla JavaScript
 - **Styling**: CSS Grid, Flexbox, Custom Properties
 - **Animations**: CSS Transforms, JavaScript interactions
-- **Build Tools**: GitHub Actions
+- **Build Tools**: GitHub Actions *(paused)*
 - **Deployment**: GitHub Pages
 - **Version Control**: Git with GitHub Flow
 
@@ -38,7 +40,7 @@ llompi.github.io/
 │   └── images/
 ├── docs/
 ├── .github/
-│   ├── workflows/
+│   ├── workflows/        # CI/CD workflows (temporarily disabled)
 │   └── ISSUE_TEMPLATE/
 ├── index.html
 ├── README.md
@@ -61,117 +63,39 @@ llompi.github.io/
    cd llompi.github.io
    ```
 
-2. **Switch to development branch**
+2. **Open in browser**
    ```bash
-   git checkout revamp
-   ```
-
-3. **Start local server**
-   ```bash
-   # Using Python
+   # Simply open index.html in your browser
+   # Or use a local server:
    python -m http.server 8000
-   
-   # Using Node.js
-   npx serve .
-   
-   # Using VS Code Live Server extension
-   # Right-click index.html and select "Open with Live Server"
+   # Or if you have Node.js:
+   npx serve
    ```
 
-4. **Open in browser**
-   Navigate to `http://localhost:8000`
+3. **Start developing**
+   - Edit HTML, CSS, and JavaScript files
+   - Refresh browser to see changes
+   - Test responsiveness across devices
 
-## 🔄 Development Workflow
+## 📝 Development Workflow
 
-### Branch Strategy
+### Branching Strategy
 
-- `main` - Production branch (auto-deploys to GitHub Pages)
-- `revamp` - Primary development branch
-- `feature/*` - Individual feature branches
-- `hotfix/*` - Emergency fixes
-
-### Contributing
-
-1. Create feature branch from `revamp`
-2. Make changes with descriptive commits
-3. Open Pull Request with detailed description
-4. Automated checks must pass
-5. Request code review
-6. Merge after approval
-
-### Commit Convention
-
-```
-type(scope): description
-
-Types:
-- feat: New feature
-- fix: Bug fix
-- docs: Documentation
-- style: Formatting, missing semicolons
-- refactor: Code restructuring
-- test: Adding tests
-- chore: Maintenance tasks
-```
-
-## 🔧 GitHub Features Demonstrated
-
-### Project Management
-- **GitHub Projects**: Kanban-style project tracking
-- **Issues**: Feature requests, bug tracking with templates
-- **Milestones**: Release planning and progress tracking
-- **Labels**: Organized issue categorization
-
-### Automation & CI/CD
-- **GitHub Actions**: Automated testing and deployment
-- **Branch Protection**: Required reviews, status checks
-- **Auto-merge**: Dependency updates with Dependabot
-- **Security**: CodeQL analysis, vulnerability scanning
-
-### Collaboration
-- **Pull Request Templates**: Structured code reviews
-- **Code Owners**: Automatic review assignments
-- **Discussions**: Community engagement and Q&A
-- **Wiki**: Additional documentation
-
-## 📊 Performance & Quality
-
-### Lighthouse Scores
-- Performance: 95+
-- Accessibility: 100
-- Best Practices: 100
-- SEO: 100
+- `main`: Production-ready code
+- `revamp`: Major redesign work (current focus)
+- Feature branches: `feature/feature-name`
+- Bug fixes: `fix/issue-description`
 
 ### Code Quality
-- ESLint for JavaScript linting
+
+- Semantic HTML5
+- BEM CSS methodology
+- ESLint for JavaScript
 - Prettier for code formatting
-- HTML5 semantic markup
-- CSS custom properties
 
-## 🎨 Design System
-
-### Color Palette
-```css
-:root {
-  --primary: #00ff88;
-  --secondary: #0070f3;
-  --accent: #ff0080;
-  --background: #000000;
-  --surface: #111111;
-  --text: #ffffff;
-  --text-secondary: #888888;
-}
-```
-
-### Typography
-- **Primary**: Inter (modern, clean sans-serif)
-- **Code**: JetBrains Mono (for code snippets)
-- **Sizes**: Fluid typography with clamp()
-
-## 📱 Responsive Breakpoints
+### Responsive Breakpoints
 
 ```css
-/* Mobile First */
 @media (min-width: 640px) { /* sm */ }
 @media (min-width: 768px) { /* md */ }
 @media (min-width: 1024px) { /* lg */ }
@@ -185,11 +109,14 @@ The site is automatically deployed to GitHub Pages when changes are pushed to th
 **Live Site**: [https://llompi.github.io](https://llompi.github.io)
 
 ### Deployment Process
+
+> **Note:** Automated deployment via GitHub Actions is currently paused. Manual deployments are being used during the portfolio revamp phase.
+
 1. Changes merged to `main`
-2. GitHub Actions workflow triggered
-3. Build process (minification, optimization)
+2. ~~GitHub Actions workflow triggered~~ (paused)
+3. ~~Build process (minification, optimization)~~ (manual for now)
 4. Deploy to GitHub Pages
-5. Cache invalidation
+5. ~~Cache invalidation~~ (handled by GitHub Pages)
 
 ## 📈 Analytics & Monitoring
 
