@@ -1,0 +1,99 @@
+{
+  "name": "joan-llompart-portfolio",
+  "version": "2.0.0",
+  "description": "Modern, minimalistic portfolio website showcasing electrical engineering projects and demonstrating GitHub best practices",
+  "main": "index.html",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "serve": "http-server dist -p 8000 -c-1",
+    "lint": "eslint . --ext .js,.ts --fix",
+    "format": "prettier --write .",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "lighthouse": "lhci autorun",
+    "analyze": "vite-bundle-analyzer",
+    "clean": "rimraf dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "portfolio",
+    "electrical-engineer",
+    "web-development",
+    "github-pages",
+    "vite",
+    "three-js",
+    "responsive-design",
+    "modern-web",
+    "minimalist-design"
+  ],
+  "author": {
+    "name": "Joan Llompart",
+    "email": "Joan.llbab@gmail.com",
+    "url": "https://llompi.github.io"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Llompi/llompi.github.io.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Llompi/llompi.github.io/issues"
+  },
+  "homepage": "https://llompi.github.io",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "devDependencies": {
+    "@lhci/cli": "^0.12.0",
+    "@types/three": "^0.158.0",
+    "@typescript-eslint/eslint-plugin": "^6.12.0",
+    "@typescript-eslint/parser": "^6.12.0",
+    "@vitejs/plugin-legacy": "^4.1.1",
+    "autoprefixer": "^10.4.16",
+    "eslint": "^8.54.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-html": "^7.1.0",
+    "http-server": "^14.1.1",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.1.0",
+    "postcss": "^8.4.32",
+    "prettier": "^3.1.0",
+    "rimraf": "^5.0.5",
+    "rollup-plugin-visualizer": "^5.9.2",
+    "typescript": "^5.3.2",
+    "vite": "^5.0.0",
+    "vite-bundle-analyzer": "^0.7.0",
+    "vite-plugin-pwa": "^0.17.4",
+    "vitest": "^1.0.0",
+    "workbox-window": "^7.0.0"
+  },
+  "dependencies": {
+    "three": "^0.158.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "not ie 11"
+  ],
+  "lint-staged": {
+    "*.{js,ts,html,css,md}": [
+      "prettier --write",
+      "git add"
+    ],
+    "*.{js,ts}": [
+      "eslint --fix",
+      "git add"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "pre-push": "npm run test && npm run lighthouse"
+    }
+  }
+}

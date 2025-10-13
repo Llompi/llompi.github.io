@@ -1,0 +1,21 @@
+# Global code owners
+* @Llompi
+
+# Frontend files
+*.html @Llompi
+*.css @Llompi
+*.js @Llompi
+*.ts @Llompi
+
+# Documentation
+*.md @Llompi
+docs/ @Llompi
+
+# Configuration files
+*.json @Llompi
+*.yml @Llompi
+*.yaml @Llompi
+vite.config.* @Llompi
+
+# GitHub specific files
+.github/ @Llompi
