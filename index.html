@@ -3,271 +3,748 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Joan Llompart - Electrical Engineer Portfolio showcasing innovative projects and skills in hardware, software, and design">
+    <meta name="description" content="Joan Llompart - Electrical Engineer specializing in hardware-software integration, PCB design, and IoT development">
     <title>Joan Llompart | Electrical Engineer</title>
+    
+    <!-- Preload critical fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         :root {
-            --color-bg: #0a0a0a;
-            --color-surface: #1a1a1a;
-            --color-text-primary: #ffffff;
-            --color-text-secondary: #a0a0a0;
-            --color-text-muted: #666666;
-            --color-accent: #3b82f6;
-            --color-border: #2a2a2a;
-            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            /* Modern Minimalist Color Palette */
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #111111;
+            --surface: #1a1a1a;
+            --surface-hover: #2a2a2a;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-muted: #666666;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --border: #2a2a2a;
+            --border-hover: #404040;
+            
+            /* Typography Scale */
+            --text-xs: 0.75rem;
+            --text-sm: 0.875rem;
+            --text-base: 1rem;
+            --text-lg: 1.125rem;
+            --text-xl: 1.25rem;
+            --text-2xl: 1.5rem;
+            --text-3xl: 1.875rem;
+            --text-4xl: 2.25rem;
+            --text-5xl: 3rem;
+            --text-6xl: 3.75rem;
+            
+            /* Spacing Scale */
+            --space-1: 0.25rem;
+            --space-2: 0.5rem;
+            --space-3: 0.75rem;
+            --space-4: 1rem;
+            --space-6: 1.5rem;
+            --space-8: 2rem;
+            --space-12: 3rem;
+            --space-16: 4rem;
+            --space-20: 5rem;
+            --space-24: 6rem;
+            
+            /* Border Radius */
+            --radius-sm: 6px;
+            --radius: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+            
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
         
+        /* Reset and Base Styles */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
         
-        body {
-            font-family: var(--font-family);
-            background-color: var(--color-bg);
-            color: var(--color-text-primary);
-            line-height: 1.6;
+        html {
+            scroll-behavior: smooth;
         }
         
+        body {
+            font-family: var(--font-family);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: var(--radius-sm);
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
+        
+        /* Layout Components */
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 0 2rem;
+            padding: 0 var(--space-8);
         }
         
+        .section {
+            padding: var(--space-24) 0;
+        }
+        
+        .section-sm {
+            padding: var(--space-16) 0;
+        }
+        
+        /* Navigation */
         .nav {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            background: rgba(10, 10, 10, 0.9);
+            background: rgba(10, 10, 10, 0.95);
             backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--color-border);
+            border-bottom: 1px solid var(--border);
             z-index: 1000;
-            padding: 1rem 0;
         }
         
-        .nav-content {
+        .nav-container {
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
+            height: 70px;
         }
         
-        .logo {
-            font-size: 1.5rem;
+        .nav-logo {
+            font-size: var(--text-xl);
             font-weight: 700;
-            color: var(--color-text-primary);
+            color: var(--text-primary);
             text-decoration: none;
+            letter-spacing: -0.025em;
         }
         
         .nav-links {
             display: flex;
             list-style: none;
-            gap: 2rem;
+            gap: var(--space-8);
+            align-items: center;
         }
         
         .nav-link {
-            color: var(--color-text-secondary);
+            color: var(--text-secondary);
             text-decoration: none;
             font-weight: 500;
+            font-size: var(--text-sm);
             transition: color 0.2s ease;
+            padding: var(--space-2) 0;
+            position: relative;
         }
         
         .nav-link:hover {
-            color: var(--color-text-primary);
+            color: var(--text-primary);
         }
         
+        .nav-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: var(--text-xl);
+            cursor: pointer;
+            padding: var(--space-2);
+        }
+        
+        /* Mobile Navigation */
+        .nav-mobile {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border);
+            padding: var(--space-4) 0;
+        }
+        
+        .nav-mobile.active {
+            display: block;
+        }
+        
+        .nav-mobile .nav-link {
+            display: block;
+            padding: var(--space-3) var(--space-8);
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .nav-mobile .nav-link:last-child {
+            border-bottom: none;
+        }
+        
+        /* Hero Section */
         .hero {
             min-height: 100vh;
             display: flex;
             align-items: center;
-            padding-top: 80px;
+            padding-top: 70px;
         }
         
         .hero-content {
             display: grid;
-            grid-template-columns: 1fr 300px;
-            gap: 4rem;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: var(--space-20);
             align-items: center;
+            width: 100%;
         }
         
-        .hero-text h1 {
-            font-size: 3.5rem;
+        .hero-text {
+            max-width: 600px;
+        }
+        
+        .hero-title {
+            font-size: var(--text-6xl);
             font-weight: 700;
-            margin-bottom: 1rem;
+            margin-bottom: var(--space-6);
             line-height: 1.1;
+            letter-spacing: -0.025em;
         }
         
-        .subtitle {
-            font-size: 1.25rem;
-            color: var(--color-text-secondary);
-            margin-bottom: 1.5rem;
+        .hero-subtitle {
+            font-size: var(--text-2xl);
+            color: var(--text-secondary);
+            margin-bottom: var(--space-6);
+            font-weight: 500;
         }
         
-        .description {
-            font-size: 1.125rem;
-            color: var(--color-text-muted);
-            margin-bottom: 2rem;
-            max-width: 500px;
+        .hero-description {
+            font-size: var(--text-lg);
+            color: var(--text-muted);
+            margin-bottom: var(--space-8);
+            line-height: 1.7;
+        }
+        
+        .hero-image {
+            position: relative;
         }
         
         .hero-image img {
             width: 100%;
-            height: 300px;
+            height: 400px;
             object-fit: cover;
-            border-radius: 12px;
-            border: 1px solid var(--color-border);
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border);
+            transition: transform 0.3s ease;
         }
         
+        .hero-image:hover img {
+            transform: scale(1.02);
+        }
+        
+        /* Buttons */
         .btn {
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
+            gap: var(--space-2);
+            padding: var(--space-3) var(--space-6);
+            border-radius: var(--radius);
             text-decoration: none;
-            font-weight: 500;
+            font-weight: 600;
+            font-size: var(--text-sm);
             transition: all 0.2s ease;
             border: 1px solid transparent;
+            white-space: nowrap;
+            cursor: pointer;
         }
         
         .btn-primary {
-            background: var(--color-accent);
+            background: var(--accent);
             color: white;
+            border-color: var(--accent);
+        }
+        
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            border-color: var(--accent-hover);
+            transform: translateY(-1px);
         }
         
         .btn-secondary {
             background: transparent;
-            color: var(--color-text-primary);
-            border-color: var(--color-border);
+            color: var(--text-primary);
+            border-color: var(--border);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--surface);
+            border-color: var(--border-hover);
+            transform: translateY(-1px);
         }
         
         .btn-group {
             display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
+            gap: var(--space-4);
+            margin-bottom: var(--space-8);
         }
         
+        /* Cards */
         .card {
-            background: var(--color-surface);
-            border: 1px solid var(--color-border);
-            border-radius: 12px;
-            padding: 2rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-8);
             transition: all 0.3s ease;
+            height: 100%;
         }
         
         .card:hover {
-            transform: translateY(-2px);
+            border-color: var(--border-hover);
+            transform: translateY(-4px);
         }
         
-        .section {
-            padding: 6rem 0;
+        .card-clickable {
+            cursor: pointer;
         }
         
-        .section-title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 3rem;
+        .card-clickable:hover {
+            background: var(--surface-hover);
         }
         
+        .card h3 {
+            font-size: var(--text-xl);
+            font-weight: 600;
+            margin-bottom: var(--space-4);
+            color: var(--text-primary);
+        }
+        
+        .card p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+        
+        /* Grid Layouts */
         .grid {
             display: grid;
-            gap: 2rem;
+            gap: var(--space-8);
         }
         
         .grid-2 {
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
         }
         
         .grid-3 {
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
         }
         
+        /* Typography */
+        .section-title {
+            font-size: var(--text-4xl);
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: var(--space-16);
+            letter-spacing: -0.025em;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .text-muted {
+            color: var(--text-muted);
+        }
+        
+        .text-secondary {
+            color: var(--text-secondary);
+        }
+        
+        /* Project Components */
+        .project-image {
+            height: 220px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            margin-bottom: var(--space-4);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .project-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        
+        .project-card:hover .project-image img {
+            transform: scale(1.05);
+        }
+        
+        .project-tags {
+            display: flex;
+            gap: var(--space-2);
+            flex-wrap: wrap;
+            margin-top: var(--space-4);
+        }
+        
+        .tag {
+            padding: var(--space-1) var(--space-3);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: var(--text-xs);
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        /* Skills Section */
+        .skills-filter {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-3);
+            margin-bottom: var(--space-12);
+            justify-content: center;
+        }
+        
+        .filter-btn {
+            padding: var(--space-2) var(--space-4);
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: var(--text-sm);
+            font-weight: 500;
+        }
+        
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+        
+        .skills-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-3);
+            justify-content: center;
+        }
+        
+        .skill-item {
+            padding: var(--space-2) var(--space-4);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: var(--text-sm);
+            font-weight: 500;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        
+        .skill-item:hover {
+            border-color: var(--border-hover);
+            background: var(--surface-hover);
+        }
+        
+        .skill-item.hidden {
+            opacity: 0;
+            transform: scale(0.8);
+            width: 0;
+            padding: 0;
+            margin: 0;
+            border: none;
+            overflow: hidden;
+        }
+        
+        /* Social Links */
         .social-links {
             display: flex;
-            gap: 1rem;
+            gap: var(--space-4);
         }
         
         .social-link {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 40px;
-            height: 40px;
-            background: var(--color-surface);
-            border: 1px solid var(--color-border);
-            border-radius: 8px;
-            color: var(--color-text-secondary);
+            width: 44px;
+            height: 44px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text-secondary);
             text-decoration: none;
             transition: all 0.2s ease;
+            font-size: var(--text-lg);
         }
         
         .social-link:hover {
-            background: var(--color-accent);
+            background: var(--accent);
+            border-color: var(--accent);
             color: white;
+            transform: translateY(-2px);
         }
         
+        /* Stats */
+        .stats {
+            display: flex;
+            gap: var(--space-8);
+            margin-top: var(--space-8);
+        }
+        
+        .stat {
+            text-align: left;
+        }
+        
+        .stat-number {
+            font-size: var(--text-3xl);
+            font-weight: 700;
+            color: var(--text-primary);
+            display: block;
+            line-height: 1;
+        }
+        
+        .stat-label {
+            font-size: var(--text-sm);
+            color: var(--text-muted);
+            margin-top: var(--space-1);
+        }
+        
+        /* Contact Section */
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-6);
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-4);
+        }
+        
+        .contact-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            color: var(--accent);
+            font-size: var(--text-lg);
+        }
+        
+        .contact-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        
+        .contact-link:hover {
+            color: var(--text-primary);
+        }
+        
+        /* Footer */
         .footer {
-            border-top: 1px solid var(--color-border);
-            padding: 3rem 0;
-            margin-top: 6rem;
-            text-align: center;
-            color: var(--color-text-muted);
+            border-top: 1px solid var(--border);
+            padding: var(--space-16) 0;
+            margin-top: var(--space-24);
         }
         
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-8);
+        }
+        
+        .footer-links {
+            display: flex;
+            gap: var(--space-6);
+        }
+        
+        .footer-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: var(--text-sm);
+            transition: color 0.2s ease;
+        }
+        
+        .footer-link:hover {
+            color: var(--text-secondary);
+        }
+        
+        .footer-copyright {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: var(--text-sm);
+            padding-top: var(--space-8);
+            border-top: 1px solid var(--border);
+        }
+        
+        /* Responsive Design */
         @media (max-width: 768px) {
             .container {
-                padding: 0 1rem;
-            }
-            
-            .hero-content {
-                grid-template-columns: 1fr;
-                text-align: center;
-                gap: 2rem;
-            }
-            
-            .hero-text h1 {
-                font-size: 2.5rem;
+                padding: 0 var(--space-4);
             }
             
             .nav-links {
                 display: none;
             }
+            
+            .nav-toggle {
+                display: block;
+            }
+            
+            .hero-content {
+                grid-template-columns: 1fr;
+                gap: var(--space-12);
+                text-align: center;
+            }
+            
+            .hero-title {
+                font-size: var(--text-4xl);
+            }
+            
+            .hero-text {
+                max-width: none;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+                align-items: center;
+                gap: var(--space-3);
+            }
+            
+            .stats {
+                justify-content: center;
+                gap: var(--space-6);
+            }
+            
+            .stat {
+                text-align: center;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                gap: var(--space-4);
+                text-align: center;
+            }
+            
+            .section {
+                padding: var(--space-16) 0;
+            }
+            
+            .section-title {
+                font-size: var(--text-3xl);
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .hero-title {
+                font-size: var(--text-3xl);
+            }
+            
+            .card {
+                padding: var(--space-6);
+            }
+            
+            .container {
+                padding: 0 var(--space-3);
+            }
+        }
+        
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .animate-fadeInUp {
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        .animate-delay-100 {
+            animation-delay: 0.1s;
+            animation-fill-mode: both;
+        }
+        
+        .animate-delay-200 {
+            animation-delay: 0.2s;
+            animation-fill-mode: both;
+        }
+        
+        .animate-delay-300 {
+            animation-delay: 0.3s;
+            animation-fill-mode: both;
+        }
+        
+        /* Simple hover effects */
+        .hover-lift {
+            transition: transform 0.2s ease;
+        }
+        
+        .hover-lift:hover {
+            transform: translateY(-3px);
         }
     </style>
 </head>
 <body>
+    <!-- Navigation -->
     <nav class="nav">
         <div class="container">
-            <div class="nav-content">
-                <a href="#" class="logo">Joan Llompart</a>
+            <div class="nav-container">
+                <a href="#" class="nav-logo">Joan Llompart</a>
                 <ul class="nav-links">
                     <li><a href="#about" class="nav-link">About</a></li>
                     <li><a href="#projects" class="nav-link">Projects</a></li>
                     <li><a href="#skills" class="nav-link">Skills</a></li>
                     <li><a href="#contact" class="nav-link">Contact</a></li>
                 </ul>
+                <button class="nav-toggle" id="nav-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <div class="nav-mobile" id="nav-mobile">
+                <a href="#about" class="nav-link">About</a>
+                <a href="#projects" class="nav-link">Projects</a>
+                <a href="#skills" class="nav-link">Skills</a>
+                <a href="#contact" class="nav-link">Contact</a>
             </div>
         </div>
     </nav>
 
+    <!-- Hero Section -->
     <section class="hero">
         <div class="container">
             <div class="hero-content">
                 <div class="hero-text">
-                    <h1>Electrical Engineer</h1>
-                    <p class="subtitle">Hardware & Software Integration</p>
-                    <p class="description">
+                    <h1 class="hero-title animate-fadeInUp">Electrical Engineer</h1>
+                    <p class="hero-subtitle animate-fadeInUp animate-delay-100">Hardware & Software Integration</p>
+                    <p class="hero-description animate-fadeInUp animate-delay-200">
                         I create innovative solutions that bridge the gap between hardware and software, 
                         specializing in PCB design, IoT development, and product commercialization.
                     </p>
-                    <div class="btn-group">
+                    <div class="btn-group animate-fadeInUp animate-delay-300">
                         <a href="#projects" class="btn btn-primary">
                             <i class="fas fa-folder-open"></i>
                             View Projects
@@ -277,72 +754,319 @@
                             Get in Touch
                         </a>
                     </div>
-                    <div class="social-links">
-                        <a href="https://linkedin.com/in/jllb" target="_blank" class="social-link">
+                    <div class="social-links animate-fadeInUp animate-delay-300">
+                        <a href="https://linkedin.com/in/jllb" target="_blank" rel="noopener" class="social-link hover-lift" aria-label="LinkedIn Profile">
                             <i class="fab fa-linkedin-in"></i>
                         </a>
-                        <a href="https://github.com/llompi" target="_blank" class="social-link">
+                        <a href="https://github.com/llompi" target="_blank" rel="noopener" class="social-link hover-lift" aria-label="GitHub Profile">
                             <i class="fab fa-github"></i>
                         </a>
                     </div>
                 </div>
-                <div class="hero-image">
-                    <img src="docs/assets/img/Project photos/IMG_8352.jpeg" alt="Joan Llompart">
+                <div class="hero-image animate-fadeInUp animate-delay-200">
+                    <img src="docs/assets/img/project-photos/IMG_8352.jpeg" alt="Joan Llompart - Electrical Engineer" loading="eager">
                 </div>
             </div>
         </div>
     </section>
 
+    <!-- About Section -->
     <section id="about" class="section">
         <div class="container">
             <h2 class="section-title">About Me</h2>
             <div class="grid grid-2">
-                <div class="card">
-                    <h3>Background</h3>
-                    <p>With 4+ years of experience in electrical engineering, I specialize in creating innovative solutions that merge hardware and software technologies.</p>
+                <div class="card hover-lift">
+                    <h3>Professional Background</h3>
+                    <p style="margin-bottom: var(--space-6);">
+                        With 4+ years of experience in electrical engineering, I specialize in creating 
+                        innovative solutions that merge hardware and software technologies. My work spans 
+                        from PCB design and RF systems to IoT development and product commercialization.
+                    </p>
+                    <div class="stats">
+                        <div class="stat">
+                            <span class="stat-number">10+</span>
+                            <span class="stat-label">Projects Completed</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number">4+</span>
+                            <span class="stat-label">Years Experience</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="card">
-                    <h3>Skills</h3>
-                    <p>PCB Design, IoT Development, RF Systems, Product Commercialization, and more.</p>
+                <div class="card hover-lift">
+                    <h3>Personal Interests</h3>
+                    <p style="margin-bottom: var(--space-4); color: var(--text-secondary);">
+                        When I'm not engineering solutions, you'll find me staying active and exploring new technologies.
+                    </p>
+                    <div style="margin-bottom: var(--space-6);">
+                        <h4 style="font-size: var(--text-base); font-weight: 600; margin-bottom: var(--space-3); color: var(--text-primary);">Activities</h4>
+                        <div style="display: flex; flex-wrap: wrap; gap: var(--space-2);">
+                            <span class="tag">Running</span>
+                            <span class="tag">Racquetball</span>
+                            <span class="tag">Programming</span>
+                            <span class="tag">Gaming</span>
+                            <span class="tag">Dog Walking</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 style="font-size: var(--text-base); font-weight: 600; margin-bottom: var(--space-3); color: var(--text-primary);">Languages</h4>
+                        <div style="display: flex; flex-wrap: wrap; gap: var(--space-2);">
+                            <span class="tag">English</span>
+                            <span class="tag">Spanish</span>
+                            <span class="tag">Catalan</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
+    <!-- Projects Section -->
     <section id="projects" class="section">
         <div class="container">
             <h2 class="section-title">Featured Projects</h2>
             <div class="grid grid-3">
-                <div class="card">
+                <div class="card project-card card-clickable hover-lift" data-project="rf-amplifier">
+                    <div class="project-image">
+                        <img src="docs/assets/img/project-photos/RFAmp.jpg" alt="RF Amplifier Project" loading="lazy">
+                    </div>
                     <h3>RF Amplifier</h3>
-                    <p>High-fidelity RF amplifier for communication systems.</p>
+                    <p style="margin-bottom: var(--space-4);">High-fidelity RF amplifier for communication systems with advanced circuit simulation and PCB design following RF best practices.</p>
+                    <div class="project-tags">
+                        <span class="tag">Hardware Design</span>
+                        <span class="tag">PCB Layout</span>
+                        <span class="tag">RF Simulation</span>
+                    </div>
                 </div>
-                <div class="card">
+                
+                <div class="card project-card card-clickable hover-lift" data-project="handheld-console">
+                    <div class="project-image">
+                        <img src="docs/assets/img/project-photos/RetropieFront.jpg" alt="Raspberry Pi Handheld Console" loading="lazy">
+                    </div>
                     <h3>Raspberry Pi Console</h3>
-                    <p>Custom handheld gaming console with retro emulation.</p>
+                    <p style="margin-bottom: var(--space-4);">Custom handheld gaming console built with Raspberry Pi 4, featuring retro game emulation and ergonomic 3D printed enclosure.</p>
+                    <div class="project-tags">
+                        <span class="tag">Embedded Systems</span>
+                        <span class="tag">3D Printing</span>
+                        <span class="tag">Software Integration</span>
+                    </div>
                 </div>
-                <div class="card">
+                
+                <div class="card project-card card-clickable hover-lift" data-project="iot-dispenser">
+                    <div class="project-image" style="padding: var(--space-4); display: flex; align-items: center; justify-content: center;">
+                        <img src="docs/assets/img/project-photos/dogTreatDispenser.png" alt="IoT Dog Treat Dispenser" style="width: 80%; height: 80%; object-fit: contain;" loading="lazy">
+                    </div>
                     <h3>IoT Dog Treat Dispenser</h3>
-                    <p>Smart pet dispenser with mobile app control.</p>
+                    <p style="margin-bottom: var(--space-4);">Smart pet treat dispenser with mobile app control, automated scheduling, and remote monitoring capabilities for modern pet care.</p>
+                    <div class="project-tags">
+                        <span class="tag">IoT Development</span>
+                        <span class="tag">Mobile App</span>
+                        <span class="tag">Hardware Integration</span>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
+    <!-- Skills Section -->
+    <section id="skills" class="section">
+        <div class="container">
+            <h2 class="section-title">Skills & Technologies</h2>
+            
+            <div class="skills-filter">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="hardware">Hardware</button>
+                <button class="filter-btn" data-filter="software">Software</button>
+                <button class="filter-btn" data-filter="design">Design</button>
+                <button class="filter-btn" data-filter="engineering">Engineering</button>
+            </div>
+            
+            <div class="skills-grid">
+                <span class="skill-item" data-category="hardware">PCB Design</span>
+                <span class="skill-item" data-category="hardware">Electric Motor Construction</span>
+                <span class="skill-item" data-category="software">Ansys Simulation</span>
+                <span class="skill-item" data-category="software">Fusion 360</span>
+                <span class="skill-item" data-category="software">KiCAD</span>
+                <span class="skill-item" data-category="engineering">Electrical Systems Design</span>
+                <span class="skill-item" data-category="engineering">Prototype Development</span>
+                <span class="skill-item" data-category="engineering">Quality Control</span>
+                <span class="skill-item" data-category="engineering">RF Circuit Analysis</span>
+                <span class="skill-item" data-category="software">IoT Development</span>
+                <span class="skill-item" data-category="software">Automation Systems</span>
+                <span class="skill-item" data-category="design">Mechanical Design</span>
+                <span class="skill-item" data-category="design">CAD Modeling</span>
+                <span class="skill-item" data-category="design">UI/UX Design</span>
+                <span class="skill-item" data-category="software">Figma</span>
+                <span class="skill-item" data-category="software">HTML/CSS</span>
+                <span class="skill-item" data-category="software">JavaScript</span>
+                <span class="skill-item" data-category="software">React Native</span>
+                <span class="skill-item" data-category="software">Python</span>
+                <span class="skill-item" data-category="engineering">Product Commercialization</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
     <section id="contact" class="section">
         <div class="container">
             <h2 class="section-title">Get In Touch</h2>
-            <div class="card" style="max-width: 600px; margin: 0 auto;">
-                <p><i class="fas fa-envelope"></i> Joan.llbab@gmail.com</p>
-                <p><i class="fas fa-map-marker-alt"></i> Portland, OR</p>
+            <div class="grid grid-2" style="max-width: 800px; margin: 0 auto;">
+                <div class="card hover-lift">
+                    <h3 style="margin-bottom: var(--space-6);">Contact Information</h3>
+                    <div class="contact-info">
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div>
+                                <h4 style="font-weight: 600; margin-bottom: var(--space-1);">Email</h4>
+                                <a href="mailto:Joan.llbab@gmail.com" class="contact-link">Joan.llbab@gmail.com</a>
+                            </div>
+                        </div>
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div>
+                                <h4 style="font-weight: 600; margin-bottom: var(--space-1);">Location</h4>
+                                <span class="text-secondary">Portland, OR</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card hover-lift">
+                    <h3 style="margin-bottom: var(--space-6);">Connect Online</h3>
+                    <div class="social-links" style="margin-bottom: var(--space-6);">
+                        <a href="https://linkedin.com/in/jllb" target="_blank" rel="noopener" class="social-link hover-lift" aria-label="LinkedIn Profile">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                        <a href="https://github.com/llompi" target="_blank" rel="noopener" class="social-link hover-lift" aria-label="GitHub Profile">
+                            <i class="fab fa-github"></i>
+                        </a>
+                    </div>
+                    <p style="color: var(--text-muted); font-size: var(--text-sm); line-height: 1.6;">
+                        Feel free to reach out for collaboration opportunities, project discussions, 
+                        or to explore how we can work together on innovative engineering solutions.
+                    </p>
+                </div>
             </div>
         </div>
     </section>
 
+    <!-- Footer -->
     <footer class="footer">
         <div class="container">
-            <p>&copy; 2025 Joan Llompart. All rights reserved.</p>
+            <div class="footer-content">
+                <div>
+                    <div class="nav-logo">Joan Llompart</div>
+                    <p style="color: var(--text-muted); margin-top: var(--space-2); font-size: var(--text-sm);">Electrical Engineer</p>
+                </div>
+                <div class="footer-links">
+                    <a href="#" class="footer-link">Privacy Policy</a>
+                    <a href="#" class="footer-link">Terms of Service</a>
+                </div>
+            </div>
+            <div class="footer-copyright">
+                &copy; 2025 Joan Llompart. All rights reserved.
+            </div>
         </div>
     </footer>
+
+    <script>
+        // Mobile navigation toggle
+        document.getElementById('nav-toggle')?.addEventListener('click', function() {
+            const navMobile = document.getElementById('nav-mobile');
+            navMobile?.classList.toggle('active');
+        });
+        
+        // Skills filter functionality
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const skillItems = document.querySelectorAll('.skill-item');
+        
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Update active button
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                
+                const filter = button.dataset.filter;
+                
+                // Filter skills with smooth transition
+                skillItems.forEach(item => {
+                    if (filter === 'all' || item.dataset.category === filter) {
+                        item.classList.remove('hidden');
+                    } else {
+                        item.classList.add('hidden');
+                    }
+                });
+            });
+        });
+        
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const target = document.querySelector(targetId);
+                if (target) {
+                    const headerOffset = 70;
+                    const elementPosition = target.getBoundingClientRect().top;
+                    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                    
+                    window.scrollTo({
+                        top: offsetPosition,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Close mobile menu if open
+                    document.getElementById('nav-mobile')?.classList.remove('active');
+                }
+            });
+        });
+        
+        // Project card click handlers
+        document.querySelectorAll('.project-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const project = this.dataset.project;
+                
+                // Simple project details display
+                const projectDetails = {
+                    'rf-amplifier': 'RF Amplifier: High-fidelity communication system amplifier with advanced PCB design and RF simulation.',
+                    'handheld-console': 'Raspberry Pi Console: Custom handheld gaming device with retro emulation and 3D printed housing.',
+                    'iot-dispenser': 'IoT Dog Treat Dispenser: Smart pet care device with mobile app control and scheduling features.'
+                };
+                
+                alert(projectDetails[project] || 'Project details coming soon!');
+            });
+        });
+        
+        // Intersection Observer for card animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+        
+        // Observe cards for staggered entrance animation
+        document.querySelectorAll('.card').forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = `opacity 0.6s ease ${index * 0.1}s, transform 0.6s ease ${index * 0.1}s`;
+            observer.observe(card);
+        });
+        
+        // Update current year dynamically
+        const currentYear = new Date().getFullYear();
+        document.querySelector('.footer-copyright').textContent = 
+            document.querySelector('.footer-copyright').textContent.replace('2025', currentYear);
+    </script>
 </body>
 </html>
