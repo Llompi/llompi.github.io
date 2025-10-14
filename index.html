@@ -3,13 +3,346 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lorenzo Llompart - Computer Engineer</title>
+    <meta name="description" content="Joan Llompart - Electrical Engineer Portfolio showcasing innovative projects and skills in hardware, software, and design">
+    <title>Joan Llompart | Electrical Engineer</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --color-bg: #0a0a0a;
+            --color-surface: #1a1a1a;
+            --color-text-primary: #ffffff;
+            --color-text-secondary: #a0a0a0;
+            --color-text-muted: #666666;
+            --color-accent: #3b82f6;
+            --color-border: #2a2a2a;
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: var(--font-family);
+            background-color: var(--color-bg);
+            color: var(--color-text-primary);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 10, 0.9);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--color-border);
+            z-index: 1000;
+            padding: 1rem 0;
+        }
+        
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--color-text-primary);
+            text-decoration: none;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+        
+        .nav-link {
+            color: var(--color-text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+        
+        .nav-link:hover {
+            color: var(--color-text-primary);
+        }
+        
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding-top: 80px;
+        }
+        
+        .hero-content {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 4rem;
+            align-items: center;
+        }
+        
+        .hero-text h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            line-height: 1.1;
+        }
+        
+        .subtitle {
+            font-size: 1.25rem;
+            color: var(--color-text-secondary);
+            margin-bottom: 1.5rem;
+        }
+        
+        .description {
+            font-size: 1.125rem;
+            color: var(--color-text-muted);
+            margin-bottom: 2rem;
+            max-width: 500px;
+        }
+        
+        .hero-image img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 1px solid var(--color-border);
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+        
+        .btn-primary {
+            background: var(--color-accent);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: var(--color-text-primary);
+            border-color: var(--color-border);
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .section {
+            padding: 6rem 0;
+        }
+        
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .grid {
+            display: grid;
+            gap: 2rem;
+        }
+        
+        .grid-2 {
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+        
+        .grid-3 {
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .social-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            color: var(--color-text-secondary);
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        
+        .social-link:hover {
+            background: var(--color-accent);
+            color: white;
+        }
+        
+        .footer {
+            border-top: 1px solid var(--color-border);
+            padding: 3rem 0;
+            margin-top: 6rem;
+            text-align: center;
+            color: var(--color-text-muted);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 1rem;
+            }
+            
+            .hero-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 2rem;
+            }
+            
+            .hero-text h1 {
+                font-size: 2.5rem;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Website Restoration in Progress</h1>
-    <p>The website is being restored after an AI disaster. Please check back shortly!</p>
+    <nav class="nav">
+        <div class="container">
+            <div class="nav-content">
+                <a href="#" class="logo">Joan Llompart</a>
+                <ul class="nav-links">
+                    <li><a href="#about" class="nav-link">About</a></li>
+                    <li><a href="#projects" class="nav-link">Projects</a></li>
+                    <li><a href="#skills" class="nav-link">Skills</a></li>
+                    <li><a href="#contact" class="nav-link">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1>Electrical Engineer</h1>
+                    <p class="subtitle">Hardware & Software Integration</p>
+                    <p class="description">
+                        I create innovative solutions that bridge the gap between hardware and software, 
+                        specializing in PCB design, IoT development, and product commercialization.
+                    </p>
+                    <div class="btn-group">
+                        <a href="#projects" class="btn btn-primary">
+                            <i class="fas fa-folder-open"></i>
+                            View Projects
+                        </a>
+                        <a href="#contact" class="btn btn-secondary">
+                            <i class="fas fa-envelope"></i>
+                            Get in Touch
+                        </a>
+                    </div>
+                    <div class="social-links">
+                        <a href="https://linkedin.com/in/jllb" target="_blank" class="social-link">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                        <a href="https://github.com/llompi" target="_blank" class="social-link">
+                            <i class="fab fa-github"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="hero-image">
+                    <img src="docs/assets/img/Project photos/IMG_8352.jpeg" alt="Joan Llompart">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="about" class="section">
+        <div class="container">
+            <h2 class="section-title">About Me</h2>
+            <div class="grid grid-2">
+                <div class="card">
+                    <h3>Background</h3>
+                    <p>With 4+ years of experience in electrical engineering, I specialize in creating innovative solutions that merge hardware and software technologies.</p>
+                </div>
+                <div class="card">
+                    <h3>Skills</h3>
+                    <p>PCB Design, IoT Development, RF Systems, Product Commercialization, and more.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="projects" class="section">
+        <div class="container">
+            <h2 class="section-title">Featured Projects</h2>
+            <div class="grid grid-3">
+                <div class="card">
+                    <h3>RF Amplifier</h3>
+                    <p>High-fidelity RF amplifier for communication systems.</p>
+                </div>
+                <div class="card">
+                    <h3>Raspberry Pi Console</h3>
+                    <p>Custom handheld gaming console with retro emulation.</p>
+                </div>
+                <div class="card">
+                    <h3>IoT Dog Treat Dispenser</h3>
+                    <p>Smart pet dispenser with mobile app control.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="section">
+        <div class="container">
+            <h2 class="section-title">Get In Touch</h2>
+            <div class="card" style="max-width: 600px; margin: 0 auto;">
+                <p><i class="fas fa-envelope"></i> Joan.llbab@gmail.com</p>
+                <p><i class="fas fa-map-marker-alt"></i> Portland, OR</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Joan Llompart. All rights reserved.</p>
+        </div>
+    </footer>
 </body>
 </html>
