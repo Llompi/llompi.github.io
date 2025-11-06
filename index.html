@@ -905,16 +905,19 @@
             height: 100vh;
             z-index: 10000;
             display: none;
-            background: rgba(0, 0, 0, 0.02);
-            backdrop-filter: blur(0px);
-            transition: backdrop-filter 0.3s ease;
-            overflow: hidden;
-            touch-action: none; /* Prevent default touch behavior */
+            pointer-events: none; /* Allow clicking through when inactive */
         }
 
         .annotation-overlay.active {
             display: block;
+            pointer-events: auto;
             animation: overlayFadeIn 0.4s ease;
+        }
+
+        .annotation-overlay.viewing {
+            display: block;
+            pointer-events: none; /* Allow scrolling and clicking page */
+            z-index: 100; /* Lower z-index when just viewing */
         }
 
         @keyframes overlayFadeIn {
@@ -927,14 +930,16 @@
         }
 
         .annotation-overlay canvas {
-            position: fixed;
+            position: absolute;
             top: 0;
             left: 0;
-            width: 100vw;
-            height: 100vh;
+            width: 100%;
             cursor: crosshair;
             background: transparent;
-            touch-action: none; /* Critical for mobile drawing */
+        }
+
+        .annotation-overlay.active canvas {
+            touch-action: none; /* Only prevent touch when actively drawing */
         }
 
         .annotation-overlay.text-mode canvas {
@@ -1753,17 +1758,29 @@
 
             setupCanvas() {
                 const resizeCanvas = () => {
-                    // Set canvas to viewport size for better mobile performance
+                    // Set canvas to full document height for full-page annotations
                     this.canvas.width = window.innerWidth;
-                    this.canvas.height = window.innerHeight;
+                    this.canvas.height = Math.max(
+                        document.documentElement.scrollHeight,
+                        document.body.scrollHeight,
+                        window.innerHeight
+                    );
                     this.redraw();
                 };
 
                 resizeCanvas();
                 window.addEventListener('resize', resizeCanvas);
-                // Update orientation change for mobile
+                // Update when content changes or orientation changes
                 window.addEventListener('orientationchange', () => {
                     setTimeout(resizeCanvas, 100);
+                });
+                // Update canvas when scrolling to handle dynamic content
+                let scrollTimeout;
+                window.addEventListener('scroll', () => {
+                    if (this.isActive) {
+                        clearTimeout(scrollTimeout);
+                        scrollTimeout = setTimeout(resizeCanvas, 150);
+                    }
                 });
             }
 
@@ -1899,16 +1916,35 @@
                 this.isActive = !this.isActive;
 
                 if (this.isActive) {
+                    // Active mode - drawing enabled, scrolling allowed
+                    this.overlay.classList.remove('viewing');
                     this.overlay.classList.add('active');
-                    // Lock scroll on both body and html for mobile
-                    document.body.style.overflow = 'hidden';
-                    document.body.style.position = 'fixed';
-                    document.body.style.width = '100%';
-                    document.body.style.height = '100%';
-                    document.documentElement.style.overflow = 'hidden';
+                    // Allow scrolling while annotating
+                    document.body.style.overflow = '';
+                    document.body.style.position = '';
+                    document.body.style.width = '';
+                    document.body.style.height = '';
+                    document.documentElement.style.overflow = '';
                     document.getElementById('annotation-toggle').style.display = 'none';
+
+                    // Show toolbar and color picker
+                    document.querySelector('.annotation-toolbar').style.display = 'flex';
+                    document.querySelector('.annotation-color-picker').style.display = 'flex';
                 } else {
-                    this.overlay.classList.remove('active');
+                    // Check if there are drawings to show
+                    if (this.strokes.length > 0) {
+                        // Viewing mode - keep drawings visible, hide UI, allow interaction
+                        this.overlay.classList.remove('active');
+                        this.overlay.classList.add('viewing');
+
+                        // Hide toolbar and color picker
+                        document.querySelector('.annotation-toolbar').style.display = 'none';
+                        document.querySelector('.annotation-color-picker').style.display = 'none';
+                    } else {
+                        // No drawings, fully hide
+                        this.overlay.classList.remove('active', 'viewing');
+                    }
+
                     // Restore scroll
                     document.body.style.overflow = '';
                     document.body.style.position = '';
@@ -1955,11 +1991,13 @@
 
             getCanvasCoordinates(e) {
                 const rect = this.canvas.getBoundingClientRect();
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
 
-                // Since canvas is fixed and covers viewport, coordinates are simpler
-                // Just get position relative to canvas top-left
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
+                // Canvas is absolute positioned and covers full document
+                // Need to account for scroll position
+                const x = e.clientX - rect.left + scrollLeft;
+                const y = e.clientY - rect.top + scrollTop;
 
                 return { x, y };
             }
@@ -2158,6 +2196,11 @@
                 if (confirm('Clear all annotations?')) {
                     this.strokes = [];
                     this.redraw();
+
+                    // If not in active mode and no drawings, hide overlay completely
+                    if (!this.isActive) {
+                        this.overlay.classList.remove('viewing');
+                    }
                 }
             }
 
@@ -2197,8 +2240,11 @@ Message: ${message}
                 // Reset
                 document.getElementById('annotation-modal').classList.remove('active');
                 document.getElementById('annotation-form').reset();
-                this.clear();
-                this.toggle();
+                this.strokes = [];
+                this.redraw();
+                this.overlay.classList.remove('active', 'viewing');
+                this.isActive = false;
+                document.getElementById('annotation-toggle').style.display = 'flex';
             }
         }
 
