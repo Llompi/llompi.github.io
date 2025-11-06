@@ -175,11 +175,21 @@
             top: 0;
             left: 0;
             right: 0;
-            background: rgba(10, 10, 10, 0.95);
+            background: var(--bg-primary);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--border);
             z-index: 1000;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Nav background opacity for glass effect */
+        [data-theme="dark"] .nav {
+            background: rgba(10, 10, 10, 0.95);
+        }
+
+        [data-theme="light"] .nav {
+            background: rgba(255, 255, 255, 0.95);
         }
 
         .nav-container {
@@ -274,11 +284,20 @@
             top: 100%;
             left: 0;
             right: 0;
-            background: rgba(10, 10, 10, 0.98);
+            background: var(--bg-primary);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--border);
             padding: var(--space-2) 0 var(--space-4);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] .nav-mobile {
+            background: rgba(10, 10, 10, 0.98);
+        }
+
+        [data-theme="light"] .nav-mobile {
+            background: rgba(255, 255, 255, 0.98);
         }
 
         .nav-mobile.active {
@@ -782,6 +801,27 @@
                 padding-right: var(--space-4);
             }
 
+            /* Optimize section spacing for mobile */
+            .section {
+                padding-top: clamp(2.5rem, 6vw, 3.5rem);
+                padding-bottom: clamp(2.5rem, 6vw, 3.5rem);
+            }
+
+            .section-title {
+                margin-bottom: var(--space-12);
+                font-size: var(--text-3xl);
+            }
+
+            /* Optimize grid and card spacing */
+            .grid {
+                gap: clamp(1rem, 3vw, 1.5rem);
+            }
+
+            .footer {
+                padding: var(--space-12) 0;
+                margin-top: var(--space-16);
+            }
+
             .nav-links {
                 display: none;
             }
@@ -851,9 +891,25 @@
                 padding-right: var(--space-4);
             }
 
+            /* Further optimize spacing for small screens */
             .section {
-                padding-top: clamp(3rem, 8vw, 4rem);
-                padding-bottom: clamp(3rem, 8vw, 4rem);
+                padding-top: clamp(2rem, 5vw, 3rem);
+                padding-bottom: clamp(2rem, 5vw, 3rem);
+            }
+
+            .section-title {
+                margin-bottom: var(--space-10);
+                font-size: var(--text-2xl);
+            }
+
+            /* Tighter grid spacing on small devices */
+            .grid {
+                gap: var(--space-4);
+            }
+
+            .footer {
+                padding: var(--space-10) 0;
+                margin-top: var(--space-12);
             }
         }
 
