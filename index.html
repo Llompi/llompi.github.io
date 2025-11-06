@@ -14,7 +14,7 @@
     
     <style>
         :root {
-            /* Modern Minimalist Color Palette */
+            /* Modern Minimalist Color Palette - Dark Theme */
             --bg-primary: #0a0a0a;
             --bg-secondary: #111111;
             --surface: #1a1a1a;
@@ -26,7 +26,7 @@
             --accent-hover: #2563eb;
             --border: #2a2a2a;
             --border-hover: #404040;
-            
+
             /* Typography Scale */
             --text-xs: 0.75rem;
             --text-sm: 0.875rem;
@@ -38,7 +38,7 @@
             --text-4xl: 2.25rem;
             --text-5xl: 3rem;
             --text-6xl: 3.75rem;
-            
+
             /* Spacing Scale */
             --space-1: 0.25rem;
             --space-2: 0.5rem;
@@ -50,14 +50,42 @@
             --space-16: 4rem;
             --space-20: 5rem;
             --space-24: 6rem;
-            
+
             /* Border Radius */
             --radius-sm: 6px;
             --radius: 8px;
             --radius-lg: 12px;
             --radius-xl: 16px;
-            
+
             --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        /* Light Theme */
+        [data-theme="light"] {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --surface: #ffffff;
+            --surface-hover: #f1f3f5;
+            --text-primary: #1a1a1a;
+            --text-secondary: #4a4a4a;
+            --text-muted: #8a8a8a;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --border: #e5e7eb;
+            --border-hover: #d1d5db;
+        }
+
+        /* Smooth theme transition */
+        body,
+        .nav,
+        .card,
+        .btn,
+        .social-link,
+        .annotation-fab,
+        .annotation-toolbar,
+        .annotation-color-picker,
+        .command-palette {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
         }
         
         /* Reset and Base Styles */
@@ -825,26 +853,111 @@
                 transform: translateY(0);
             }
         }
-        
+
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeInRight {
+            from {
+                opacity: 0;
+                transform: translateX(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes rotateIn {
+            from {
+                opacity: 0;
+                transform: rotate(-5deg) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: rotate(0) scale(1);
+            }
+        }
+
+        /* Scroll animation classes */
+        .scroll-reveal {
+            opacity: 0;
+        }
+
+        .scroll-reveal.animate {
+            animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .scroll-reveal-left {
+            opacity: 0;
+        }
+
+        .scroll-reveal-left.animate {
+            animation: fadeInLeft 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .scroll-reveal-right {
+            opacity: 0;
+        }
+
+        .scroll-reveal-right.animate {
+            animation: fadeInRight 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .scroll-reveal-scale {
+            opacity: 0;
+        }
+
+        .scroll-reveal-scale.animate {
+            animation: scaleIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        /* Stagger delays for child elements */
+        .scroll-reveal.stagger-1 { animation-delay: 0.1s; }
+        .scroll-reveal.stagger-2 { animation-delay: 0.2s; }
+        .scroll-reveal.stagger-3 { animation-delay: 0.3s; }
+        .scroll-reveal.stagger-4 { animation-delay: 0.4s; }
+        .scroll-reveal.stagger-5 { animation-delay: 0.5s; }
+        .scroll-reveal.stagger-6 { animation-delay: 0.6s; }
+
         .animate-fadeInUp {
             animation: fadeInUp 0.6s ease-out;
         }
-        
+
         .animate-delay-100 {
             animation-delay: 0.1s;
             animation-fill-mode: both;
         }
-        
+
         .animate-delay-200 {
             animation-delay: 0.2s;
             animation-fill-mode: both;
         }
-        
+
         .animate-delay-300 {
             animation-delay: 0.3s;
             animation-fill-mode: both;
         }
-        
+
         /* Simple hover effects */
         .hover-lift {
             transition: transform 0.2s ease;
@@ -1512,6 +1625,67 @@
             text-align: center;
             color: var(--text-muted);
         }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 108px;
+            right: 32px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--surface);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1) rotate(15deg);
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
+            border-color: var(--border-hover);
+        }
+
+        .theme-toggle:active {
+            transform: scale(0.95);
+        }
+
+        .theme-toggle .theme-icon {
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .theme-toggle .theme-icon.hidden {
+            transform: rotate(180deg) scale(0);
+            opacity: 0;
+            position: absolute;
+        }
+
+        /* Adjust annotation button spacing */
+        .annotation-fab {
+            bottom: 32px;
+        }
+
+        @media (max-width: 768px) {
+            .theme-toggle {
+                width: 52px;
+                height: 52px;
+                bottom: 92px;
+                right: 24px;
+                font-size: 18px;
+            }
+
+            .annotation-fab {
+                bottom: 24px;
+                right: 24px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1794,6 +1968,12 @@
         </div>
     </footer>
 
+    <!-- Theme Toggle Button -->
+    <button id="theme-toggle" class="theme-toggle" title="Toggle Theme" aria-label="Toggle dark/light theme">
+        <i class="fas fa-moon theme-icon" id="theme-icon-dark"></i>
+        <i class="fas fa-sun theme-icon hidden" id="theme-icon-light"></i>
+    </button>
+
     <!-- Annotation Mode Floating Button -->
     <button id="annotation-toggle" class="annotation-fab" title="Leave Feedback (Press D)" aria-label="Toggle annotation mode">
         <i class="fas fa-pen"></i>
@@ -1982,6 +2162,151 @@
         const currentYear = new Date().getFullYear();
         document.querySelector('.footer-copyright').textContent =
             document.querySelector('.footer-copyright').textContent.replace('2025', currentYear);
+
+        // ============================================
+        // THEME SWITCHER
+        // ============================================
+
+        class ThemeSwitcher {
+            constructor() {
+                this.theme = localStorage.getItem('theme') || 'dark';
+                this.toggleButton = document.getElementById('theme-toggle');
+                this.darkIcon = document.getElementById('theme-icon-dark');
+                this.lightIcon = document.getElementById('theme-icon-light');
+
+                this.init();
+            }
+
+            init() {
+                // Apply saved theme
+                this.applyTheme(this.theme);
+
+                // Toggle on click
+                this.toggleButton.addEventListener('click', () => {
+                    this.toggle();
+                });
+
+                // Add to command palette
+                this.addToCommandPalette();
+            }
+
+            toggle() {
+                this.theme = this.theme === 'dark' ? 'light' : 'dark';
+                this.applyTheme(this.theme);
+                localStorage.setItem('theme', this.theme);
+            }
+
+            applyTheme(theme) {
+                document.documentElement.setAttribute('data-theme', theme);
+
+                if (theme === 'light') {
+                    this.darkIcon.classList.add('hidden');
+                    this.lightIcon.classList.remove('hidden');
+                } else {
+                    this.darkIcon.classList.remove('hidden');
+                    this.lightIcon.classList.add('hidden');
+                }
+            }
+
+            addToCommandPalette() {
+                // Wait for command palette to be initialized
+                setTimeout(() => {
+                    if (window.commandPalette) {
+                        commandPalette.commands.push({
+                            id: 'theme',
+                            title: 'Toggle Theme',
+                            description: 'Switch between dark and light mode',
+                            icon: 'fa-adjust',
+                            action: () => {
+                                commandPalette.close();
+                                this.toggle();
+                            }
+                        });
+                    }
+                }, 100);
+            }
+        }
+
+        // Initialize theme switcher
+        const themeSwitcher = new ThemeSwitcher();
+
+        // ============================================
+        // SMOOTH SCROLL ANIMATIONS
+        // ============================================
+
+        class ScrollAnimations {
+            constructor() {
+                this.observer = null;
+                this.init();
+            }
+
+            init() {
+                // Create intersection observer
+                this.observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('animate');
+                            // Optional: unobserve after animation
+                            // this.observer.unobserve(entry.target);
+                        }
+                    });
+                }, {
+                    threshold: 0.1,
+                    rootMargin: '0px 0px -50px 0px'
+                });
+
+                // Observe all scroll-reveal elements
+                this.observeElements();
+
+                // Re-observe on dynamic content load
+                this.setupMutationObserver();
+            }
+
+            observeElements() {
+                const revealElements = document.querySelectorAll('[class*="scroll-reveal"]');
+                revealElements.forEach(el => {
+                    this.observer.observe(el);
+                });
+            }
+
+            setupMutationObserver() {
+                const mutationObserver = new MutationObserver(() => {
+                    this.observeElements();
+                });
+
+                mutationObserver.observe(document.body, {
+                    childList: true,
+                    subtree: true
+                });
+            }
+        }
+
+        // Initialize scroll animations
+        const scrollAnimations = new ScrollAnimations();
+
+        // Add scroll reveal classes to sections dynamically
+        document.addEventListener('DOMContentLoaded', () => {
+            // Section titles
+            document.querySelectorAll('.section-title').forEach(title => {
+                if (!title.classList.contains('scroll-reveal')) {
+                    title.classList.add('scroll-reveal');
+                }
+            });
+
+            // Cards with stagger effect
+            document.querySelectorAll('.grid .card').forEach((card, index) => {
+                if (!card.classList.contains('scroll-reveal')) {
+                    card.classList.add('scroll-reveal', `stagger-${(index % 3) + 1}`);
+                }
+            });
+
+            // Stats
+            document.querySelectorAll('.stats .stat').forEach((stat, index) => {
+                if (!stat.classList.contains('scroll-reveal-scale')) {
+                    stat.classList.add('scroll-reveal-scale', `stagger-${index + 1}`);
+                }
+            });
+        });
 
         // ============================================
         // ANNOTATION SYSTEM - Interactive Feedback
