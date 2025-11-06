@@ -11,7 +11,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
+    <!-- Three.js for 3D background -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
     <style>
         :root {
             /* Modern Minimalist Color Palette - Dark Theme */
@@ -308,6 +311,29 @@
             align-items: center;
             padding-top: 80px;
             padding-bottom: var(--space-12);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 3D Background Canvas */
+        #hero-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.6;
+            transition: opacity 0.3s ease;
+        }
+
+        [data-theme="light"] #hero-canvas {
+            opacity: 0.3;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
         }
 
         .hero-content {
@@ -1731,6 +1757,7 @@
 
     <!-- Hero Section -->
     <section class="hero">
+        <canvas id="hero-canvas"></canvas>
         <div class="container">
             <div class="hero-content">
                 <div class="hero-text">
@@ -2229,6 +2256,210 @@
 
         // Initialize theme switcher
         const themeSwitcher = new ThemeSwitcher();
+
+        // ============================================
+        // 3D HERO BACKGROUND
+        // ============================================
+
+        class HeroBackground3D {
+            constructor() {
+                this.canvas = document.getElementById('hero-canvas');
+                if (!this.canvas || !window.THREE) return;
+
+                this.scene = null;
+                this.camera = null;
+                this.renderer = null;
+                this.mesh = null;
+                this.mouse = { x: 0, y: 0 };
+                this.targetMouse = { x: 0, y: 0 };
+                this.animationId = null;
+
+                // Check if device can handle 3D (skip on low-end mobile)
+                if (this.shouldRender()) {
+                    this.init();
+                }
+            }
+
+            shouldRender() {
+                // Disable on very small screens or if prefers-reduced-motion
+                const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                const isSmallScreen = window.innerWidth < 768;
+                return !prefersReducedMotion && (!isSmallScreen || window.devicePixelRatio < 2);
+            }
+
+            init() {
+                this.setupScene();
+                this.createMesh();
+                this.setupLights();
+                this.setupEventListeners();
+                this.animate();
+            }
+
+            setupScene() {
+                // Scene
+                this.scene = new THREE.Scene();
+
+                // Camera
+                this.camera = new THREE.PerspectiveCamera(
+                    75,
+                    this.canvas.parentElement.clientWidth / this.canvas.parentElement.clientHeight,
+                    0.1,
+                    1000
+                );
+                this.camera.position.z = 5;
+
+                // Renderer
+                this.renderer = new THREE.WebGLRenderer({
+                    canvas: this.canvas,
+                    alpha: true,
+                    antialias: true
+                });
+                this.renderer.setSize(
+                    this.canvas.parentElement.clientWidth,
+                    this.canvas.parentElement.clientHeight
+                );
+                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            }
+
+            createMesh() {
+                // Create animated gradient mesh
+                const geometry = new THREE.IcosahedronGeometry(2, 4);
+
+                // Gradient shader material
+                const material = new THREE.ShaderMaterial({
+                    uniforms: {
+                        time: { value: 0 },
+                        color1: { value: new THREE.Color(0x3b82f6) }, // Accent blue
+                        color2: { value: new THREE.Color(0x2563eb) }, // Darker blue
+                        color3: { value: new THREE.Color(0x1e40af) }  // Even darker
+                    },
+                    vertexShader: `
+                        varying vec3 vPosition;
+                        varying vec3 vNormal;
+                        uniform float time;
+
+                        void main() {
+                            vPosition = position;
+                            vNormal = normal;
+
+                            vec3 pos = position;
+                            // Add wave animation
+                            pos.x += sin(position.y * 2.0 + time) * 0.1;
+                            pos.y += cos(position.x * 2.0 + time) * 0.1;
+                            pos.z += sin(position.x * position.y + time) * 0.05;
+
+                            gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+                        }
+                    `,
+                    fragmentShader: `
+                        varying vec3 vPosition;
+                        varying vec3 vNormal;
+                        uniform vec3 color1;
+                        uniform vec3 color2;
+                        uniform vec3 color3;
+                        uniform float time;
+
+                        void main() {
+                            // Create gradient based on position
+                            float mixValue = (vPosition.y + 2.0) / 4.0;
+                            mixValue += sin(time * 0.5 + vPosition.x) * 0.1;
+
+                            vec3 color = mix(color1, color2, mixValue);
+                            color = mix(color, color3, vPosition.z / 2.0);
+
+                            // Add some glow
+                            float glow = dot(vNormal, vec3(0.0, 0.0, 1.0));
+                            color += glow * 0.2;
+
+                            gl_FragColor = vec4(color, 1.0);
+                        }
+                    `,
+                    wireframe: false,
+                    transparent: false
+                });
+
+                this.mesh = new THREE.Mesh(geometry, material);
+                this.scene.add(this.mesh);
+            }
+
+            setupLights() {
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+                this.scene.add(ambientLight);
+
+                const pointLight = new THREE.PointLight(0x3b82f6, 1);
+                pointLight.position.set(5, 5, 5);
+                this.scene.add(pointLight);
+            }
+
+            setupEventListeners() {
+                // Mouse move for interactivity
+                window.addEventListener('mousemove', (e) => {
+                    this.targetMouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+                    this.targetMouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+                });
+
+                // Resize handler
+                window.addEventListener('resize', () => {
+                    if (!this.renderer || !this.camera) return;
+
+                    const width = this.canvas.parentElement.clientWidth;
+                    const height = this.canvas.parentElement.clientHeight;
+
+                    this.camera.aspect = width / height;
+                    this.camera.updateProjectionMatrix();
+                    this.renderer.setSize(width, height);
+                });
+
+                // Cleanup on page unload
+                window.addEventListener('beforeunload', () => {
+                    this.destroy();
+                });
+            }
+
+            animate() {
+                this.animationId = requestAnimationFrame(() => this.animate());
+
+                if (!this.mesh) return;
+
+                // Smooth mouse follow
+                this.mouse.x += (this.targetMouse.x - this.mouse.x) * 0.05;
+                this.mouse.y += (this.targetMouse.y - this.mouse.y) * 0.05;
+
+                // Rotate mesh
+                this.mesh.rotation.x += 0.001;
+                this.mesh.rotation.y += 0.002;
+
+                // Mouse interaction
+                this.mesh.rotation.x += this.mouse.y * 0.001;
+                this.mesh.rotation.y += this.mouse.x * 0.001;
+
+                // Update shader time
+                if (this.mesh.material.uniforms) {
+                    this.mesh.material.uniforms.time.value += 0.01;
+                }
+
+                this.renderer.render(this.scene, this.camera);
+            }
+
+            destroy() {
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                }
+                if (this.renderer) {
+                    this.renderer.dispose();
+                }
+                if (this.mesh) {
+                    this.mesh.geometry.dispose();
+                    this.mesh.material.dispose();
+                }
+            }
+        }
+
+        // Initialize 3D background
+        let heroBackground3D;
+        window.addEventListener('load', () => {
+            heroBackground3D = new HeroBackground3D();
+        });
 
         // ============================================
         // SMOOTH SCROLL ANIMATIONS
