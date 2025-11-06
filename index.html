@@ -1271,11 +1271,262 @@
 
         /* Drawing cursor styles */
         .annotation-overlay.drawing canvas {
-            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><circle cx="8" cy="8" r="4" fill="white" stroke="black" stroke-width="1"/></svg>') 8 8, crosshair;
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><circle cx="8" cy="8" r="4" fill="white" stroke="black" stroke="width="1"/></svg>') 8 8, crosshair;
+        }
+
+        /* Custom Cursor System */
+        body {
+            cursor: none;
+        }
+
+        a, button, .card-clickable, .social-link, .btn, .nav-link,
+        .filter-btn, .skill-item, [role="button"], input, textarea {
+            cursor: none !important;
+        }
+
+        .custom-cursor {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--accent);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.15s ease-out, width 0.2s ease, height 0.2s ease, border-color 0.2s ease;
+            mix-blend-mode: difference;
+            opacity: 0;
+        }
+
+        .custom-cursor.visible {
+            opacity: 1;
+        }
+
+        .custom-cursor.hover {
+            width: 50px;
+            height: 50px;
+            border-color: var(--text-primary);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .custom-cursor-dot {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10000;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .custom-cursor-dot.visible {
+            opacity: 1;
+        }
+
+        /* Hide custom cursor on mobile */
+        @media (hover: none) and (pointer: coarse) {
+            body {
+                cursor: auto;
+            }
+
+            a, button, .card-clickable, .social-link, .btn, .nav-link,
+            .filter-btn, .skill-item, [role="button"], input, textarea {
+                cursor: pointer !important;
+            }
+
+            .custom-cursor,
+            .custom-cursor-dot {
+                display: none;
+            }
+        }
+
+        /* Disable custom cursor in annotation mode */
+        .annotation-overlay.active ~ .custom-cursor,
+        .annotation-overlay.active ~ .custom-cursor-dot {
+            display: none;
+        }
+
+        /* Command Palette */
+        .command-palette-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 10001;
+            display: none;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 15vh;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .command-palette-overlay.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .command-palette {
+            width: 90%;
+            max-width: 600px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+            overflow: hidden;
+            animation: slideDown 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-40px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .command-palette-header {
+            padding: clamp(1rem, 3vw, 1.25rem);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+
+        .command-palette-icon {
+            color: var(--text-muted);
+            font-size: 1.125rem;
+        }
+
+        .command-palette-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-primary);
+            font-size: clamp(0.9375rem, 2vw, 1rem);
+            font-family: var(--font-family);
+        }
+
+        .command-palette-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .command-palette-hint {
+            display: none;
+            padding: var(--space-2) var(--space-3);
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
+            font-size: var(--text-xs);
+            color: var(--text-muted);
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+
+        @media (min-width: 768px) {
+            .command-palette-hint {
+                display: block;
+            }
+        }
+
+        .command-palette-results {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .command-palette-item {
+            padding: clamp(0.875rem, 2vw, 1rem) clamp(1rem, 3vw, 1.25rem);
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
+        }
+
+        .command-palette-item:last-child {
+            border-bottom: none;
+        }
+
+        .command-palette-item:hover,
+        .command-palette-item.selected {
+            background: var(--surface-hover);
+        }
+
+        .command-palette-item-icon {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            color: var(--accent);
+            font-size: 0.9375rem;
+            flex-shrink: 0;
+        }
+
+        .command-palette-item-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .command-palette-item-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: clamp(0.9375rem, 2vw, 1rem);
+            margin-bottom: 0.125rem;
+        }
+
+        .command-palette-item-description {
+            font-size: var(--text-xs);
+            color: var(--text-muted);
+        }
+
+        .command-palette-empty {
+            padding: var(--space-12) var(--space-6);
+            text-align: center;
+            color: var(--text-muted);
         }
     </style>
 </head>
 <body>
+    <!-- Custom Cursor -->
+    <div class="custom-cursor"></div>
+    <div class="custom-cursor-dot"></div>
+
+    <!-- Command Palette -->
+    <div class="command-palette-overlay" id="command-palette-overlay">
+        <div class="command-palette">
+            <div class="command-palette-header">
+                <i class="fas fa-search command-palette-icon"></i>
+                <input type="text" class="command-palette-input" id="command-palette-input" placeholder="Search or jump to..." autocomplete="off">
+                <div class="command-palette-hint">ESC</div>
+            </div>
+            <div class="command-palette-results" id="command-palette-results"></div>
+        </div>
+    </div>
+
     <!-- Navigation -->
     <nav class="nav">
         <div class="container">
@@ -2250,6 +2501,306 @@ Message: ${message}
 
         // Initialize annotation system when DOM is ready
         const annotationSystem = new AnnotationSystem();
+
+        // ============================================
+        // CUSTOM CURSOR SYSTEM - Magnetic Effect
+        // ============================================
+
+        class CustomCursor {
+            constructor() {
+                this.cursor = document.querySelector('.custom-cursor');
+                this.cursorDot = document.querySelector('.custom-cursor-dot');
+                this.cursorPos = { x: 0, y: 0 };
+                this.cursorDotPos = { x: 0, y: 0 };
+                this.mousePos = { x: 0, y: 0 };
+                this.hoveredElement = null;
+
+                // Check if device supports hover (desktop)
+                if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+                    this.init();
+                }
+            }
+
+            init() {
+                // Track mouse movement
+                document.addEventListener('mousemove', (e) => {
+                    this.mousePos.x = e.clientX;
+                    this.mousePos.y = e.clientY;
+
+                    // Show cursor
+                    if (!this.cursor.classList.contains('visible')) {
+                        this.cursor.classList.add('visible');
+                        this.cursorDot.classList.add('visible');
+                    }
+
+                    // Update dot position immediately
+                    this.cursorDotPos.x = e.clientX;
+                    this.cursorDotPos.y = e.clientY;
+                });
+
+                // Hide cursor when leaving window
+                document.addEventListener('mouseleave', () => {
+                    this.cursor.classList.remove('visible');
+                    this.cursorDot.classList.remove('visible');
+                });
+
+                // Detect hoverable elements
+                const hoverableElements = 'a, button, .card-clickable, .social-link, .btn, .nav-link, .filter-btn, .skill-item, [role="button"]';
+
+                document.addEventListener('mouseover', (e) => {
+                    if (e.target.closest(hoverableElements)) {
+                        this.hoveredElement = e.target.closest(hoverableElements);
+                        this.cursor.classList.add('hover');
+                    }
+                });
+
+                document.addEventListener('mouseout', (e) => {
+                    if (e.target.closest(hoverableElements)) {
+                        this.hoveredElement = null;
+                        this.cursor.classList.remove('hover');
+                    }
+                });
+
+                // Animate cursor
+                this.animate();
+            }
+
+            animate() {
+                // Smooth follow with easing
+                const ease = 0.15;
+
+                // Magnetic effect if hovering over an element
+                let targetX = this.mousePos.x;
+                let targetY = this.mousePos.y;
+
+                if (this.hoveredElement) {
+                    const rect = this.hoveredElement.getBoundingClientRect();
+                    const centerX = rect.left + rect.width / 2;
+                    const centerY = rect.top + rect.height / 2;
+
+                    // Pull cursor toward center of hovered element
+                    const magnetStrength = 0.3;
+                    targetX = this.mousePos.x + (centerX - this.mousePos.x) * magnetStrength;
+                    targetY = this.mousePos.y + (centerY - this.mousePos.y) * magnetStrength;
+                }
+
+                // Smooth cursor movement
+                this.cursorPos.x += (targetX - this.cursorPos.x) * ease;
+                this.cursorPos.y += (targetY - this.cursorPos.y) * ease;
+
+                // Update cursor position
+                this.cursor.style.transform = `translate(${this.cursorPos.x - 10}px, ${this.cursorPos.y - 10}px)`;
+                this.cursorDot.style.transform = `translate(${this.cursorDotPos.x - 3}px, ${this.cursorDotPos.y - 3}px)`;
+
+                requestAnimationFrame(() => this.animate());
+            }
+        }
+
+        // Initialize custom cursor
+        const customCursor = new CustomCursor();
+
+        // ============================================
+        // COMMAND PALETTE - Quick Navigation
+        // ============================================
+
+        class CommandPalette {
+            constructor() {
+                this.overlay = document.getElementById('command-palette-overlay');
+                this.input = document.getElementById('command-palette-input');
+                this.results = document.getElementById('command-palette-results');
+                this.isOpen = false;
+                this.selectedIndex = 0;
+
+                // Define commands
+                this.commands = [
+                    { id: 'about', title: 'About Me', description: 'Learn about my background', icon: 'fa-user', action: () => this.navigate('#about') },
+                    { id: 'projects', title: 'Projects', description: 'View my featured projects', icon: 'fa-folder-open', action: () => this.navigate('#projects') },
+                    { id: 'skills', title: 'Skills', description: 'Explore my technical skills', icon: 'fa-code', action: () => this.navigate('#skills') },
+                    { id: 'contact', title: 'Contact', description: 'Get in touch with me', icon: 'fa-envelope', action: () => this.navigate('#contact') },
+                    { id: 'annotate', title: 'Leave Feedback', description: 'Draw and annotate the page', icon: 'fa-pen', action: () => { this.close(); document.getElementById('annotation-toggle').click(); } },
+                    { id: 'top', title: 'Scroll to Top', description: 'Jump to the top of the page', icon: 'fa-arrow-up', action: () => { this.close(); window.scrollTo({ top: 0, behavior: 'smooth' }); } },
+                ];
+
+                this.init();
+            }
+
+            init() {
+                // Keyboard shortcut CMD+K or CTRL+K
+                document.addEventListener('keydown', (e) => {
+                    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                        e.preventDefault();
+                        this.toggle();
+                    }
+
+                    // ESC to close
+                    if (e.key === 'Escape' && this.isOpen) {
+                        this.close();
+                    }
+
+                    // Arrow keys for navigation
+                    if (this.isOpen) {
+                        if (e.key === 'ArrowDown') {
+                            e.preventDefault();
+                            this.selectNext();
+                        } else if (e.key === 'ArrowUp') {
+                            e.preventDefault();
+                            this.selectPrevious();
+                        } else if (e.key === 'Enter') {
+                            e.preventDefault();
+                            this.execute();
+                        }
+                    }
+                });
+
+                // Click outside to close
+                this.overlay.addEventListener('click', (e) => {
+                    if (e.target === this.overlay) {
+                        this.close();
+                    }
+                });
+
+                // Search on input
+                this.input.addEventListener('input', () => {
+                    this.search();
+                });
+
+                // Initial render
+                this.render([]);
+            }
+
+            toggle() {
+                if (this.isOpen) {
+                    this.close();
+                } else {
+                    this.open();
+                }
+            }
+
+            open() {
+                this.isOpen = true;
+                this.overlay.classList.add('active');
+                this.input.value = '';
+                this.input.focus();
+                this.search();
+            }
+
+            close() {
+                this.isOpen = false;
+                this.overlay.classList.remove('active');
+                this.selectedIndex = 0;
+            }
+
+            search() {
+                const query = this.input.value.toLowerCase().trim();
+
+                if (!query) {
+                    this.render(this.commands);
+                    return;
+                }
+
+                const filtered = this.commands.filter(cmd =>
+                    cmd.title.toLowerCase().includes(query) ||
+                    cmd.description.toLowerCase().includes(query)
+                );
+
+                this.render(filtered);
+            }
+
+            render(commands) {
+                this.selectedIndex = 0;
+
+                if (commands.length === 0) {
+                    this.results.innerHTML = '<div class="command-palette-empty">No results found</div>';
+                    return;
+                }
+
+                this.results.innerHTML = commands.map((cmd, index) => `
+                    <div class="command-palette-item ${index === 0 ? 'selected' : ''}" data-index="${index}">
+                        <div class="command-palette-item-icon">
+                            <i class="fas ${cmd.icon}"></i>
+                        </div>
+                        <div class="command-palette-item-content">
+                            <div class="command-palette-item-title">${cmd.title}</div>
+                            <div class="command-palette-item-description">${cmd.description}</div>
+                        </div>
+                    </div>
+                `).join('');
+
+                // Add click handlers
+                this.results.querySelectorAll('.command-palette-item').forEach((item, index) => {
+                    item.addEventListener('click', () => {
+                        this.selectedIndex = index;
+                        this.execute();
+                    });
+
+                    item.addEventListener('mouseenter', () => {
+                        this.selectItem(index);
+                    });
+                });
+
+                this.currentCommands = commands;
+            }
+
+            selectNext() {
+                const items = this.results.querySelectorAll('.command-palette-item');
+                if (items.length === 0) return;
+
+                this.selectedIndex = (this.selectedIndex + 1) % items.length;
+                this.updateSelection();
+            }
+
+            selectPrevious() {
+                const items = this.results.querySelectorAll('.command-palette-item');
+                if (items.length === 0) return;
+
+                this.selectedIndex = (this.selectedIndex - 1 + items.length) % items.length;
+                this.updateSelection();
+            }
+
+            selectItem(index) {
+                this.selectedIndex = index;
+                this.updateSelection();
+            }
+
+            updateSelection() {
+                const items = this.results.querySelectorAll('.command-palette-item');
+                items.forEach((item, index) => {
+                    if (index === this.selectedIndex) {
+                        item.classList.add('selected');
+                        item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                    } else {
+                        item.classList.remove('selected');
+                    }
+                });
+            }
+
+            execute() {
+                if (!this.currentCommands || this.currentCommands.length === 0) return;
+
+                const command = this.currentCommands[this.selectedIndex];
+                if (command && command.action) {
+                    command.action();
+                }
+            }
+
+            navigate(hash) {
+                this.close();
+                const element = document.querySelector(hash);
+                if (element) {
+                    const headerOffset = 80;
+                    const elementPosition = element.getBoundingClientRect().top;
+                    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+                    window.scrollTo({
+                        top: offsetPosition,
+                        behavior: 'smooth'
+                    });
+                }
+            }
+        }
+
+        // Initialize command palette
+        const commandPalette = new CommandPalette();
     </script>
 </body>
 </html>
