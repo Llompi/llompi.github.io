@@ -5,7 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Joan Llompart - Electrical Engineer specializing in hardware-software integration, PCB design, and IoT development">
     <title>Joan Llompart | Electrical Engineer</title>
-    
+
+    <!-- Critical: Set theme before page renders to avoid flash -->
+    <script>
+        (function() {
+            const theme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+
     <!-- Preload critical fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -801,25 +809,25 @@
                 padding-right: var(--space-4);
             }
 
-            /* Optimize section spacing for mobile */
+            /* Optimize section spacing for mobile - much tighter */
             .section {
-                padding-top: clamp(2.5rem, 6vw, 3.5rem);
-                padding-bottom: clamp(2.5rem, 6vw, 3.5rem);
+                padding-top: clamp(1.5rem, 4vw, 2.5rem);
+                padding-bottom: clamp(1.5rem, 4vw, 2.5rem);
             }
 
             .section-title {
-                margin-bottom: var(--space-12);
+                margin-bottom: var(--space-8);
                 font-size: var(--text-3xl);
             }
 
             /* Optimize grid and card spacing */
             .grid {
-                gap: clamp(1rem, 3vw, 1.5rem);
+                gap: var(--space-4);
             }
 
             .footer {
-                padding: var(--space-12) 0;
-                margin-top: var(--space-16);
+                padding: var(--space-8) 0;
+                margin-top: var(--space-12);
             }
 
             .nav-links {
@@ -891,25 +899,25 @@
                 padding-right: var(--space-4);
             }
 
-            /* Further optimize spacing for small screens */
+            /* Further optimize spacing for small screens - very compact */
             .section {
-                padding-top: clamp(2rem, 5vw, 3rem);
-                padding-bottom: clamp(2rem, 5vw, 3rem);
+                padding-top: clamp(1rem, 3vw, 2rem);
+                padding-bottom: clamp(1rem, 3vw, 2rem);
             }
 
             .section-title {
-                margin-bottom: var(--space-10);
+                margin-bottom: var(--space-6);
                 font-size: var(--text-2xl);
             }
 
-            /* Tighter grid spacing on small devices */
+            /* Very tight grid spacing on small devices */
             .grid {
-                gap: var(--space-4);
+                gap: var(--space-3);
             }
 
             .footer {
-                padding: var(--space-10) 0;
-                margin-top: var(--space-12);
+                padding: var(--space-6) 0;
+                margin-top: var(--space-8);
             }
         }
 
