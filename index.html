@@ -98,22 +98,47 @@
             background: var(--accent);
         }
         
-        /* Layout Components */
+        /* Layout Components - Meticulously Crafted */
         .container {
             max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 var(--space-8);
+            margin-left: auto;
+            margin-right: auto;
+            padding-left: var(--space-6);
+            padding-right: var(--space-6);
+            width: 100%;
         }
-        
+
         .section {
-            padding: var(--space-24) 0;
+            padding-top: clamp(4rem, 8vw, 6rem);
+            padding-bottom: clamp(4rem, 8vw, 6rem);
+            position: relative;
         }
-        
+
         .section-sm {
-            padding: var(--space-16) 0;
+            padding-top: clamp(3rem, 6vw, 4rem);
+            padding-bottom: clamp(3rem, 6vw, 4rem);
+        }
+
+        /* Container variations for different content widths */
+        .container-narrow {
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            padding-left: var(--space-6);
+            padding-right: var(--space-6);
+            width: 100%;
+        }
+
+        .container-wide {
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+            padding-left: var(--space-6);
+            padding-right: var(--space-6);
+            width: 100%;
         }
         
-        /* Navigation */
+        /* Navigation - Carefully Sized and Spaced */
         .nav {
             position: fixed;
             top: 0;
@@ -121,234 +146,311 @@
             right: 0;
             background: rgba(10, 10, 10, 0.95);
             backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--border);
             z-index: 1000;
         }
-        
+
         .nav-container {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            height: 70px;
+            height: 80px;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+            padding-left: var(--space-6);
+            padding-right: var(--space-6);
         }
-        
+
         .nav-logo {
-            font-size: var(--text-xl);
+            font-size: clamp(1.125rem, 2vw, 1.25rem);
             font-weight: 700;
             color: var(--text-primary);
             text-decoration: none;
             letter-spacing: -0.025em;
+            transition: opacity 0.2s ease;
         }
-        
+
+        .nav-logo:hover {
+            opacity: 0.8;
+        }
+
         .nav-links {
             display: flex;
             list-style: none;
-            gap: var(--space-8);
+            gap: clamp(1.5rem, 3vw, 2.5rem);
             align-items: center;
+            margin: 0;
+            padding: 0;
         }
-        
+
         .nav-link {
             color: var(--text-secondary);
             text-decoration: none;
             font-weight: 500;
             font-size: var(--text-sm);
             transition: color 0.2s ease;
-            padding: var(--space-2) 0;
+            padding: var(--space-2) var(--space-1);
             position: relative;
+            display: inline-block;
         }
-        
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--accent);
+            transform: scaleX(0);
+            transition: transform 0.2s ease;
+        }
+
         .nav-link:hover {
             color: var(--text-primary);
         }
-        
+
+        .nav-link:hover::after {
+            transform: scaleX(1);
+        }
+
         .nav-toggle {
             display: none;
             background: none;
             border: none;
             color: var(--text-primary);
-            font-size: var(--text-xl);
+            font-size: 1.25rem;
             cursor: pointer;
-            padding: var(--space-2);
+            padding: var(--space-3);
+            /* Minimum touch target size for mobile */
+            min-width: 44px;
+            min-height: 44px;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.2s ease;
+        }
+
+        .nav-toggle:hover {
+            opacity: 0.7;
         }
         
-        /* Mobile Navigation */
+        /* Mobile Navigation - Properly Spaced */
         .nav-mobile {
             display: none;
             position: absolute;
             top: 100%;
             left: 0;
             right: 0;
-            background: var(--bg-primary);
+            background: rgba(10, 10, 10, 0.98);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--border);
-            padding: var(--space-4) 0;
+            padding: var(--space-2) 0 var(--space-4);
         }
-        
+
         .nav-mobile.active {
             display: block;
         }
-        
+
         .nav-mobile .nav-link {
             display: block;
-            padding: var(--space-3) var(--space-8);
+            padding: var(--space-4) var(--space-6);
             border-bottom: 1px solid var(--border);
+            /* Proper touch target */
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+            font-size: var(--text-base);
         }
-        
+
         .nav-mobile .nav-link:last-child {
             border-bottom: none;
         }
+
+        .nav-mobile .nav-link::after {
+            display: none;
+        }
         
-        /* Hero Section */
+        /* Hero Section - Intentionally Sized and Spaced */
         .hero {
             min-height: 100vh;
             display: flex;
             align-items: center;
-            padding-top: 70px;
+            padding-top: 80px;
+            padding-bottom: var(--space-12);
         }
-        
+
         .hero-content {
             display: grid;
-            grid-template-columns: 1.2fr 0.8fr;
-            gap: var(--space-20);
+            grid-template-columns: 1fr 0.8fr;
+            gap: clamp(2rem, 5vw, 5rem);
             align-items: center;
             width: 100%;
         }
-        
+
         .hero-text {
-            max-width: 600px;
+            max-width: 640px;
         }
-        
+
         .hero-title {
-            font-size: var(--text-6xl);
+            font-size: clamp(2.5rem, 6vw, 4rem);
             font-weight: 700;
-            margin-bottom: var(--space-6);
+            margin-bottom: clamp(1rem, 2vw, 1.5rem);
             line-height: 1.1;
             letter-spacing: -0.025em;
+            color: var(--text-primary);
         }
-        
+
         .hero-subtitle {
-            font-size: var(--text-2xl);
+            font-size: clamp(1.25rem, 3vw, 1.75rem);
             color: var(--text-secondary);
-            margin-bottom: var(--space-6);
+            margin-bottom: clamp(1rem, 2vw, 1.5rem);
             font-weight: 500;
+            line-height: 1.3;
         }
-        
+
         .hero-description {
-            font-size: var(--text-lg);
+            font-size: clamp(1rem, 2vw, 1.125rem);
             color: var(--text-muted);
-            margin-bottom: var(--space-8);
+            margin-bottom: clamp(1.5rem, 3vw, 2rem);
             line-height: 1.7;
+            max-width: 560px;
         }
-        
+
         .hero-image {
             position: relative;
+            width: 100%;
         }
-        
+
         .hero-image img {
             width: 100%;
-            height: 400px;
+            height: clamp(300px, 40vw, 450px);
             object-fit: cover;
             border-radius: var(--radius-xl);
             border: 1px solid var(--border);
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: block;
         }
-        
+
         .hero-image:hover img {
-            transform: scale(1.02);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
         }
         
-        /* Buttons */
+        /* Buttons - Proper Touch Targets and Spacing */
         .btn {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: var(--space-2);
-            padding: var(--space-3) var(--space-6);
+            padding: clamp(0.75rem, 2vw, 1rem) clamp(1.25rem, 3vw, 1.75rem);
             border-radius: var(--radius);
             text-decoration: none;
             font-weight: 600;
-            font-size: var(--text-sm);
+            font-size: clamp(0.875rem, 2vw, 0.9375rem);
             transition: all 0.2s ease;
             border: 1px solid transparent;
             white-space: nowrap;
             cursor: pointer;
+            /* Ensure minimum touch target */
+            min-height: 44px;
+            line-height: 1;
         }
-        
+
         .btn-primary {
             background: var(--accent);
             color: white;
             border-color: var(--accent);
         }
-        
+
         .btn-primary:hover {
             background: var(--accent-hover);
             border-color: var(--accent-hover);
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
         }
-        
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
         .btn-secondary {
             background: transparent;
             color: var(--text-primary);
             border-color: var(--border);
         }
-        
+
         .btn-secondary:hover {
             background: var(--surface);
             border-color: var(--border-hover);
-            transform: translateY(-1px);
+            transform: translateY(-2px);
         }
-        
+
+        .btn-secondary:active {
+            transform: translateY(0);
+        }
+
         .btn-group {
             display: flex;
-            gap: var(--space-4);
-            margin-bottom: var(--space-8);
+            flex-wrap: wrap;
+            gap: clamp(0.75rem, 2vw, 1rem);
+            margin-bottom: clamp(1.5rem, 3vw, 2rem);
         }
         
-        /* Cards */
+        /* Cards - Intentional Padding and Spacing */
         .card {
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: var(--radius-lg);
-            padding: var(--space-8);
-            transition: all 0.3s ease;
+            padding: clamp(1.5rem, 4vw, 2rem);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             height: 100%;
+            display: flex;
+            flex-direction: column;
         }
-        
+
         .card:hover {
             border-color: var(--border-hover);
             transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
         }
-        
+
         .card-clickable {
             cursor: pointer;
         }
-        
+
         .card-clickable:hover {
             background: var(--surface-hover);
         }
-        
+
         .card h3 {
-            font-size: var(--text-xl);
+            font-size: clamp(1.125rem, 2.5vw, 1.25rem);
             font-weight: 600;
-            margin-bottom: var(--space-4);
+            margin-bottom: clamp(0.75rem, 2vw, 1rem);
             color: var(--text-primary);
+            line-height: 1.3;
         }
-        
+
         .card p {
             color: var(--text-secondary);
             line-height: 1.6;
+            font-size: clamp(0.9375rem, 2vw, 1rem);
         }
-        
-        /* Grid Layouts */
+
+        /* Grid Layouts - Responsive and Intentional */
         .grid {
             display: grid;
-            gap: var(--space-8);
+            gap: clamp(1.5rem, 3vw, 2rem);
         }
-        
+
         .grid-2 {
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
         }
-        
+
         .grid-3 {
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
         }
         
         /* Typography */
@@ -471,32 +573,41 @@
             overflow: hidden;
         }
         
-        /* Social Links */
+        /* Social Links - Proper Touch Targets */
         .social-links {
             display: flex;
-            gap: var(--space-4);
+            flex-wrap: wrap;
+            gap: clamp(0.75rem, 2vw, 1rem);
         }
-        
+
         .social-link {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 44px;
-            height: 44px;
+            /* Proper touch target size */
+            min-width: 48px;
+            min-height: 48px;
+            width: clamp(44px, 8vw, 48px);
+            height: clamp(44px, 8vw, 48px);
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: var(--radius);
             color: var(--text-secondary);
             text-decoration: none;
-            transition: all 0.2s ease;
-            font-size: var(--text-lg);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: clamp(1.0625rem, 2vw, 1.125rem);
         }
-        
+
         .social-link:hover {
             background: var(--accent);
             border-color: var(--accent);
             color: white;
             transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .social-link:active {
+            transform: translateY(0);
         }
         
         /* Stats */
@@ -595,75 +706,111 @@
             border-top: 1px solid var(--border);
         }
         
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .container {
-                padding: 0 var(--space-4);
+        /* Responsive Design - Mobile First, Carefully Crafted */
+
+        /* Tablet and Below */
+        @media (max-width: 1024px) {
+            .nav-container {
+                height: 72px;
             }
-            
+
+            .hero {
+                padding-top: 72px;
+            }
+        }
+
+        /* Mobile and Below */
+        @media (max-width: 768px) {
+            .container,
+            .container-narrow,
+            .container-wide {
+                padding-left: var(--space-4);
+                padding-right: var(--space-4);
+            }
+
             .nav-links {
                 display: none;
             }
-            
+
             .nav-toggle {
-                display: block;
+                display: flex;
             }
-            
+
+            .nav-container {
+                height: 64px;
+            }
+
+            .hero {
+                padding-top: 64px;
+                min-height: auto;
+                padding-bottom: var(--space-8);
+            }
+
             .hero-content {
                 grid-template-columns: 1fr;
-                gap: var(--space-12);
+                gap: clamp(2rem, 6vw, 3rem);
                 text-align: center;
             }
-            
-            .hero-title {
-                font-size: var(--text-4xl);
-            }
-            
+
             .hero-text {
                 max-width: none;
             }
-            
-            .btn-group {
-                flex-direction: column;
-                align-items: center;
-                gap: var(--space-3);
+
+            .hero-image img {
+                height: clamp(280px, 50vw, 400px);
             }
-            
+
+            .btn-group {
+                justify-content: center;
+            }
+
             .stats {
                 justify-content: center;
-                gap: var(--space-6);
+                gap: clamp(1.5rem, 4vw, 2rem);
+                flex-wrap: wrap;
             }
-            
+
             .stat {
                 text-align: center;
             }
-            
+
             .footer-content {
                 flex-direction: column;
-                gap: var(--space-4);
+                gap: var(--space-6);
                 text-align: center;
+                align-items: center;
             }
-            
-            .section {
-                padding: var(--space-16) 0;
-            }
-            
-            .section-title {
-                font-size: var(--text-3xl);
+
+            .footer-links {
+                flex-direction: column;
+                gap: var(--space-4);
+                align-items: center;
             }
         }
-        
+
+        /* Small Mobile */
         @media (max-width: 480px) {
-            .hero-title {
-                font-size: var(--text-3xl);
+            .container,
+            .container-narrow,
+            .container-wide {
+                padding-left: var(--space-4);
+                padding-right: var(--space-4);
             }
-            
-            .card {
-                padding: var(--space-6);
+
+            .section {
+                padding-top: clamp(3rem, 8vw, 4rem);
+                padding-bottom: clamp(3rem, 8vw, 4rem);
             }
-            
-            .container {
-                padding: 0 var(--space-3);
+        }
+
+        /* Reduce motion for accessibility */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
             }
         }
         
@@ -761,6 +908,8 @@
             background: rgba(0, 0, 0, 0.02);
             backdrop-filter: blur(0px);
             transition: backdrop-filter 0.3s ease;
+            overflow: hidden;
+            touch-action: none; /* Prevent default touch behavior */
         }
 
         .annotation-overlay.active {
@@ -778,13 +927,14 @@
         }
 
         .annotation-overlay canvas {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             cursor: crosshair;
             background: transparent;
+            touch-action: none; /* Critical for mobile drawing */
         }
 
         .annotation-overlay.text-mode canvas {
@@ -1603,17 +1753,17 @@
 
             setupCanvas() {
                 const resizeCanvas = () => {
+                    // Set canvas to viewport size for better mobile performance
                     this.canvas.width = window.innerWidth;
-                    this.canvas.height = document.documentElement.scrollHeight;
+                    this.canvas.height = window.innerHeight;
                     this.redraw();
                 };
 
                 resizeCanvas();
                 window.addEventListener('resize', resizeCanvas);
-                window.addEventListener('scroll', () => {
-                    if (this.isActive) {
-                        resizeCanvas();
-                    }
+                // Update orientation change for mobile
+                window.addEventListener('orientationchange', () => {
+                    setTimeout(resizeCanvas, 100);
                 });
             }
 
@@ -1651,32 +1801,49 @@
                 this.canvas.addEventListener('mouseup', (e) => this.stopDrawing(e));
                 this.canvas.addEventListener('mouseleave', () => this.stopDrawing());
 
-                // Touch support
+                // Touch support - Direct handling for accurate coordinates
                 this.canvas.addEventListener('touchstart', (e) => {
                     e.preventDefault();
                     const touch = e.touches[0];
-                    const mouseEvent = new MouseEvent('mousedown', {
+                    const rect = this.canvas.getBoundingClientRect();
+                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+
+                    // Create a mock event with corrected coordinates
+                    const mockEvent = {
                         clientX: touch.clientX,
-                        clientY: touch.clientY
-                    });
-                    this.canvas.dispatchEvent(mouseEvent);
-                });
+                        clientY: touch.clientY,
+                        preventDefault: () => {}
+                    };
+                    this.startDrawing(mockEvent);
+                }, { passive: false });
 
                 this.canvas.addEventListener('touchmove', (e) => {
                     e.preventDefault();
                     const touch = e.touches[0];
-                    const mouseEvent = new MouseEvent('mousemove', {
+
+                    const mockEvent = {
                         clientX: touch.clientX,
-                        clientY: touch.clientY
-                    });
-                    this.canvas.dispatchEvent(mouseEvent);
-                });
+                        clientY: touch.clientY,
+                        preventDefault: () => {}
+                    };
+                    this.draw(mockEvent);
+                }, { passive: false });
 
                 this.canvas.addEventListener('touchend', (e) => {
                     e.preventDefault();
-                    const mouseEvent = new MouseEvent('mouseup', {});
-                    this.canvas.dispatchEvent(mouseEvent);
-                });
+                    if (e.changedTouches && e.changedTouches.length > 0) {
+                        const touch = e.changedTouches[0];
+                        const mockEvent = {
+                            clientX: touch.clientX,
+                            clientY: touch.clientY,
+                            preventDefault: () => {}
+                        };
+                        this.stopDrawing(mockEvent);
+                    } else {
+                        this.stopDrawing();
+                    }
+                }, { passive: false });
 
                 // Modal events
                 document.getElementById('modal-cancel').addEventListener('click', () => {
@@ -1733,11 +1900,21 @@
 
                 if (this.isActive) {
                     this.overlay.classList.add('active');
+                    // Lock scroll on both body and html for mobile
                     document.body.style.overflow = 'hidden';
+                    document.body.style.position = 'fixed';
+                    document.body.style.width = '100%';
+                    document.body.style.height = '100%';
+                    document.documentElement.style.overflow = 'hidden';
                     document.getElementById('annotation-toggle').style.display = 'none';
                 } else {
                     this.overlay.classList.remove('active');
+                    // Restore scroll
                     document.body.style.overflow = '';
+                    document.body.style.position = '';
+                    document.body.style.width = '';
+                    document.body.style.height = '';
+                    document.documentElement.style.overflow = '';
                     document.getElementById('annotation-toggle').style.display = 'flex';
                 }
             }
@@ -1776,11 +1953,20 @@
                 });
             }
 
+            getCanvasCoordinates(e) {
+                const rect = this.canvas.getBoundingClientRect();
+
+                // Since canvas is fixed and covers viewport, coordinates are simpler
+                // Just get position relative to canvas top-left
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                return { x, y };
+            }
+
             startDrawing(e) {
                 this.isDrawing = true;
-                const rect = this.canvas.getBoundingClientRect();
-                const x = e.clientX - rect.left + window.scrollX;
-                const y = e.clientY - rect.top + window.scrollY;
+                const { x, y } = this.getCanvasCoordinates(e);
 
                 this.startPoint = { x, y };
 
@@ -1805,9 +1991,7 @@
             draw(e) {
                 if (!this.isDrawing || !this.currentStroke) return;
 
-                const rect = this.canvas.getBoundingClientRect();
-                const x = e.clientX - rect.left + window.scrollX;
-                const y = e.clientY - rect.top + window.scrollY;
+                const { x, y } = this.getCanvasCoordinates(e);
 
                 if (this.currentTool === 'pen' || this.currentTool === 'highlighter') {
                     this.currentStroke.points.push({ x, y });
@@ -1822,9 +2006,7 @@
                 if (!this.isDrawing) return;
 
                 if (this.currentStroke && e) {
-                    const rect = this.canvas.getBoundingClientRect();
-                    const x = e.clientX - rect.left + window.scrollX;
-                    const y = e.clientY - rect.top + window.scrollY;
+                    const { x, y } = this.getCanvasCoordinates(e);
 
                     // For shapes, set end point
                     if (this.currentTool === 'circle' || this.currentTool === 'arrow') {
