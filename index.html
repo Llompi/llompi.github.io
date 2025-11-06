@@ -741,7 +741,7 @@
             }
 
             .hero {
-                padding-top: 64px;
+                padding-top: clamp(96px, 20vw, 120px);
                 min-height: auto;
                 padding-bottom: var(--space-8);
             }
@@ -862,10 +862,10 @@
             width: 64px;
             height: 64px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--accent);
             color: white;
             border: none;
-            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.4);
             cursor: pointer;
             z-index: 999;
             display: flex;
@@ -878,7 +878,8 @@
 
         .annotation-fab:hover {
             transform: scale(1.1) rotate(5deg);
-            box-shadow: 0 12px 48px rgba(102, 126, 234, 0.6);
+            background: var(--accent-hover);
+            box-shadow: 0 12px 48px rgba(59, 130, 246, 0.6);
         }
 
         .annotation-fab:active {
@@ -887,25 +888,25 @@
 
         @keyframes pulse-ring {
             0%, 100% {
-                box-shadow: 0 8px 32px rgba(102, 126, 234, 0.4),
-                            0 0 0 0 rgba(102, 126, 234, 0.7);
+                box-shadow: 0 8px 32px rgba(59, 130, 246, 0.4),
+                            0 0 0 0 rgba(59, 130, 246, 0.7);
             }
             50% {
-                box-shadow: 0 8px 32px rgba(102, 126, 234, 0.4),
-                            0 0 0 20px rgba(102, 126, 234, 0);
+                box-shadow: 0 8px 32px rgba(59, 130, 246, 0.4),
+                            0 0 0 20px rgba(59, 130, 246, 0);
             }
         }
 
         /* Annotation Overlay */
         .annotation-overlay {
-            position: fixed;
+            position: absolute;
             top: 0;
             left: 0;
-            width: 100vw;
-            height: 100vh;
+            width: 100%;
+            min-height: 100vh;
             z-index: 10000;
             display: none;
-            pointer-events: none; /* Allow clicking through when inactive */
+            pointer-events: none;
         }
 
         .annotation-overlay.active {
@@ -916,8 +917,8 @@
 
         .annotation-overlay.viewing {
             display: block;
-            pointer-events: none; /* Allow scrolling and clicking page */
-            z-index: 100; /* Lower z-index when just viewing */
+            pointer-events: none;
+            z-index: 100;
         }
 
         @keyframes overlayFadeIn {
@@ -939,7 +940,7 @@
         }
 
         .annotation-overlay.active canvas {
-            touch-action: none; /* Only prevent touch when actively drawing */
+            touch-action: none;
         }
 
         .annotation-overlay.text-mode canvas {
@@ -1021,22 +1022,25 @@
         }
 
         .annotation-submit {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--accent);
             color: white;
             border: none;
-            gap: 4px;
+            gap: 6px;
             width: auto;
-            padding: 0 16px;
+            min-width: 80px;
+            padding: 0 clamp(12px, 3vw, 16px);
             font-weight: 600;
+            white-space: nowrap;
         }
 
         .annotation-submit:hover {
+            background: var(--accent-hover);
             transform: scale(1.05);
-            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
         }
 
         .annotation-submit span {
-            font-size: 14px;
+            font-size: clamp(12px, 2vw, 14px);
         }
 
         /* Color Picker */
@@ -2010,29 +2014,26 @@
             setupCanvas() {
                 const resizeCanvas = () => {
                     // Set canvas to full document height for full-page annotations
-                    this.canvas.width = window.innerWidth;
-                    this.canvas.height = Math.max(
+                    const docHeight = Math.max(
                         document.documentElement.scrollHeight,
                         document.body.scrollHeight,
                         window.innerHeight
                     );
+
+                    this.canvas.width = window.innerWidth;
+                    this.canvas.height = docHeight;
+                    this.overlay.style.height = docHeight + 'px';
                     this.redraw();
                 };
 
                 resizeCanvas();
                 window.addEventListener('resize', resizeCanvas);
-                // Update when content changes or orientation changes
                 window.addEventListener('orientationchange', () => {
                     setTimeout(resizeCanvas, 100);
                 });
-                // Update canvas when scrolling to handle dynamic content
-                let scrollTimeout;
-                window.addEventListener('scroll', () => {
-                    if (this.isActive) {
-                        clearTimeout(scrollTimeout);
-                        scrollTimeout = setTimeout(resizeCanvas, 150);
-                    }
-                });
+
+                // Update canvas when window is loaded (images may change height)
+                window.addEventListener('load', resizeCanvas);
             }
 
             attachEventListeners() {
@@ -2242,13 +2243,11 @@
 
             getCanvasCoordinates(e) {
                 const rect = this.canvas.getBoundingClientRect();
-                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
 
-                // Canvas is absolute positioned and covers full document
-                // Need to account for scroll position
-                const x = e.clientX - rect.left + scrollLeft;
-                const y = e.clientY - rect.top + scrollTop;
+                // Canvas is absolutely positioned in document flow
+                // clientX/Y gives viewport position, rect gives canvas position in viewport
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
 
                 return { x, y };
             }
@@ -2801,6 +2800,328 @@ Message: ${message}
 
         // Initialize command palette
         const commandPalette = new CommandPalette();
+
+        // ============================================
+        // AUTOMATED LAYOUT VALIDATOR
+        // ============================================
+
+        class LayoutValidator {
+            constructor() {
+                this.issues = [];
+                this.warnings = [];
+            }
+
+            // Run all validation checks
+            validate() {
+                console.group('🔍 Layout Validation Report');
+                this.issues = [];
+                this.warnings = [];
+
+                this.checkTouchTargets();
+                this.checkTextOverflow();
+                this.checkSpacing();
+                this.checkThemeConsistency();
+                this.checkAccessibility();
+                this.checkResponsiveness();
+
+                this.printReport();
+                console.groupEnd();
+
+                return {
+                    issues: this.issues,
+                    warnings: this.warnings,
+                    passed: this.issues.length === 0
+                };
+            }
+
+            // Check touch target sizes (minimum 44x44px)
+            checkTouchTargets() {
+                const interactiveElements = document.querySelectorAll('a, button, input, textarea, select, [role="button"], [onclick]');
+                let count = 0;
+
+                interactiveElements.forEach(el => {
+                    const rect = el.getBoundingClientRect();
+                    const computed = window.getComputedStyle(el);
+
+                    // Check if element is visible
+                    if (computed.display === 'none' || computed.visibility === 'hidden') return;
+
+                    if (rect.width < 44 || rect.height < 44) {
+                        this.issues.push({
+                            type: 'touch-target',
+                            element: this.getElementPath(el),
+                            size: `${Math.round(rect.width)}x${Math.round(rect.height)}px`,
+                            message: `Touch target too small (should be at least 44x44px)`
+                        });
+                        count++;
+                    }
+                });
+
+                if (count === 0) {
+                    console.log('✅ Touch targets: All interactive elements meet 44x44px minimum');
+                } else {
+                    console.error(`❌ Touch targets: ${count} elements too small`);
+                }
+            }
+
+            // Check for text overflow
+            checkTextOverflow() {
+                const textElements = document.querySelectorAll('p, span, h1, h2, h3, h4, h5, h6, a, button, li');
+                let count = 0;
+
+                textElements.forEach(el => {
+                    const computed = window.getComputedStyle(el);
+
+                    // Skip hidden elements
+                    if (computed.display === 'none' || computed.visibility === 'hidden') return;
+
+                    // Check if content is overflowing
+                    if (el.scrollWidth > el.clientWidth || el.scrollHeight > el.clientHeight) {
+                        // Check if overflow is intentional (scrollable)
+                        const hasScroll = computed.overflow === 'auto' || computed.overflow === 'scroll' ||
+                                        computed.overflowX === 'auto' || computed.overflowX === 'scroll' ||
+                                        computed.overflowY === 'auto' || computed.overflowY === 'scroll';
+
+                        if (!hasScroll) {
+                            this.issues.push({
+                                type: 'text-overflow',
+                                element: this.getElementPath(el),
+                                message: `Text overflowing container (${el.scrollWidth}px > ${el.clientWidth}px)`,
+                                text: el.textContent.substring(0, 50) + '...'
+                            });
+                            count++;
+                        }
+                    }
+                });
+
+                if (count === 0) {
+                    console.log('✅ Text overflow: No overflow issues detected');
+                } else {
+                    console.error(`❌ Text overflow: ${count} elements overflowing`);
+                }
+            }
+
+            // Check spacing consistency
+            checkSpacing() {
+                const sections = document.querySelectorAll('section, .section');
+                let inconsistencies = 0;
+
+                sections.forEach(section => {
+                    const computed = window.getComputedStyle(section);
+                    const paddingTop = parseInt(computed.paddingTop);
+                    const paddingBottom = parseInt(computed.paddingBottom);
+
+                    // Check if padding is too small (less than 32px on desktop)
+                    if (window.innerWidth > 768) {
+                        if (paddingTop < 32 || paddingBottom < 32) {
+                            this.warnings.push({
+                                type: 'spacing',
+                                element: this.getElementPath(section),
+                                message: `Section padding might be too small (${paddingTop}px / ${paddingBottom}px)`
+                            });
+                            inconsistencies++;
+                        }
+                    }
+                });
+
+                if (inconsistencies === 0) {
+                    console.log('✅ Spacing: Section spacing looks good');
+                } else {
+                    console.warn(`⚠️  Spacing: ${inconsistencies} potential spacing issues`);
+                }
+            }
+
+            // Check theme consistency (colors)
+            checkThemeConsistency() {
+                const rootStyles = getComputedStyle(document.documentElement);
+                const accentColor = rootStyles.getPropertyValue('--accent').trim();
+                let inconsistencies = 0;
+
+                // Check for hardcoded colors that don't match theme
+                const allElements = document.querySelectorAll('*');
+                const colorPattern = /#[0-9a-f]{6}|rgb\([^)]+\)|rgba\([^)]+\)/gi;
+
+                allElements.forEach(el => {
+                    const computed = window.getComputedStyle(el);
+                    const inlineStyle = el.getAttribute('style');
+
+                    if (inlineStyle) {
+                        // Check for hardcoded colors in inline styles
+                        const hasHardcodedColors = inlineStyle.match(colorPattern);
+                        if (hasHardcodedColors) {
+                            // Check if it's using theme colors
+                            const usesVarColors = inlineStyle.includes('var(--');
+                            if (!usesVarColors) {
+                                this.warnings.push({
+                                    type: 'theme',
+                                    element: this.getElementPath(el),
+                                    message: `Element has hardcoded colors instead of CSS variables`,
+                                    value: hasHardcodedColors[0]
+                                });
+                                inconsistencies++;
+                            }
+                        }
+                    }
+                });
+
+                if (inconsistencies === 0) {
+                    console.log('✅ Theme: Using CSS variables consistently');
+                } else {
+                    console.warn(`⚠️  Theme: ${inconsistencies} elements with hardcoded colors`);
+                }
+            }
+
+            // Check accessibility
+            checkAccessibility() {
+                let issues = 0;
+
+                // Check images for alt text
+                const images = document.querySelectorAll('img');
+                images.forEach(img => {
+                    if (!img.getAttribute('alt')) {
+                        this.issues.push({
+                            type: 'accessibility',
+                            element: this.getElementPath(img),
+                            message: 'Image missing alt text',
+                            src: img.src
+                        });
+                        issues++;
+                    }
+                });
+
+                // Check buttons for aria-labels if no text content
+                const buttons = document.querySelectorAll('button');
+                buttons.forEach(btn => {
+                    const hasText = btn.textContent.trim().length > 0;
+                    const hasAriaLabel = btn.getAttribute('aria-label');
+                    const hasTitle = btn.getAttribute('title');
+
+                    if (!hasText && !hasAriaLabel && !hasTitle) {
+                        this.issues.push({
+                            type: 'accessibility',
+                            element: this.getElementPath(btn),
+                            message: 'Button has no accessible text (missing aria-label or text content)'
+                        });
+                        issues++;
+                    }
+                });
+
+                if (issues === 0) {
+                    console.log('✅ Accessibility: Basic checks passed');
+                } else {
+                    console.error(`❌ Accessibility: ${issues} issues found`);
+                }
+            }
+
+            // Check responsive behavior
+            checkResponsiveness() {
+                const viewportWidth = window.innerWidth;
+                let issues = 0;
+
+                // Check for elements wider than viewport
+                const allElements = document.querySelectorAll('*');
+                allElements.forEach(el => {
+                    const rect = el.getBoundingClientRect();
+                    if (rect.width > viewportWidth + 10) { // 10px tolerance
+                        const computed = window.getComputedStyle(el);
+                        if (computed.overflow !== 'hidden' && computed.overflowX !== 'hidden') {
+                            this.warnings.push({
+                                type: 'responsiveness',
+                                element: this.getElementPath(el),
+                                message: `Element wider than viewport (${Math.round(rect.width)}px > ${viewportWidth}px)`,
+                            });
+                            issues++;
+                        }
+                    }
+                });
+
+                if (issues === 0) {
+                    console.log('✅ Responsiveness: No horizontal overflow');
+                } else {
+                    console.warn(`⚠️  Responsiveness: ${issues} elements may cause horizontal scroll`);
+                }
+            }
+
+            // Get readable path for element
+            getElementPath(el) {
+                if (el.id) return `#${el.id}`;
+                if (el.className && typeof el.className === 'string') {
+                    const classes = el.className.split(' ').filter(c => c.length > 0).slice(0, 2).join('.');
+                    if (classes) return `${el.tagName.toLowerCase()}.${classes}`;
+                }
+                return el.tagName.toLowerCase();
+            }
+
+            // Print formatted report
+            printReport() {
+                console.log('\n📊 Summary:');
+                console.log(`   Issues: ${this.issues.length}`);
+                console.log(`   Warnings: ${this.warnings.length}`);
+
+                if (this.issues.length > 0) {
+                    console.group('\n❌ Issues (Must Fix):');
+                    this.issues.forEach((issue, i) => {
+                        console.log(`${i + 1}. [${issue.type}] ${issue.element}`);
+                        console.log(`   ${issue.message}`);
+                        if (issue.size) console.log(`   Size: ${issue.size}`);
+                        if (issue.text) console.log(`   Text: "${issue.text}"`);
+                    });
+                    console.groupEnd();
+                }
+
+                if (this.warnings.length > 0) {
+                    console.group('\n⚠️  Warnings (Should Review):');
+                    this.warnings.forEach((warning, i) => {
+                        console.log(`${i + 1}. [${warning.type}] ${warning.element}`);
+                        console.log(`   ${warning.message}`);
+                        if (warning.value) console.log(`   Value: ${warning.value}`);
+                    });
+                    console.groupEnd();
+                }
+
+                if (this.issues.length === 0 && this.warnings.length === 0) {
+                    console.log('\n🎉 All checks passed! Layout looks great!');
+                }
+            }
+
+            // Run validation on resize (debounced)
+            startMonitoring() {
+                let resizeTimeout;
+                window.addEventListener('resize', () => {
+                    clearTimeout(resizeTimeout);
+                    resizeTimeout = setTimeout(() => {
+                        console.log('\n🔄 Running validation after resize...');
+                        this.validate();
+                    }, 500);
+                });
+
+                console.log('👀 Layout monitoring enabled - will re-validate on resize');
+            }
+        }
+
+        // Initialize validator
+        const layoutValidator = new LayoutValidator();
+
+        // Run validation after page loads
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                layoutValidator.validate();
+                // Uncomment to enable continuous monitoring:
+                // layoutValidator.startMonitoring();
+            }, 1000);
+        });
+
+        // Add to command palette for manual validation
+        commandPalette.commands.push({
+            id: 'validate',
+            title: 'Validate Layout',
+            description: 'Check for layout and accessibility issues',
+            icon: 'fa-check-circle',
+            action: () => {
+                commandPalette.close();
+                layoutValidator.validate();
+            }
+        });
     </script>
 </body>
 </html>
