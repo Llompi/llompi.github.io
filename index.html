@@ -761,6 +761,8 @@
             background: rgba(0, 0, 0, 0.02);
             backdrop-filter: blur(0px);
             transition: backdrop-filter 0.3s ease;
+            overflow: hidden;
+            touch-action: none; /* Prevent default touch behavior */
         }
 
         .annotation-overlay.active {
@@ -778,13 +780,14 @@
         }
 
         .annotation-overlay canvas {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             cursor: crosshair;
             background: transparent;
+            touch-action: none; /* Critical for mobile drawing */
         }
 
         .annotation-overlay.text-mode canvas {
@@ -1603,17 +1606,17 @@
 
             setupCanvas() {
                 const resizeCanvas = () => {
+                    // Set canvas to viewport size for better mobile performance
                     this.canvas.width = window.innerWidth;
-                    this.canvas.height = document.documentElement.scrollHeight;
+                    this.canvas.height = window.innerHeight;
                     this.redraw();
                 };
 
                 resizeCanvas();
                 window.addEventListener('resize', resizeCanvas);
-                window.addEventListener('scroll', () => {
-                    if (this.isActive) {
-                        resizeCanvas();
-                    }
+                // Update orientation change for mobile
+                window.addEventListener('orientationchange', () => {
+                    setTimeout(resizeCanvas, 100);
                 });
             }
 
@@ -1651,32 +1654,49 @@
                 this.canvas.addEventListener('mouseup', (e) => this.stopDrawing(e));
                 this.canvas.addEventListener('mouseleave', () => this.stopDrawing());
 
-                // Touch support
+                // Touch support - Direct handling for accurate coordinates
                 this.canvas.addEventListener('touchstart', (e) => {
                     e.preventDefault();
                     const touch = e.touches[0];
-                    const mouseEvent = new MouseEvent('mousedown', {
+                    const rect = this.canvas.getBoundingClientRect();
+                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+
+                    // Create a mock event with corrected coordinates
+                    const mockEvent = {
                         clientX: touch.clientX,
-                        clientY: touch.clientY
-                    });
-                    this.canvas.dispatchEvent(mouseEvent);
-                });
+                        clientY: touch.clientY,
+                        preventDefault: () => {}
+                    };
+                    this.startDrawing(mockEvent);
+                }, { passive: false });
 
                 this.canvas.addEventListener('touchmove', (e) => {
                     e.preventDefault();
                     const touch = e.touches[0];
-                    const mouseEvent = new MouseEvent('mousemove', {
+
+                    const mockEvent = {
                         clientX: touch.clientX,
-                        clientY: touch.clientY
-                    });
-                    this.canvas.dispatchEvent(mouseEvent);
-                });
+                        clientY: touch.clientY,
+                        preventDefault: () => {}
+                    };
+                    this.draw(mockEvent);
+                }, { passive: false });
 
                 this.canvas.addEventListener('touchend', (e) => {
                     e.preventDefault();
-                    const mouseEvent = new MouseEvent('mouseup', {});
-                    this.canvas.dispatchEvent(mouseEvent);
-                });
+                    if (e.changedTouches && e.changedTouches.length > 0) {
+                        const touch = e.changedTouches[0];
+                        const mockEvent = {
+                            clientX: touch.clientX,
+                            clientY: touch.clientY,
+                            preventDefault: () => {}
+                        };
+                        this.stopDrawing(mockEvent);
+                    } else {
+                        this.stopDrawing();
+                    }
+                }, { passive: false });
 
                 // Modal events
                 document.getElementById('modal-cancel').addEventListener('click', () => {
@@ -1733,11 +1753,21 @@
 
                 if (this.isActive) {
                     this.overlay.classList.add('active');
+                    // Lock scroll on both body and html for mobile
                     document.body.style.overflow = 'hidden';
+                    document.body.style.position = 'fixed';
+                    document.body.style.width = '100%';
+                    document.body.style.height = '100%';
+                    document.documentElement.style.overflow = 'hidden';
                     document.getElementById('annotation-toggle').style.display = 'none';
                 } else {
                     this.overlay.classList.remove('active');
+                    // Restore scroll
                     document.body.style.overflow = '';
+                    document.body.style.position = '';
+                    document.body.style.width = '';
+                    document.body.style.height = '';
+                    document.documentElement.style.overflow = '';
                     document.getElementById('annotation-toggle').style.display = 'flex';
                 }
             }
@@ -1776,11 +1806,20 @@
                 });
             }
 
+            getCanvasCoordinates(e) {
+                const rect = this.canvas.getBoundingClientRect();
+
+                // Since canvas is fixed and covers viewport, coordinates are simpler
+                // Just get position relative to canvas top-left
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                return { x, y };
+            }
+
             startDrawing(e) {
                 this.isDrawing = true;
-                const rect = this.canvas.getBoundingClientRect();
-                const x = e.clientX - rect.left + window.scrollX;
-                const y = e.clientY - rect.top + window.scrollY;
+                const { x, y } = this.getCanvasCoordinates(e);
 
                 this.startPoint = { x, y };
 
@@ -1805,9 +1844,7 @@
             draw(e) {
                 if (!this.isDrawing || !this.currentStroke) return;
 
-                const rect = this.canvas.getBoundingClientRect();
-                const x = e.clientX - rect.left + window.scrollX;
-                const y = e.clientY - rect.top + window.scrollY;
+                const { x, y } = this.getCanvasCoordinates(e);
 
                 if (this.currentTool === 'pen' || this.currentTool === 'highlighter') {
                     this.currentStroke.points.push({ x, y });
@@ -1822,9 +1859,7 @@
                 if (!this.isDrawing) return;
 
                 if (this.currentStroke && e) {
-                    const rect = this.canvas.getBoundingClientRect();
-                    const x = e.clientX - rect.left + window.scrollX;
-                    const y = e.clientY - rect.top + window.scrollY;
+                    const { x, y } = this.getCanvasCoordinates(e);
 
                     // For shapes, set end point
                     if (this.currentTool === 'circle' || this.currentTool === 'arrow') {
