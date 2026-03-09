@@ -1057,6 +1057,228 @@
             transform: translateY(-3px);
         }
 
+        /* Modal System */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            overflow-y: auto;
+            padding: var(--space-8) var(--space-4);
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            max-width: 800px;
+            width: 100%;
+            margin: var(--space-8) auto;
+            position: relative;
+            animation: fadeInUp 0.3s ease-out;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: var(--space-4);
+            right: var(--space-4);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: var(--text-lg);
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+
+        .close-modal:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        /* Carousel */
+        .carousel {
+            position: relative;
+            width: 100%;
+            border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+            overflow: hidden;
+            background: var(--bg-secondary);
+        }
+
+        .carousel-inner {
+            display: flex;
+            transition: transform 0.4s ease;
+        }
+
+        .carousel-item {
+            min-width: 100%;
+            height: 400px;
+        }
+
+        .carousel-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: var(--bg-secondary);
+        }
+
+        .carousel-control {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--border);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: var(--text-base);
+            transition: all 0.2s ease;
+            z-index: 5;
+        }
+
+        .carousel-control:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .carousel-control.prev { left: var(--space-3); }
+        .carousel-control.next { right: var(--space-3); }
+
+        .carousel-indicators {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-2);
+            padding: var(--space-3) 0;
+            background: var(--surface);
+        }
+
+        .carousel-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--border);
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 0;
+        }
+
+        .carousel-dot.active {
+            background: var(--accent);
+            transform: scale(1.3);
+        }
+
+        /* Modal Body */
+        .modal-body {
+            padding: var(--space-8);
+        }
+
+        .modal-title {
+            font-size: var(--text-2xl);
+            font-weight: 700;
+            margin-bottom: var(--space-4);
+        }
+
+        .modal-description {
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: var(--space-8);
+        }
+
+        .modal-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-6);
+        }
+
+        .modal-grid h4 {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--space-3);
+        }
+
+        .modal-grid ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+        }
+
+        .modal-grid li {
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+            padding-left: var(--space-4);
+            position: relative;
+        }
+
+        .modal-grid li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 8px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--border-hover);
+        }
+
+        /* Single-image carousel hides controls */
+        .carousel[data-count="1"] .carousel-control,
+        .carousel[data-count="1"] .carousel-indicators {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .modal {
+                padding: var(--space-2);
+            }
+
+            .modal-content {
+                margin: var(--space-4) auto;
+            }
+
+            .carousel-item {
+                height: 250px;
+            }
+
+            .modal-body {
+                padding: var(--space-6);
+            }
+
+            .modal-grid {
+                grid-template-columns: 1fr;
+                gap: var(--space-4);
+            }
+        }
+
         /* Annotation System Styles */
         .annotation-fab {
             position: fixed;
@@ -1951,9 +2173,299 @@
                         <span class="tag">Hardware Integration</span>
                     </div>
                 </div>
+
+                <div class="card project-card card-clickable hover-lift" data-project="ebike-retrofit">
+                    <div class="project-image">
+                        <img src="docs/assets/img/project-photos/ebike1.jpg" alt="Electric Bike Retrofit" loading="lazy">
+                    </div>
+                    <h3>Electric Bike Retrofit</h3>
+                    <p style="margin-bottom: var(--space-4);">Senior project retrofitting a bicycle with electric power assist, regenerative braking, and battery management system.</p>
+                    <div class="project-tags">
+                        <span class="tag">Engineering</span>
+                        <span class="tag">Motor Design</span>
+                        <span class="tag">Testing</span>
+                    </div>
+                </div>
+
+                <div class="card project-card card-clickable hover-lift" data-project="flexible-pcb">
+                    <div class="project-image">
+                        <img src="docs/assets/img/project-photos/flexiPCB.jpg" alt="Flexible PCB Design" loading="lazy">
+                    </div>
+                    <h3>Flexible PCB Design</h3>
+                    <p style="margin-bottom: var(--space-4);">Exploration into flexible PCB design principles including polyimide substrates, bend radius compliance, and FPC manufacturing.</p>
+                    <div class="project-tags">
+                        <span class="tag">PCB Design</span>
+                        <span class="tag">Advanced Materials</span>
+                        <span class="tag">Hardware</span>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
+
+    <!-- Project Modals -->
+    <div class="modal" id="modal-rf-amplifier">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('rf-amplifier')">&times;</button>
+            <div class="carousel" data-count="5">
+                <div class="carousel-inner" id="carousel-rf-amplifier">
+                    <div class="carousel-item"><img src="docs/assets/img/project-photos/RFAmp.jpg" alt="RF Amplifier"></div>
+                    <div class="carousel-item"><img src="docs/assets/img/project-photos/RFAmpPCB.jpg" alt="RF Amplifier PCB"></div>
+                    <div class="carousel-item"><img src="docs/assets/img/project-photos/RFAmpProgress.jpg" alt="RF Amplifier Progress"></div>
+                    <div class="carousel-item"><img src="docs/assets/img/project-photos/RFAmpSetup.jpg" alt="RF Amplifier Setup"></div>
+                    <div class="carousel-item"><img src="docs/assets/img/project-photos/RFPCB.png" alt="RF PCB Layout"></div>
+                </div>
+                <button class="carousel-control prev" onclick="prevSlide('rf-amplifier')"><i class="fas fa-chevron-left"></i></button>
+                <button class="carousel-control next" onclick="nextSlide('rf-amplifier')"><i class="fas fa-chevron-right"></i></button>
+            </div>
+            <div class="carousel-indicators" id="indicators-rf-amplifier">
+                <button class="carousel-dot active" onclick="goToSlide('rf-amplifier', 0)"></button>
+                <button class="carousel-dot" onclick="goToSlide('rf-amplifier', 1)"></button>
+                <button class="carousel-dot" onclick="goToSlide('rf-amplifier', 2)"></button>
+                <button class="carousel-dot" onclick="goToSlide('rf-amplifier', 3)"></button>
+                <button class="carousel-dot" onclick="goToSlide('rf-amplifier', 4)"></button>
+            </div>
+            <div class="modal-body">
+                <h3 class="modal-title">RF Amplifier</h3>
+                <p class="modal-description">Designed and built a high-fidelity RF amplifier targeting specific gain and bandwidth goals. Focused on signal integrity, PCB layout following RF best practices, component assembly, and rigorous testing with professional RF equipment.</p>
+                <div class="modal-grid">
+                    <div>
+                        <h4>Technologies</h4>
+                        <ul>
+                            <li>Circuit Sim (ADS/SPICE)</li>
+                            <li>PCB Design (KiCAD/Fusion 360)</li>
+                            <li>RF Test Equipment (VNA, SA)</li>
+                            <li>Soldering (SMD & THT)</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>Key Features</h4>
+                        <ul>
+                            <li>Target Gain Achievement</li>
+                            <li>Defined Bandwidth Range</li>
+                            <li>50 Ohm Impedance Matching</li>
+                            <li>Low Noise Figure</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>Details</h4>
+                        <ul>
+                            <li>RF best-practice PCB layout</li>
+                            <li>Professional test & measurement</li>
+                            <li>SMD component assembly</li>
+                            <li>Full characterization report</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modal-handheld-console">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('handheld-console')">&times;</button>
+            <div class="carousel" data-count="2">
+                <div class="carousel-inner" id="carousel-handheld-console">
+                    <div class="carousel-item"><img src="docs/assets/img/project-photos/RetropieFront.jpg" alt="Retropie Front"></div>
+                    <div class="carousel-item"><img src="docs/assets/img/project-photos/RetropieBack.jpg" alt="Retropie Back"></div>
+                </div>
+                <button class="carousel-control prev" onclick="prevSlide('handheld-console')"><i class="fas fa-chevron-left"></i></button>
+                <button class="carousel-control next" onclick="nextSlide('handheld-console')"><i class="fas fa-chevron-right"></i></button>
+            </div>
+            <div class="carousel-indicators" id="indicators-handheld-console">
+                <button class="carousel-dot active" onclick="goToSlide('handheld-console', 0)"></button>
+                <button class="carousel-dot" onclick="goToSlide('handheld-console', 1)"></button>
+            </div>
+            <div class="modal-body">
+                <h3 class="modal-title">Raspberry Pi Console</h3>
+                <p class="modal-description">Custom-designed handheld gaming console powered by Raspberry Pi. Features integrated controls, display, audio, and power management all housed in a 3D-printed ergonomic enclosure. Runs RetroPie and Lakka for retro game emulation.</p>
+                <div class="modal-grid">
+                    <div>
+                        <h4>Technologies</h4>
+                        <ul>
+                            <li>Raspberry Pi</li>
+                            <li>Linux / RetroPie / Lakka</li>
+                            <li>Custom PCB & Wiring</li>
+                            <li>CAD (Fusion 360) & 3D Printing</li>
+                            <li>Power Management (LiPo)</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>Key Features</h4>
+                        <ul>
+                            <li>Portable Retro Gaming</li>
+                            <li>Integrated LCD Display</li>
+                            <li>Full Control Layout</li>
+                            <li>Rechargeable Battery</li>
+                            <li>Custom Ergonomic Case</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>Details</h4>
+                        <ul>
+                            <li>3D-printed enclosure design</li>
+                            <li>Custom wiring harness</li>
+                            <li>Multi-platform emulation</li>
+                            <li>Audio amplifier integration</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modal-iot-dispenser">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('iot-dispenser')">&times;</button>
+            <div class="carousel" data-count="1">
+                <div class="carousel-inner" id="carousel-iot-dispenser">
+                    <div class="carousel-item"><img src="docs/assets/img/project-photos/dogTreatDispenser.png" alt="IoT Dog Treat Dispenser"></div>
+                </div>
+            </div>
+            <div class="carousel-indicators" id="indicators-iot-dispenser"></div>
+            <div class="modal-body">
+                <h3 class="modal-title">IoT Dog Treat Dispenser</h3>
+                <p class="modal-description">IoT-connected device that dispenses dog treats remotely or on a set schedule. Combines mechanical dispensing design, microcontroller hardware integration, and software for wireless connectivity and control.</p>
+                <div class="modal-grid">
+                    <div>
+                        <h4>Technologies</h4>
+                        <ul>
+                            <li>ESP32 / ESP8266</li>
+                            <li>Servo Motor / Auger Mechanism</li>
+                            <li>CAD & 3D Printing</li>
+                            <li>MQTT / WiFi</li>
+                            <li>Mobile App Framework</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>Key Features</h4>
+                        <ul>
+                            <li>Remote Dispensing</li>
+                            <li>Scheduled Feeding</li>
+                            <li>Adjustable Portion Size</li>
+                            <li>Web / App Interface</li>
+                            <li>Low Treat Sensor</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>Details</h4>
+                        <ul>
+                            <li>WiFi-connected microcontroller</li>
+                            <li>Mechanical treat dispensing</li>
+                            <li>Mobile app control</li>
+                            <li>Automated scheduling system</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modal-ebike-retrofit">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('ebike-retrofit')">&times;</button>
+            <div class="carousel" data-count="2">
+                <div class="carousel-inner" id="carousel-ebike-retrofit">
+                    <div class="carousel-item"><img src="docs/assets/img/project-photos/ebike1.jpg" alt="Electric Bike Build"></div>
+                    <div class="carousel-item"><img src="docs/assets/img/project-photos/ebike2.jpg" alt="Electric Bike Detail"></div>
+                </div>
+                <button class="carousel-control prev" onclick="prevSlide('ebike-retrofit')"><i class="fas fa-chevron-left"></i></button>
+                <button class="carousel-control next" onclick="nextSlide('ebike-retrofit')"><i class="fas fa-chevron-right"></i></button>
+            </div>
+            <div class="carousel-indicators" id="indicators-ebike-retrofit">
+                <button class="carousel-dot active" onclick="goToSlide('ebike-retrofit', 0)"></button>
+                <button class="carousel-dot" onclick="goToSlide('ebike-retrofit', 1)"></button>
+            </div>
+            <div class="modal-body">
+                <h3 class="modal-title">Electric Bike Retrofit</h3>
+                <p class="modal-description">Senior design project converting a standard bicycle into a fully electric-assisted ride. Involved motor and battery selection, controls integration, and implementation of electric regenerative braking for energy recovery.</p>
+                <div class="modal-grid">
+                    <div>
+                        <h4>Technologies</h4>
+                        <ul>
+                            <li>BLDC Hub Motor</li>
+                            <li>Motor Controller (VESC)</li>
+                            <li>Li-Ion Battery & BMS</li>
+                            <li>Throttle / PAS</li>
+                            <li>Microcontroller</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>Key Features</h4>
+                        <ul>
+                            <li>Electric Power Assist</li>
+                            <li>Regenerative Braking</li>
+                            <li>Variable Assist Levels</li>
+                            <li>Battery Display</li>
+                            <li>Frame Integration</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>Details</h4>
+                        <ul>
+                            <li>Senior capstone project</li>
+                            <li>Full mechanical integration</li>
+                            <li>Battery management system</li>
+                            <li>Performance testing & tuning</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modal-flexible-pcb">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('flexible-pcb')">&times;</button>
+            <div class="carousel" data-count="2">
+                <div class="carousel-inner" id="carousel-flexible-pcb">
+                    <div class="carousel-item"><img src="docs/assets/img/project-photos/flexiPCB.jpg" alt="Flexible PCB"></div>
+                    <div class="carousel-item"><img src="docs/assets/img/project-photos/VNA.jpg" alt="VNA Testing"></div>
+                </div>
+                <button class="carousel-control prev" onclick="prevSlide('flexible-pcb')"><i class="fas fa-chevron-left"></i></button>
+                <button class="carousel-control next" onclick="nextSlide('flexible-pcb')"><i class="fas fa-chevron-right"></i></button>
+            </div>
+            <div class="carousel-indicators" id="indicators-flexible-pcb">
+                <button class="carousel-dot active" onclick="goToSlide('flexible-pcb', 0)"></button>
+                <button class="carousel-dot" onclick="goToSlide('flexible-pcb', 1)"></button>
+            </div>
+            <div class="modal-body">
+                <h3 class="modal-title">Flexible PCB Design</h3>
+                <p class="modal-description">Exploration of flexible printed circuit board design principles including material selection (Polyimide), stack-up design, trace routing for flexibility, and manufacturing considerations for compact and dynamic applications.</p>
+                <div class="modal-grid">
+                    <div>
+                        <h4>Technologies</h4>
+                        <ul>
+                            <li>Flex PCB Design Software</li>
+                            <li>Polyimide (Kapton)</li>
+                            <li>Adhesiveless Construction</li>
+                            <li>Stiffeners & Coverlay</li>
+                            <li>FPC Manufacturing</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>Key Features</h4>
+                        <ul>
+                            <li>Bend Radius Compliance</li>
+                            <li>Dynamic & Static Flex</li>
+                            <li>3D Interconnects</li>
+                            <li>Layer Stackup Design</li>
+                            <li>Component Placement Rules</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>Details</h4>
+                        <ul>
+                            <li>Polyimide substrate selection</li>
+                            <li>Flex-to-rigid transitions</li>
+                            <li>Manufacturing DFM rules</li>
+                            <li>VNA characterization</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Skills Section -->
     <section id="skills" class="section">
@@ -2210,20 +2722,85 @@
             });
         });
         
+        // Modal & Carousel state
+        const carouselState = {};
+
+        function openModal(projectId) {
+            const modal = document.getElementById('modal-' + projectId);
+            if (!modal) return;
+            carouselState[projectId] = 0;
+            updateCarousel(projectId);
+            document.body.style.overflow = 'hidden';
+            modal.style.display = 'flex';
+            requestAnimationFrame(() => modal.classList.add('active'));
+        }
+
+        function closeModal(projectId) {
+            const modal = document.getElementById('modal-' + projectId);
+            if (!modal) return;
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+            setTimeout(() => { modal.style.display = 'none'; }, 300);
+        }
+
+        function closeAllModals() {
+            document.querySelectorAll('.modal.active').forEach(modal => {
+                const id = modal.id.replace('modal-', '');
+                closeModal(id);
+            });
+        }
+
+        function getSlideCount(projectId) {
+            const inner = document.getElementById('carousel-' + projectId);
+            return inner ? inner.children.length : 0;
+        }
+
+        function updateCarousel(projectId) {
+            const idx = carouselState[projectId] || 0;
+            const inner = document.getElementById('carousel-' + projectId);
+            if (inner) inner.style.transform = 'translateX(-' + (idx * 100) + '%)';
+            const indicators = document.getElementById('indicators-' + projectId);
+            if (indicators) {
+                indicators.querySelectorAll('.carousel-dot').forEach((dot, i) => {
+                    dot.classList.toggle('active', i === idx);
+                });
+            }
+        }
+
+        function prevSlide(projectId) {
+            const count = getSlideCount(projectId);
+            carouselState[projectId] = ((carouselState[projectId] || 0) - 1 + count) % count;
+            updateCarousel(projectId);
+        }
+
+        function nextSlide(projectId) {
+            const count = getSlideCount(projectId);
+            carouselState[projectId] = ((carouselState[projectId] || 0) + 1) % count;
+            updateCarousel(projectId);
+        }
+
+        function goToSlide(projectId, index) {
+            carouselState[projectId] = index;
+            updateCarousel(projectId);
+        }
+
         // Project card click handlers
         document.querySelectorAll('.project-card').forEach(card => {
             card.addEventListener('click', function() {
-                const project = this.dataset.project;
-                
-                // Simple project details display
-                const projectDetails = {
-                    'rf-amplifier': 'RF Amplifier: High-fidelity communication system amplifier with advanced PCB design and RF simulation.',
-                    'handheld-console': 'Raspberry Pi Console: Custom handheld gaming device with retro emulation and 3D printed housing.',
-                    'iot-dispenser': 'IoT Dog Treat Dispenser: Smart pet care device with mobile app control and scheduling features.'
-                };
-                
-                alert(projectDetails[project] || 'Project details coming soon!');
+                openModal(this.dataset.project);
             });
+        });
+
+        // Close modal on backdrop click
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) closeAllModals();
+            });
+        });
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeAllModals();
         });
         
         // Intersection Observer for card animations
