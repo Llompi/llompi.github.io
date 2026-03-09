@@ -7,7 +7,7 @@
     <meta name="keywords" content="electrical engineer, portfolio, hardware design, PCB design, IoT, embedded systems">
     <meta name="author" content="Joan Llompart">
     <title>Joan Llompart | Electrical Engineer</title>
-
+h
     <!-- Open Graph / Social Media -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="Joan Llompart | Electrical Engineer Portfolio">
@@ -3832,38 +3832,77 @@
             }
 
             async sendFeedback() {
-                const name = document.getElementById('feedback-name').value;
-                const email = document.getElementById('feedback-email').value;
-                const message = document.getElementById('feedback-message').value;
+            const name = document.getElementById('feedback-name').value;
+            const email = document.getElementById('feedback-email').value;
+            const message = document.getElementById('feedback-message').value;
 
-                // Capture screenshot
-                const screenshotData = this.canvas.toDataURL('image/png');
+            // Capture screenshot as base64
+            const screenshotData = this.canvas.toDataURL('image/png');
+            // Extract just the base64 content (remove data:image/png;base64, prefix)
+            const base64Content = screenshotData.split(',')[1];
 
-                // In a real implementation, you would send this to a backend
-                // For now, we'll use mailto as a fallback
-                const emailBody = `
-Name: ${name}
-Email: ${email}
-Message: ${message}
+            const submitBtn = document.querySelector('#annotation-form button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Sending...';
+            submitBtn.disabled = true;
 
-[Screenshot attached in annotation]
-                `.trim();
+            try {
+                const response = await fetch('https://api.resend.com/emails', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer re_37M75Vzx_Dy8PTQog2ourqCLxwn1XjYqr',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        from: 'Portfolio Feedback <onboarding@resend.dev>',
+                        to: ['Joan.llbab@gmail.com'],
+                        subject: `Portfolio Feedback from ${name}`,
+                        html: `<h2>Portfolio Annotation Feedback</h2>
+                               <p><strong>Name:</strong> ${name}</p>
+                               <p><strong>Email:</strong> ${email}</p>
+                               <p><strong>Message:</strong> ${message || 'No additional comments'}</p>
+                               <p><strong>Screenshot attached below</strong></p>
+                               <hr>
+                               <p><em>Sent from the portfolio annotation system at llompi.github.io</em></p>`,
+                        attachments: [
+                            {
+                                filename: 'annotation-screenshot.png',
+                                content: base64Content
+                            }
+                        ]
+                    })
+                });
 
-                // Show success message
-                alert('Feedback captured! Opening email client...\n\nIn production, this would send to a backend with the annotated screenshot.');
-
-                // Open mailto (fallback)
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Feedback sent successfully:', data);
+                    alert('Feedback sent successfully! Thank you for your input.');
+                } else {
+                    const errorData = await response.json();
+                    console.error('Failed to send feedback:', errorData);
+                    alert('Failed to send feedback. Opening email client as fallback...');
+                    const emailBody = `Name: ${name}\nEmail: ${email}\nMessage: ${message}\n\n[Screenshot attached in annotation]`;
+                    window.location.href = `mailto:Joan.llbab@gmail.com?subject=Portfolio Feedback from ${name}&body=${encodeURIComponent(emailBody)}`;
+                }
+            } catch (error) {
+                console.error('Error sending feedback:', error);
+                alert('Network error. Opening email client as fallback...');
+                const emailBody = `Name: ${name}\nEmail: ${email}\nMessage: ${message}\n\n[Screenshot attached in annotation]`;
                 window.location.href = `mailto:Joan.llbab@gmail.com?subject=Portfolio Feedback from ${name}&body=${encodeURIComponent(emailBody)}`;
-
-                // Reset
-                document.getElementById('annotation-modal').classList.remove('active');
-                document.getElementById('annotation-form').reset();
-                this.strokes = [];
-                this.redraw();
-                this.overlay.classList.remove('active', 'viewing');
-                this.isActive = false;
-                document.getElementById('annotation-toggle').style.display = 'flex';
+            } finally {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
             }
+
+            // Reset
+            document.getElementById('annotation-modal').classList.remove('active');
+            document.getElementById('annotation-form').reset();
+            this.strokes = [];
+            this.redraw();
+            this.overlay.classList.remove('active', 'viewing');
+            this.isActive = false;
+            document.getElementById('annotation-toggle').style.display = 'flex';
+        }
         }
 
         // Initialize annotation system when DOM is ready
