@@ -94,3 +94,9 @@ docs/build/
 
 # Storybook Build
 storybook-static/
+
+# Claude Code
+.claude/
+
+# Review/debug screenshots (root only)
+/*.png

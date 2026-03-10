@@ -7,7 +7,7 @@
     <meta name="keywords" content="electrical engineer, portfolio, hardware design, PCB design, IoT, embedded systems">
     <meta name="author" content="Joan Llompart">
     <title>Joan Llompart | Electrical Engineer</title>
-h
+
     <!-- Open Graph / Social Media -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="Joan Llompart | Electrical Engineer Portfolio">
@@ -72,6 +72,9 @@ h
 
     <!-- Three.js for 3D background -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <!-- html2canvas for page capture in ASCII art -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
 
     <style>
         :root {
@@ -1342,7 +1345,7 @@ h
             color: white;
             border: none;
             box-shadow: 0 8px 32px rgba(59, 130, 246, 0.4);
-            cursor: pointer;
+            cursor: pointer !important;
             z-index: 999;
             display: flex;
             align-items: center;
@@ -1389,6 +1392,7 @@ h
             display: block;
             pointer-events: auto;
             animation: overlayFadeIn 0.4s ease;
+            cursor: crosshair !important;
         }
 
         .annotation-overlay.viewing {
@@ -1411,7 +1415,7 @@ h
             top: 0;
             left: 0;
             width: 100%;
-            cursor: crosshair;
+            cursor: crosshair !important;
             background: transparent;
         }
 
@@ -1420,11 +1424,11 @@ h
         }
 
         .annotation-overlay.text-mode canvas {
-            cursor: text;
+            cursor: text !important;
         }
 
         .annotation-overlay.eraser-mode canvas {
-            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><circle cx="12" cy="12" r="10" fill="white" stroke="black" stroke-width="2"/></svg>') 12 12, auto;
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><circle cx="12" cy="12" r="10" fill="white" stroke="black" stroke-width="2"/></svg>') 12 12, auto !important;
         }
 
         /* Annotation Toolbar */
@@ -1443,6 +1447,7 @@ h
             gap: 8px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
             animation: toolbarSlideIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            cursor: default !important;
         }
 
         @keyframes toolbarSlideIn {
@@ -1479,7 +1484,7 @@ h
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
+            cursor: pointer !important;
             transition: all 0.2s ease;
             font-size: 18px;
         }
@@ -1534,6 +1539,7 @@ h
             gap: 8px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
             animation: toolbarSlideIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            cursor: default !important;
         }
 
         .color-option {
@@ -1541,7 +1547,7 @@ h
             height: 40px;
             border-radius: 50%;
             border: 3px solid transparent;
-            cursor: pointer;
+            cursor: pointer !important;
             transition: all 0.2s ease;
             position: relative;
         }
@@ -1617,6 +1623,11 @@ h
             background: rgba(0, 0, 0, 0.8);
             backdrop-filter: blur(10px);
             animation: modalFadeIn 0.3s ease;
+        }
+
+        .annotation-modal.active,
+        .annotation-modal.active * {
+            cursor: auto !important;
         }
 
         .annotation-modal.active {
@@ -1706,6 +1717,156 @@ h
             flex: 1;
         }
 
+        /* Annotation Preview */
+        #annotation-preview-container {
+            display: none;
+            margin-top: var(--space-4);
+        }
+
+        #annotation-preview-container.visible {
+            display: block;
+            animation: previewReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes previewReveal {
+            from { opacity: 0; transform: translateY(8px) scale(0.98); filter: blur(4px); }
+            to   { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+        }
+
+        #annotation-preview-label {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            margin-bottom: var(--space-2);
+        }
+
+        .preview-label-text {
+            font-size: var(--text-xs);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .preview-label-badge {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 700;
+            color: var(--accent);
+            background: rgba(99, 102, 241, 0.12);
+            padding: 2px 8px;
+            border-radius: 999px;
+            line-height: 1.6;
+        }
+
+        .annotation-preview-frame {
+            position: relative;
+            border-radius: var(--radius);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2), 0 2px 8px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .annotation-preview-frame::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            padding: 1px;
+            background: linear-gradient(135deg, var(--accent), transparent 40%, transparent 60%, var(--accent));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0.3;
+            animation: borderGlow 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes borderGlow {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 0.5; }
+        }
+
+        .annotation-preview-frame:hover {
+            transform: translateY(-1px);
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2), 0 4px 16px rgba(0, 0, 0, 0.25);
+        }
+
+        #annotation-preview-ascii {
+            display: block;
+            width: 100%;
+            max-height: 240px;
+            overflow: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 4px;
+            line-height: 1.0;
+            letter-spacing: 0.05em;
+            white-space: pre;
+            color: var(--text-primary);
+            background: transparent;
+            margin: 0;
+            padding: 8px;
+            min-height: 80px;
+        }
+
+        .annotation-preview-shimmer {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                105deg,
+                transparent 30%,
+                rgba(255, 255, 255, 0.06) 45%,
+                rgba(255, 255, 255, 0.12) 50%,
+                rgba(255, 255, 255, 0.06) 55%,
+                transparent 70%
+            );
+            animation: shimmerSweep 1.2s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes shimmerSweep {
+            from { transform: translateX(-100%); }
+            to   { transform: translateX(100%); }
+        }
+
+        #annotation-unavailable {
+            display: none;
+            font-size: var(--text-sm);
+            color: var(--text-muted);
+            font-style: italic;
+            margin-top: var(--space-2);
+        }
+
+        /* Light theme overrides for preview */
+        [data-theme="light"] .annotation-preview-frame {
+            border-color: rgba(0, 0, 0, 0.1);
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.08);
+            background: rgba(0, 0, 0, 0.03);
+        }
+
+        [data-theme="light"] .annotation-preview-frame:hover {
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.12);
+        }
+
+        [data-theme="light"] .preview-label-badge {
+            background: rgba(99, 102, 241, 0.08);
+        }
+
+        [data-theme="light"] .annotation-preview-shimmer {
+            background: linear-gradient(
+                105deg,
+                transparent 30%,
+                rgba(255, 255, 255, 0.15) 45%,
+                rgba(255, 255, 255, 0.3) 50%,
+                rgba(255, 255, 255, 0.15) 55%,
+                transparent 70%
+            );
+        }
+
         /* Mobile Responsiveness */
         @media (max-width: 768px) {
             .annotation-fab {
@@ -1751,7 +1912,7 @@ h
 
         /* Drawing cursor styles */
         .annotation-overlay.drawing canvas {
-            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><circle cx="8" cy="8" r="4" fill="white" stroke="black" stroke="width="1"/></svg>') 8 8, crosshair;
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><circle cx="8" cy="8" r="4" fill="white" stroke="black" stroke="width="1"/></svg>') 8 8, crosshair !important;
         }
 
         /* Custom Cursor System */
@@ -1765,16 +1926,20 @@ h
         }
 
         .custom-cursor {
+            --cursor-size: 20px;
             position: fixed;
             top: 0;
             left: 0;
-            width: 20px;
-            height: 20px;
+            width: var(--cursor-size);
+            height: var(--cursor-size);
+            margin-left: calc(-1 * var(--cursor-size) / 2);
+            margin-top: calc(-1 * var(--cursor-size) / 2);
             border: 2px solid var(--accent);
             border-radius: 50%;
             pointer-events: none;
             z-index: 9999;
-            transition: transform 0.15s ease-out, width 0.2s ease, height 0.2s ease, border-color 0.2s ease;
+            transition: width 0.2s ease, height 0.2s ease, border-color 0.2s ease, background 0.2s ease, margin 0.2s ease;
+            will-change: transform;
             mix-blend-mode: difference;
             opacity: 0;
         }
@@ -1784,28 +1949,9 @@ h
         }
 
         .custom-cursor.hover {
-            width: 50px;
-            height: 50px;
+            --cursor-size: 50px;
             border-color: var(--text-primary);
             background: rgba(59, 130, 246, 0.1);
-        }
-
-        .custom-cursor-dot {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 6px;
-            height: 6px;
-            background: var(--accent);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 10000;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-        }
-
-        .custom-cursor-dot.visible {
-            opacity: 1;
         }
 
         /* Hide custom cursor on mobile */
@@ -1819,15 +1965,13 @@ h
                 cursor: pointer !important;
             }
 
-            .custom-cursor,
-            .custom-cursor-dot {
+            .custom-cursor {
                 display: none;
             }
         }
 
         /* Disable custom cursor in annotation mode */
-        .annotation-overlay.active ~ .custom-cursor,
-        .annotation-overlay.active ~ .custom-cursor-dot {
+        body.annotation-active .custom-cursor {
             display: none;
         }
 
@@ -2156,7 +2300,6 @@ h
 
     <!-- Custom Cursor -->
     <div class="custom-cursor"></div>
-    <div class="custom-cursor-dot"></div>
 
     <!-- Command Palette -->
     <div class="command-palette-overlay" id="command-palette-overlay">
@@ -2813,6 +2956,17 @@ h
         <div class="annotation-modal-content">
             <h3>Submit Your Feedback</h3>
             <p>Add your contact info so I can respond to your feedback:</p>
+            <div id="annotation-preview-container">
+                <div id="annotation-preview-label">
+                    <span class="preview-label-text">Your annotation</span>
+                    <span class="preview-label-badge">LIVE CAPTURE</span>
+                </div>
+                <div class="annotation-preview-frame">
+                    <pre id="annotation-preview-ascii"></pre>
+                    <div class="annotation-preview-shimmer"></div>
+                </div>
+            </div>
+            <p id="annotation-unavailable">Preview unavailable</p>
             <form id="annotation-form">
                 <input type="text" id="feedback-name" placeholder="Your Name" required>
                 <input type="email" id="feedback-email" placeholder="Your Email" required>
@@ -3373,6 +3527,21 @@ h
                 // Text annotation
                 this.textInput = null;
 
+                // Capture state
+                this.compositeResult = null;
+                this.asciiArt = null;
+                this.securityError = false;
+
+                // Cache DOM elements
+                this.modal = document.getElementById('annotation-modal');
+                this.previewContainer = document.getElementById('annotation-preview-container');
+                this.previewAscii = document.getElementById('annotation-preview-ascii');
+                this.unavailableEl = document.getElementById('annotation-unavailable');
+                this.form = document.getElementById('annotation-form');
+                this.toggleBtn = document.getElementById('annotation-toggle');
+                this.toolbar = document.querySelector('.annotation-toolbar');
+                this.colorPicker = document.querySelector('.annotation-color-picker');
+
                 // Initialize
                 this.setupCanvas();
                 this.attachEventListeners();
@@ -3406,7 +3575,7 @@ h
 
             attachEventListeners() {
                 // Toggle button
-                document.getElementById('annotation-toggle').addEventListener('click', () => {
+                this.toggleBtn.addEventListener('click', () => {
                     this.toggle();
                 });
 
@@ -3439,44 +3608,26 @@ h
                 this.canvas.addEventListener('mouseleave', () => this.stopDrawing());
 
                 // Touch support - Direct handling for accurate coordinates
+                const touchToMock = (touch) => ({
+                    clientX: touch.clientX,
+                    clientY: touch.clientY,
+                    preventDefault: () => {}
+                });
+
                 this.canvas.addEventListener('touchstart', (e) => {
                     e.preventDefault();
-                    const touch = e.touches[0];
-                    const rect = this.canvas.getBoundingClientRect();
-                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-
-                    // Create a mock event with corrected coordinates
-                    const mockEvent = {
-                        clientX: touch.clientX,
-                        clientY: touch.clientY,
-                        preventDefault: () => {}
-                    };
-                    this.startDrawing(mockEvent);
+                    this.startDrawing(touchToMock(e.touches[0]));
                 }, { passive: false });
 
                 this.canvas.addEventListener('touchmove', (e) => {
                     e.preventDefault();
-                    const touch = e.touches[0];
-
-                    const mockEvent = {
-                        clientX: touch.clientX,
-                        clientY: touch.clientY,
-                        preventDefault: () => {}
-                    };
-                    this.draw(mockEvent);
+                    this.draw(touchToMock(e.touches[0]));
                 }, { passive: false });
 
                 this.canvas.addEventListener('touchend', (e) => {
                     e.preventDefault();
                     if (e.changedTouches && e.changedTouches.length > 0) {
-                        const touch = e.changedTouches[0];
-                        const mockEvent = {
-                            clientX: touch.clientX,
-                            clientY: touch.clientY,
-                            preventDefault: () => {}
-                        };
-                        this.stopDrawing(mockEvent);
+                        this.stopDrawing(touchToMock(e.changedTouches[0]));
                     } else {
                         this.stopDrawing();
                     }
@@ -3484,10 +3635,12 @@ h
 
                 // Modal events
                 document.getElementById('modal-cancel').addEventListener('click', () => {
-                    document.getElementById('annotation-modal').classList.remove('active');
+                    this.modal.classList.remove('active');
+                    this.previewContainer.classList.remove('visible');
+                    this.unavailableEl.style.display = 'none';
                 });
 
-                document.getElementById('annotation-form').addEventListener('submit', (e) => {
+                this.form.addEventListener('submit', (e) => {
                     e.preventDefault();
                     this.sendFeedback();
                 });
@@ -3536,43 +3689,31 @@ h
                 this.isActive = !this.isActive;
 
                 if (this.isActive) {
-                    // Active mode - drawing enabled, scrolling allowed
                     this.overlay.classList.remove('viewing');
                     this.overlay.classList.add('active');
-                    // Allow scrolling while annotating
-                    document.body.style.overflow = '';
-                    document.body.style.position = '';
-                    document.body.style.width = '';
-                    document.body.style.height = '';
-                    document.documentElement.style.overflow = '';
-                    document.getElementById('annotation-toggle').style.display = 'none';
-
-                    // Show toolbar and color picker
-                    document.querySelector('.annotation-toolbar').style.display = 'flex';
-                    document.querySelector('.annotation-color-picker').style.display = 'flex';
+                    this.toggleBtn.style.display = 'none';
+                    this.toolbar.style.display = 'flex';
+                    this.colorPicker.style.display = 'flex';
+                    document.body.classList.add('annotation-active');
                 } else {
-                    // Check if there are drawings to show
+                    document.body.classList.remove('annotation-active');
                     if (this.strokes.length > 0) {
-                        // Viewing mode - keep drawings visible, hide UI, allow interaction
                         this.overlay.classList.remove('active');
                         this.overlay.classList.add('viewing');
-
-                        // Hide toolbar and color picker
-                        document.querySelector('.annotation-toolbar').style.display = 'none';
-                        document.querySelector('.annotation-color-picker').style.display = 'none';
+                        this.toolbar.style.display = 'none';
+                        this.colorPicker.style.display = 'none';
                     } else {
-                        // No drawings, fully hide
                         this.overlay.classList.remove('active', 'viewing');
                     }
-
-                    // Restore scroll
-                    document.body.style.overflow = '';
-                    document.body.style.position = '';
-                    document.body.style.width = '';
-                    document.body.style.height = '';
-                    document.documentElement.style.overflow = '';
-                    document.getElementById('annotation-toggle').style.display = 'flex';
+                    this.toggleBtn.style.display = 'flex';
                 }
+
+                // Ensure scroll is always restored
+                document.body.style.overflow = '';
+                document.body.style.position = '';
+                document.body.style.width = '';
+                document.body.style.height = '';
+                document.documentElement.style.overflow = '';
             }
 
             setTool(tool) {
@@ -3822,74 +3963,329 @@ h
                 }
             }
 
+            async captureComposite() {
+                if (this.strokes.length === 0) return null;
+
+                // Compute bounding box of all strokes
+                let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+                for (const stroke of this.strokes) {
+                    if (stroke.tool === 'circle' && stroke.startPoint && stroke.endPoint) {
+                        const radius = Math.sqrt(
+                            Math.pow(stroke.endPoint.x - stroke.startPoint.x, 2) +
+                            Math.pow(stroke.endPoint.y - stroke.startPoint.y, 2)
+                        );
+                        minX = Math.min(minX, stroke.startPoint.x - radius);
+                        minY = Math.min(minY, stroke.startPoint.y - radius);
+                        maxX = Math.max(maxX, stroke.startPoint.x + radius);
+                        maxY = Math.max(maxY, stroke.startPoint.y + radius);
+                    } else if (stroke.tool === 'arrow' && stroke.startPoint && stroke.endPoint) {
+                        minX = Math.min(minX, stroke.startPoint.x, stroke.endPoint.x);
+                        minY = Math.min(minY, stroke.startPoint.y, stroke.endPoint.y);
+                        maxX = Math.max(maxX, stroke.startPoint.x, stroke.endPoint.x);
+                        maxY = Math.max(maxY, stroke.startPoint.y, stroke.endPoint.y);
+                    } else if (stroke.tool === 'text' && stroke.startPoint) {
+                        minX = Math.min(minX, stroke.startPoint.x);
+                        minY = Math.min(minY, stroke.startPoint.y - 20);
+                        maxX = Math.max(maxX, stroke.startPoint.x + (stroke.text || '').length * 12);
+                        maxY = Math.max(maxY, stroke.startPoint.y + 5);
+                    } else if (stroke.points && stroke.points.length > 0) {
+                        for (const pt of stroke.points) {
+                            minX = Math.min(minX, pt.x);
+                            minY = Math.min(minY, pt.y);
+                            maxX = Math.max(maxX, pt.x);
+                            maxY = Math.max(maxY, pt.y);
+                        }
+                    }
+                }
+
+                // Add generous padding to capture surrounding page content
+                const pad = 80;
+                minX = Math.max(0, Math.floor(minX) - pad);
+                minY = Math.max(0, Math.floor(minY) - pad);
+                maxX = Math.min(this.canvas.width, Math.ceil(maxX) + pad);
+                maxY = Math.min(this.canvas.height, Math.ceil(maxY) + pad);
+
+                const bboxW = maxX - minX;
+                const bboxH = maxY - minY;
+                if (bboxW <= 0 || bboxH <= 0) return null;
+
+                let sourceCanvas = null;
+                let sourceW, sourceH;
+                let usedPageCapture = false;
+
+                if (typeof html2canvas === 'function') {
+                    try {
+                        const hideEls = [
+                            this.overlay,
+                            this.toolbar,
+                            this.colorPicker,
+                            this.toggleBtn,
+                            document.querySelector('.custom-cursor')
+                        ].filter(Boolean);
+                        const savedDisplay = hideEls.map(el => el.style.display);
+                        hideEls.forEach(el => el.style.display = 'none');
+
+                        void document.documentElement.offsetHeight;
+
+                        const resolvedBg = getComputedStyle(document.body).backgroundColor || '#0a0a0a';
+
+                        const pageCapture = await html2canvas(document.documentElement, {
+                            x: minX,
+                            y: minY,
+                            width: bboxW,
+                            height: bboxH,
+                            scrollX: 0,
+                            scrollY: 0,
+                            useCORS: true,
+                            logging: false,
+                            backgroundColor: resolvedBg
+                        });
+
+                        hideEls.forEach((el, i) => el.style.display = savedDisplay[i]);
+
+                        const composite = document.createElement('canvas');
+                        composite.width = pageCapture.width;
+                        composite.height = pageCapture.height;
+                        const compCtx = composite.getContext('2d');
+
+                        compCtx.drawImage(pageCapture, 0, 0);
+                        compCtx.drawImage(
+                            this.canvas,
+                            minX, minY, bboxW, bboxH,
+                            0, 0, pageCapture.width, pageCapture.height
+                        );
+
+                        sourceCanvas = composite;
+                        sourceW = composite.width;
+                        sourceH = composite.height;
+                        usedPageCapture = true;
+                    } catch (e) {
+                        console.warn('html2canvas failed, falling back to annotations only:', e);
+                    }
+                }
+
+                if (!sourceCanvas) {
+                    try {
+                        const temp = document.createElement('canvas');
+                        temp.width = bboxW;
+                        temp.height = bboxH;
+                        const tempCtx = temp.getContext('2d');
+                        tempCtx.drawImage(this.canvas, minX, minY, bboxW, bboxH, 0, 0, bboxW, bboxH);
+                        sourceCanvas = temp;
+                        sourceW = bboxW;
+                        sourceH = bboxH;
+                    } catch (e) {
+                        if (e.name === 'SecurityError') this.securityError = true;
+                        return null;
+                    }
+                }
+
+                return { canvas: sourceCanvas, width: sourceW, height: sourceH, bbox: { minX, minY, bboxW, bboxH }, usedPageCapture };
+            }
+
+            generateAsciiArt(compositeResult) {
+                try {
+                    const canvas = compositeResult.canvas;
+                    const ctx = canvas.getContext('2d');
+                    const sourceW = canvas.width;
+                    const sourceH = canvas.height;
+                    const ramp = ' .:-=+*#%@';
+
+                    const cols = 100;
+                    const cellW = sourceW / cols;
+                    const cellH = cellW * 2;
+                    const rows = Math.floor(sourceH / cellH);
+                    if (rows === 0) return null;
+
+                    const imageData = ctx.getImageData(0, 0, sourceW, sourceH);
+                    const pixels = imageData.data;
+
+                    const lum = (i) => 0.299 * pixels[i] + 0.587 * pixels[i + 1] + 0.114 * pixels[i + 2];
+
+                    // Detect background from 4 corners
+                    const corners = [0, (sourceW - 1), (sourceH - 1) * sourceW, (sourceH - 1) * sourceW + (sourceW - 1)];
+                    const cornerLum = corners.reduce((s, px) => s + lum(px * 4), 0) / 4;
+                    const invertMap = cornerLum > 128;
+
+                    // First pass: area-averaged luminance grid
+                    const lumGrid = [];
+                    for (let r = 0; r < rows; r++) {
+                        lumGrid[r] = [];
+                        for (let c = 0; c < cols; c++) {
+                            const x0 = Math.floor(c * cellW), x1 = Math.min(Math.ceil((c + 1) * cellW), sourceW);
+                            const y0 = Math.floor(r * cellH), y1 = Math.min(Math.ceil((r + 1) * cellH), sourceH);
+                            let sum = 0, pixelCount = 0;
+                            for (let y = y0; y < y1; y++) {
+                                for (let x = x0; x < x1; x++) {
+                                    sum += lum((y * sourceW + x) * 4);
+                                    pixelCount++;
+                                }
+                            }
+                            lumGrid[r][c] = pixelCount === 0 ? 0 : sum / pixelCount;
+                        }
+                    }
+
+                    // Contrast stretch
+                    let minLum = Infinity, maxLum = -Infinity;
+                    for (let r = 0; r < rows; r++)
+                        for (let c = 0; c < cols; c++) {
+                            if (lumGrid[r][c] < minLum) minLum = lumGrid[r][c];
+                            if (lumGrid[r][c] > maxLum) maxLum = lumGrid[r][c];
+                        }
+                    let range = maxLum - minLum;
+                    if (range === 0) range = 1;
+
+                    // Second pass: map to ramp
+                    const lines = [];
+                    for (let r = 0; r < rows; r++) {
+                        let line = '';
+                        for (let c = 0; c < cols; c++) {
+                            let normalized = (lumGrid[r][c] - minLum) / range;
+                            if (invertMap) normalized = 1 - normalized;
+                            line += ramp[Math.min(Math.floor(normalized * ramp.length), ramp.length - 1)];
+                        }
+                        lines.push(line);
+                    }
+
+                    return lines.join('\n');
+                } catch (e) {
+                    console.warn('generateAsciiArt failed:', e);
+                    return null;
+                }
+            }
+
             async submit() {
                 if (this.strokes.length === 0) {
                     alert('Please add some feedback before submitting!');
                     return;
                 }
 
-                document.getElementById('annotation-modal').classList.add('active');
+                this.compositeResult = await this.captureComposite();
+
+                if (this.securityError) {
+                    this.previewContainer.classList.remove('visible');
+                    this.unavailableEl.style.display = 'block';
+                } else if (this.compositeResult) {
+                    this.asciiArt = this.generateAsciiArt(this.compositeResult);
+                    // Release canvas after conversion
+                    this.compositeResult.canvas.width = 0;
+                    this.compositeResult.canvas.height = 0;
+                    this.compositeResult.canvas = null;
+
+                    if (this.asciiArt) {
+                        this.previewAscii.textContent = this.asciiArt;
+                        // Re-trigger animations on resubmit
+                        this.previewContainer.classList.remove('visible');
+                        const shimmer = this.previewContainer.querySelector('.annotation-preview-shimmer');
+                        const frame = this.previewContainer.querySelector('.annotation-preview-frame');
+                        if (shimmer) { shimmer.remove(); void this.previewContainer.offsetWidth; }
+                        if (shimmer && frame) { frame.appendChild(shimmer); }
+                        this.previewContainer.classList.add('visible');
+                        this.unavailableEl.style.display = 'none';
+                    } else {
+                        this.previewContainer.classList.remove('visible');
+                        this.unavailableEl.style.display = 'block';
+                    }
+                } else {
+                    this.previewContainer.classList.remove('visible');
+                    this.unavailableEl.style.display = 'none';
+                }
+
+                this.modal.classList.add('active');
+            }
+
+            resetAnnotationState() {
+                this.compositeResult = null;
+                this.previewAscii.textContent = '';
+                this.previewContainer.classList.remove('visible');
+                const shimmer = this.previewContainer.querySelector('.annotation-preview-shimmer');
+                if (shimmer) shimmer.getAnimations().forEach(a => a.cancel());
+                this.unavailableEl.style.display = 'none';
+                this.asciiArt = null;
+                this.securityError = false;
+                this.modal.classList.remove('active');
+                this.form.reset();
+                this.strokes = [];
+                this.redraw();
+                this.overlay.classList.remove('active', 'viewing');
+                this.isActive = false;
+                this.toggleBtn.style.display = 'flex';
+                document.body.classList.remove('annotation-active');
+            }
+
+            buildMailtoFallback(name, email, message) {
+                let emailBody = `Name: ${name}\nEmail: ${email}\nMessage: ${message}`;
+
+                // Include ASCII art truncated to max 20 rows
+                if (this.asciiArt) {
+                    const artLines = this.asciiArt.split('\n');
+                    const truncated = artLines.slice(0, 20).join('\n');
+                    const suffix = artLines.length > 20 ? '\n[...truncated]' : '';
+                    emailBody += `\n\nAnnotation Preview:\n${truncated}${suffix}`;
+                } else {
+                    emailBody += '\n\n[Screenshot was captured but could not be sent]';
+                }
+
+                return emailBody;
+            }
+
+            openMailtoFallback(name, email, message) {
+                const emailBody = this.buildMailtoFallback(name, email, message);
+                this.resetAnnotationState();
+                window.location.href = `mailto:Joan.llbab@gmail.com?subject=Portfolio Feedback from ${name}&body=${encodeURIComponent(emailBody)}`;
             }
 
             async sendFeedback() {
-            const name = document.getElementById('feedback-name').value;
-            const email = document.getElementById('feedback-email').value;
-            const message = document.getElementById('feedback-message').value;
+                const name = document.getElementById('feedback-name').value;
+                const email = document.getElementById('feedback-email').value;
+                const message = document.getElementById('feedback-message').value;
 
-            // Capture screenshot as base64
-            const screenshotData = this.canvas.toDataURL('image/png');
-            const base64Content = screenshotData.split(',')[1];
+                // Capture screenshot as base64
+                const screenshotData = this.canvas.toDataURL('image/png');
+                const base64Content = screenshotData.split(',')[1];
 
-            const submitBtn = document.querySelector('#annotation-form button[type="submit"]');
-            const originalText = submitBtn.textContent;
-            submitBtn.textContent = 'Sending...';
-            submitBtn.disabled = true;
+                const submitBtn = this.form.querySelector('button[type="submit"]');
+                const originalText = submitBtn.textContent;
+                submitBtn.textContent = 'Sending...';
+                submitBtn.disabled = true;
 
-            try {
-                // Send via serverless proxy to protect API key
-                const response = await fetch('https://portfolio-email-proxy.joan-llompart.workers.dev/send', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        name: name,
-                        email: email,
-                        message: message || 'No additional comments',
-                        screenshot: base64Content
-                    })
-                });
+                try {
+                    // Send via serverless proxy to protect API key
+                    const response = await fetch('https://portfolio-email-proxy.joan-llompart.workers.dev/send', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            name: name,
+                            email: email,
+                            message: message || 'No additional comments',
+                            screenshot: base64Content,
+                            asciiArt: this.asciiArt || ''
+                        })
+                    });
 
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log('Feedback sent successfully:', data);
-                    alert('Feedback sent successfully! Thank you for your input.');
-                } else {
-                    const errorData = await response.json().catch(() => ({}));
-                    console.error('Failed to send feedback:', errorData);
-                    alert('Failed to send feedback. Opening email client as fallback...');
-                    const emailBody = `Name: ${name}\nEmail: ${email}\nMessage: ${message}\n\n[Screenshot was captured but could not be sent]`;
-                    window.location.href = `mailto:Joan.llbab@gmail.com?subject=Portfolio Feedback from ${name}&body=${encodeURIComponent(emailBody)}`;
+                    if (response.ok) {
+                        const data = await response.json();
+                        console.log('Feedback sent successfully:', data);
+                        alert('Feedback sent successfully! Thank you for your input.');
+                        this.resetAnnotationState();
+                    } else {
+                        const errorData = await response.json().catch(() => ({}));
+                        console.error('Failed to send feedback:', errorData);
+                        alert('Failed to send feedback. Opening email client as fallback...');
+                        this.openMailtoFallback(name, email, message);
+                    }
+                } catch (error) {
+                    console.error('Error sending feedback:', error);
+                    alert('Network error. Opening email client as fallback...');
+                    this.openMailtoFallback(name, email, message);
+                } finally {
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
                 }
-            } catch (error) {
-                console.error('Error sending feedback:', error);
-                alert('Network error. Opening email client as fallback...');
-                const emailBody = `Name: ${name}\nEmail: ${email}\nMessage: ${message}\n\n[Screenshot was captured but could not be sent]`;
-                window.location.href = `mailto:Joan.llbab@gmail.com?subject=Portfolio Feedback from ${name}&body=${encodeURIComponent(emailBody)}`;
-            } finally {
-                submitBtn.textContent = originalText;
-                submitBtn.disabled = false;
             }
-
-            // Reset
-            document.getElementById('annotation-modal').classList.remove('active');
-            document.getElementById('annotation-form').reset();
-            this.strokes = [];
-            this.redraw();
-            this.overlay.classList.remove('active', 'viewing');
-            this.isActive = false;
-            document.getElementById('annotation-toggle').style.display = 'flex';
-        }
         }
 
         // Initialize annotation system when DOM is ready
@@ -3902,11 +4298,7 @@ h
         class CustomCursor {
             constructor() {
                 this.cursor = document.querySelector('.custom-cursor');
-                this.cursorDot = document.querySelector('.custom-cursor-dot');
-                this.cursorPos = { x: 0, y: 0 };
-                this.cursorDotPos = { x: 0, y: 0 };
-                this.mousePos = { x: 0, y: 0 };
-                this.hoveredElement = null;
+                this.visible = false;
 
                 // Check if device supports hover (desktop)
                 if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
@@ -3915,26 +4307,19 @@ h
             }
 
             init() {
-                // Track mouse movement
+                // Track mouse movement — direct transform, no animation loop
                 document.addEventListener('mousemove', (e) => {
-                    this.mousePos.x = e.clientX;
-                    this.mousePos.y = e.clientY;
-
-                    // Show cursor
-                    if (!this.cursor.classList.contains('visible')) {
+                    if (!this.visible) {
                         this.cursor.classList.add('visible');
-                        this.cursorDot.classList.add('visible');
+                        this.visible = true;
                     }
-
-                    // Update dot position immediately
-                    this.cursorDotPos.x = e.clientX;
-                    this.cursorDotPos.y = e.clientY;
+                    this.cursor.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
                 });
 
                 // Hide cursor when leaving window
                 document.addEventListener('mouseleave', () => {
                     this.cursor.classList.remove('visible');
-                    this.cursorDot.classList.remove('visible');
+                    this.visible = false;
                 });
 
                 // Detect hoverable elements
@@ -3942,50 +4327,15 @@ h
 
                 document.addEventListener('mouseover', (e) => {
                     if (e.target.closest(hoverableElements)) {
-                        this.hoveredElement = e.target.closest(hoverableElements);
                         this.cursor.classList.add('hover');
                     }
                 });
 
                 document.addEventListener('mouseout', (e) => {
                     if (e.target.closest(hoverableElements)) {
-                        this.hoveredElement = null;
                         this.cursor.classList.remove('hover');
                     }
                 });
-
-                // Animate cursor
-                this.animate();
-            }
-
-            animate() {
-                // Smooth follow with easing
-                const ease = 0.15;
-
-                // Magnetic effect if hovering over an element
-                let targetX = this.mousePos.x;
-                let targetY = this.mousePos.y;
-
-                if (this.hoveredElement) {
-                    const rect = this.hoveredElement.getBoundingClientRect();
-                    const centerX = rect.left + rect.width / 2;
-                    const centerY = rect.top + rect.height / 2;
-
-                    // Pull cursor toward center of hovered element
-                    const magnetStrength = 0.3;
-                    targetX = this.mousePos.x + (centerX - this.mousePos.x) * magnetStrength;
-                    targetY = this.mousePos.y + (centerY - this.mousePos.y) * magnetStrength;
-                }
-
-                // Smooth cursor movement
-                this.cursorPos.x += (targetX - this.cursorPos.x) * ease;
-                this.cursorPos.y += (targetY - this.cursorPos.y) * ease;
-
-                // Update cursor position
-                this.cursor.style.transform = `translate(${this.cursorPos.x - 10}px, ${this.cursorPos.y - 10}px)`;
-                this.cursorDot.style.transform = `translate(${this.cursorDotPos.x - 3}px, ${this.cursorDotPos.y - 3}px)`;
-
-                requestAnimationFrame(() => this.animate());
             }
         }
 
