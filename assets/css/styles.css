@@ -1115,6 +1115,12 @@ dialog.project-modal::backdrop {
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 1.6rem 1.4rem 2rem;
+  /* Scrolling works as usual, the bar itself stays hidden */
+  scrollbar-width: none;
+}
+
+.modal-scroll::-webkit-scrollbar {
+  display: none;
 }
 
 @media (min-width: 700px) {
