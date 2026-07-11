@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 · Joan Llompart</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <script>
+    (function () {
+      var stored = null;
+      try { stored = localStorage.getItem("theme"); } catch (e) {}
+      var theme = stored || (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/styles.css">
+  <style>
+    .lost {
+      min-height: 100svh;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      background-image:
+        linear-gradient(var(--grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+      background-size: 44px 44px;
+    }
+    .lost-code {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      letter-spacing: 0.18em;
+      color: var(--copper);
+      margin-bottom: 1rem;
+    }
+    .lost h1 {
+      font-size: var(--text-xl);
+      margin-bottom: 1rem;
+    }
+    .lost p {
+      color: var(--text-2);
+      margin-bottom: 2rem;
+      max-width: 34rem;
+    }
+  </style>
+</head>
+<body>
+  <main class="lost">
+    <div class="container">
+      <p class="lost-code">ERROR 404 / OPEN CIRCUIT</p>
+      <h1>This trace doesn't connect to anything.</h1>
+      <p>The page you're after may have moved during the redesign. Everything worth seeing is back on the main board.</p>
+      <a class="btn btn-primary" href="/">Back to the portfolio</a>
+    </div>
+  </main>
+</body>
+</html>
