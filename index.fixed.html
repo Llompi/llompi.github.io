@@ -76,6 +76,10 @@
     <!-- html2canvas for page+drawing screenshot capture in the feedback tool -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
 
+    <!-- modern-screenshot: DOM→canvas that supports modern CSS (color-mix / color()),
+         which html2canvas 1.4.1 cannot parse. Primary capture for the feedback tool. -->
+    <script src="https://cdn.jsdelivr.net/npm/modern-screenshot@4.4.39/dist/index.js"></script>
+
     <style>
         :root {
             /* Modern Minimalist Color Palette - Dark Theme */
@@ -722,6 +726,10 @@
             flex-wrap: wrap;
             gap: var(--space-3);
             justify-content: center;
+            /* Anchor for pills that are popped out of flow (position:absolute)
+               while they fade out during filtering — lets survivors reflow
+               immediately so their movement can be FLIP-animated. */
+            position: relative;
         }
         
         .skill-item {
@@ -1901,8 +1909,33 @@
             padding: 40px;
             max-width: 500px;
             width: 90%;
+            position: relative;
             animation: modalSlideUp 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
             box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+        }
+
+        .annotation-modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            line-height: 1;
+            color: var(--text-secondary);
+            background: transparent;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.18s ease, color 0.18s ease;
+        }
+
+        .annotation-modal-close:hover {
+            background: var(--surface-hover);
+            color: var(--text-primary);
         }
 
         @keyframes modalSlideUp {
@@ -2092,6 +2125,118 @@
             margin-top: var(--space-2);
         }
 
+        .annotation-copy-status {
+            min-height: 20px;
+            margin: var(--space-3) 0 0;
+            font-size: var(--text-sm);
+            line-height: 1.4;
+            color: var(--text-secondary);
+            text-align: center;
+            transition: color 0.2s ease;
+        }
+
+        .annotation-copy-status.success { color: #10b981; }
+        .annotation-copy-status.error   { color: #ef4444; }
+
+        /* Feedback capture loading overlay — shown while the screenshot is being
+           generated (capture can take a few seconds). It is EXCLUDED from the capture
+           itself via [data-no-capture]. All animation here is transform/opacity only,
+           so it keeps running on the compositor thread even while html2canvas blocks
+           the main thread (paint/layout-based animation would freeze). */
+        .feedback-loader {
+            position: fixed;
+            inset: 0;
+            z-index: 21000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(8, 10, 14, 0.72);
+            backdrop-filter: blur(6px);
+        }
+
+        .feedback-loader.active { display: flex; }
+
+        .feedback-loader-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 18px;
+            padding: 38px 46px;
+            border-radius: 20px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+        }
+
+        .fl-stage {
+            position: relative;
+            width: 92px;
+            height: 92px;
+        }
+
+        /* Hand-drawn-looking dashed circle orbiting — the "annotation" being drawn. */
+        .fl-ring {
+            position: absolute;
+            inset: 0;
+            border: 3px dashed #ff4757;
+            border-radius: 50%;
+            animation: fl-spin 3.2s linear infinite;
+        }
+
+        /* A crisp accent arc spinning the other way for energy. */
+        .fl-ring.inner {
+            inset: 13px;
+            border: 3px solid transparent;
+            border-top-color: var(--accent);
+            border-right-color: var(--accent);
+            animation: fl-spin-rev 1s linear infinite;
+        }
+
+        /* The marker, bobbing as if writing. */
+        .fl-pen {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            color: #ff4757;
+            animation: fl-bob 1.3s ease-in-out infinite;
+        }
+
+        .fl-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .fl-dots span {
+            display: inline-block;
+            animation: fl-blink 1.4s infinite;
+        }
+        .fl-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .fl-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+        .fl-sub {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        @keyframes fl-spin     { to { transform: rotate(360deg); } }
+        @keyframes fl-spin-rev { to { transform: rotate(-360deg); } }
+        @keyframes fl-bob {
+            0%, 100% { transform: translateY(3px) rotate(-8deg); }
+            50%      { transform: translateY(-4px) rotate(7deg); }
+        }
+        @keyframes fl-blink {
+            0%, 100% { opacity: 0.25; }
+            50%      { opacity: 1; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .fl-ring, .fl-ring.inner, .fl-pen, .fl-dots span { animation-duration: 0.001s; animation-iteration-count: 1; }
+        }
+
         /* Light theme overrides for preview */
         [data-theme="light"] .annotation-preview-frame {
             border-color: rgba(0, 0, 0, 0.1);
@@ -2177,7 +2322,7 @@
         }
 
         .custom-cursor {
-            --cursor-size: 20px;
+            --cursor-size: 30px;
             position: fixed;
             top: 0;
             left: 0;
@@ -2185,24 +2330,50 @@
             height: var(--cursor-size);
             margin-left: calc(-1 * var(--cursor-size) / 2);
             margin-top: calc(-1 * var(--cursor-size) / 2);
-            border: 2px solid var(--accent);
+            border: 1.5px solid var(--accent);
             border-radius: 50%;
             pointer-events: none;
             z-index: 9999;
             transition: width 0.2s ease, height 0.2s ease, border-color 0.2s ease, background 0.2s ease, margin 0.2s ease;
             will-change: transform;
-            mix-blend-mode: difference;
             opacity: 0;
+        }
+
+        /* Precise center dot — tracks the pointer 1:1 with no lag so there is
+           always an exact cursor position; the ring trails it smoothly. */
+        .custom-cursor-dot {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 6px;
+            margin-left: -3px;
+            margin-top: -3px;
+            background: var(--accent);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10000;
+            will-change: transform;
+            opacity: 0;
+            transition: opacity 0.2s ease;
         }
 
         .custom-cursor.visible {
             opacity: 1;
         }
 
+        .custom-cursor-dot.visible {
+            opacity: 1;
+        }
+
+        .custom-cursor-dot.hover {
+            opacity: 0;
+        }
+
         .custom-cursor.hover {
             --cursor-size: 50px;
             border-color: var(--text-primary);
-            background: rgba(59, 130, 246, 0.1);
+            background: color-mix(in srgb, var(--accent) 12%, transparent);
         }
 
         /* Hide custom cursor on mobile */
@@ -2216,13 +2387,15 @@
                 cursor: pointer !important;
             }
 
-            .custom-cursor {
+            .custom-cursor,
+            .custom-cursor-dot {
                 display: none;
             }
         }
 
         /* Disable custom cursor in annotation mode */
-        body.annotation-active .custom-cursor {
+        body.annotation-active .custom-cursor,
+        body.annotation-active .custom-cursor-dot {
             display: none;
         }
 
@@ -2636,6 +2809,7 @@
 
     <!-- Custom Cursor -->
     <div class="custom-cursor"></div>
+    <div class="custom-cursor-dot"></div>
 
     <!-- Command Palette -->
     <div class="command-palette-overlay" id="command-palette-overlay">
@@ -3373,7 +3547,7 @@
             <div class="annotation-toolbar-divider"></div>
 
             <div class="annotation-toolbar-section">
-                <button class="annotation-action annotation-submit" id="annotation-submit" title="Submit Feedback">
+                <button class="annotation-action annotation-submit" id="annotation-submit" title="Prepare feedback snapshot">
                     <i class="fas fa-paper-plane"></i>
                     <span>Submit</span>
                 </button>
@@ -3400,15 +3574,29 @@
         </div>
     </div>
 
+    <!-- Feedback capture loader (excluded from the screenshot via data-no-capture) -->
+    <div id="feedback-loader" class="feedback-loader" data-no-capture aria-hidden="true">
+        <div class="feedback-loader-card">
+            <div class="fl-stage">
+                <div class="fl-ring"></div>
+                <div class="fl-ring inner"></div>
+                <div class="fl-pen"><i class="fas fa-pen"></i></div>
+            </div>
+            <div class="fl-title">Preparing your snapshot<span class="fl-dots"><span>.</span><span>.</span><span>.</span></span></div>
+            <div class="fl-sub">Snapshotting the page with your marks</div>
+        </div>
+    </div>
+
     <!-- Submission Modal -->
     <div id="annotation-modal" class="annotation-modal">
         <div class="annotation-modal-content">
-            <h3>Submit Your Feedback</h3>
-            <p>Add your contact info so I can respond to your feedback:</p>
+            <button type="button" class="annotation-modal-close" id="annotation-modal-close" aria-label="Close">&times;</button>
+            <h3>Send feedback by email</h3>
+            <p>Copy the snapshot below, then paste it into an email to me — or download it to attach.</p>
             <div id="annotation-preview-container">
                 <div id="annotation-preview-label">
                     <span class="preview-label-text">Your annotation</span>
-                    <span class="preview-label-badge">LIVE CAPTURE</span>
+                    <span class="preview-label-badge">SNAPSHOT</span>
                 </div>
                 <div class="annotation-preview-frame">
                     <img id="annotation-preview-image" alt="Captured feedback screenshot">
@@ -3416,18 +3604,24 @@
                 </div>
             </div>
             <p id="annotation-unavailable">Preview unavailable</p>
-            <form id="annotation-form">
-                <input type="text" id="feedback-name" placeholder="Your Name" required>
-                <input type="email" id="feedback-email" placeholder="Your Email" required>
-                <textarea id="feedback-message" placeholder="Additional comments (optional)" rows="3"></textarea>
-                <div class="annotation-modal-actions">
-                    <button type="button" class="btn btn-secondary" id="modal-cancel">Cancel</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-paper-plane"></i>
-                        Send Feedback
-                    </button>
-                </div>
-            </form>
+            <div id="annotation-copy-status" class="annotation-copy-status"></div>
+            <div class="annotation-modal-actions">
+                <button type="button" class="btn btn-primary" id="annotation-copy">
+                    <i class="fas fa-copy"></i>
+                    Copy image
+                </button>
+                <button type="button" class="btn btn-secondary" id="annotation-download">
+                    <i class="fas fa-download"></i>
+                    Download
+                </button>
+                <button type="button" class="btn btn-secondary" id="annotation-email">
+                    <i class="fas fa-envelope"></i>
+                    Email Joan
+                </button>
+            </div>
+            <div class="annotation-modal-actions" style="margin-top: var(--space-3);">
+                <button type="button" class="btn btn-secondary" id="modal-cancel">Close</button>
+            </div>
         </div>
     </div>
 
@@ -3443,63 +3637,110 @@
             this.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
         });
         
-        // Skills filter functionality
+        // Skills filter functionality (FLIP-animated)
         const filterButtons = document.querySelectorAll('.filter-btn');
-        const skillItems = document.querySelectorAll('.skill-item');
+        const skillItems = Array.from(document.querySelectorAll('.skill-item'));
         const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+        let filterToken = 0;
 
-        // Animate a pill out (fade + scale), then drop it from the flow so the
-        // remaining pills reflow with no phantom gap. Under reduced motion we
-        // skip the timing and remove from flow immediately.
-        function hideSkill(item) {
-            item.classList.add('hidden');
+        const shouldShow = (item, filter) => filter === 'all' || item.dataset.category === filter;
+        // "Visible now" means in the flow AND not mid-fade — the true on-screen state.
+        const isVisible = (item) => !item.classList.contains('gone') && !item.classList.contains('hidden');
+
+        // Smoothly transition the grid to `filter` in two phases:
+        //   Phase 1 — fade the leaving pills out *in place* (no reflow yet).
+        //   Phase 2 — pull them from the flow, then FLIP the survivors from their
+        //             old slots to their new ones so the grid re-packs in one
+        //             continuous glide, and fade the incoming pills in.
+        // A token guards against overlapping runs from rapid filter clicks.
+        function applyFilter(filter) {
+            const token = ++filterToken;
+
             if (reduceMotion.matches) {
-                item.classList.add('gone');
+                skillItems.forEach(item => {
+                    if (shouldShow(item, filter)) item.classList.remove('gone', 'hidden');
+                    else item.classList.add('hidden', 'gone');
+                });
                 return;
             }
-            const onDone = (e) => {
-                if (e.target !== item || e.propertyName !== 'opacity') return;
-                if (item.classList.contains('hidden')) item.classList.add('gone');
-                item.removeEventListener('transitionend', onDone);
+
+            // Classify against the *visible* state so cancelled/mid-fade pills
+            // are reclassified correctly on a fresh click.
+            const entering = [], leaving = [], staying = [];
+            skillItems.forEach(item => {
+                const show = shouldShow(item, filter);
+                const vis = isVisible(item);
+                if (show && vis) staying.push(item);
+                else if (show && !vis) entering.push(item);       // gone OR mid-fade → reveal
+                else if (!show && vis) leaving.push(item);
+                else item.classList.add('hidden', 'gone');         // already hidden → ensure out of flow
+            });
+
+            // Phase 1: fade leavers out where they sit (still occupying their slot).
+            leaving.forEach(item => item.classList.add('hidden'));
+
+            const reflow = () => {
+                if (token !== filterToken) return; // superseded by a newer click
+
+                // FIRST — positions of everything still in the flow.
+                const first = new Map();
+                skillItems.forEach(item => {
+                    if (!item.classList.contains('gone')) first.set(item, item.getBoundingClientRect());
+                });
+
+                // Pull leavers out of the flow; let incomers claim their slot (hidden).
+                leaving.forEach(item => item.classList.add('gone'));
+                entering.forEach(item => {
+                    item.classList.add('hidden');
+                    item.classList.remove('gone');
+                });
+
+                // LAST + INVERT — survivors glide from old slot to new.
+                const inverts = new Map();
+                staying.forEach(item => {
+                    const f = first.get(item);
+                    if (!f) return;
+                    const last = item.getBoundingClientRect();
+                    const dx = f.left - last.left;
+                    const dy = f.top - last.top;
+                    if (dx || dy) inverts.set(item, { dx, dy });
+                });
+                inverts.forEach(({ dx, dy }, item) => {
+                    item.style.transition = 'none';
+                    item.style.transform = `translate(${dx}px, ${dy}px)`;
+                });
+
+                // PLAY — release transforms next frame; fade incomers in.
+                requestAnimationFrame(() => requestAnimationFrame(() => {
+                    inverts.forEach((_, item) => {
+                        item.style.transition = 'transform 0.5s cubic-bezier(0.22, 1, 0.36, 1)';
+                        item.style.transform = '';
+                        const clear = (e) => {
+                            if (e.propertyName !== 'transform') return;
+                            item.style.transition = '';
+                            item.removeEventListener('transitionend', clear);
+                        };
+                        item.addEventListener('transitionend', clear);
+                    });
+                    let vi = 0;
+                    entering.forEach(item => {
+                        item.style.setProperty('--i', vi++);
+                        item.style.transition = '';
+                        item.classList.remove('hidden');
+                    });
+                }));
             };
-            item.addEventListener('transitionend', onDone);
-        }
 
-        // Bring a pill back: re-enter the flow first (remove 'gone'), then on the
-        // next frame drop 'hidden' so the cascade transition actually runs.
-        // `index` is the pill's position *among currently visible pills*, used to
-        // drive the staggered --i delay so the reveal ripples into place.
-        function showSkill(item, index) {
-            item.style.setProperty('--i', index);
-            item.classList.remove('gone');
-            if (reduceMotion.matches) {
-                item.classList.remove('hidden');
-                return;
-            }
-            requestAnimationFrame(() => requestAnimationFrame(() => {
-                item.classList.remove('hidden');
-            }));
+            // Give the exit fade ~0.18s before re-packing; skip the wait if nothing leaves.
+            if (leaving.length) setTimeout(reflow, 180);
+            else reflow();
         }
 
         filterButtons.forEach(button => {
             button.addEventListener('click', () => {
-                // Update active button
                 filterButtons.forEach(btn => btn.classList.remove('active'));
                 button.classList.add('active');
-
-                const filter = button.dataset.filter;
-
-                // Filter skills with a smooth, gap-free, staggered transition.
-                // `visibleIndex` counts only the pills being shown, so the
-                // cascade delay is continuous (no gaps from skipped pills).
-                let visibleIndex = 0;
-                skillItems.forEach(item => {
-                    if (filter === 'all' || item.dataset.category === filter) {
-                        showSkill(item, visibleIndex++);
-                    } else {
-                        hideSkill(item);
-                    }
-                });
+                applyFilter(button.dataset.filter);
             });
         });
         
@@ -4153,14 +4394,13 @@
                 this.compositeResult = null;
                 this.compositeImage = null;
                 this.compositeBbox = null;
-                this.securityError = false;
 
                 // Cache DOM elements
                 this.modal = document.getElementById('annotation-modal');
+                this.loader = document.getElementById('feedback-loader');
                 this.previewContainer = document.getElementById('annotation-preview-container');
                 this.previewImage = document.getElementById('annotation-preview-image');
                 this.unavailableEl = document.getElementById('annotation-unavailable');
-                this.form = document.getElementById('annotation-form');
                 this.toggleBtn = document.getElementById('annotation-toggle');
                 this.toolbar = document.querySelector('.annotation-toolbar');
                 this.colorPicker = document.querySelector('.annotation-color-picker');
@@ -4277,16 +4517,29 @@
                 document.addEventListener('gestureend', blockGestureWhenActive, { passive: false });
 
                 // Modal events
-                document.getElementById('modal-cancel').addEventListener('click', () => {
-                    this.modal.classList.remove('active');
-                    this.previewContainer.classList.remove('visible');
-                    this.unavailableEl.style.display = 'none';
+                document.getElementById('modal-cancel').addEventListener('click', () => this.closeModal());
+                document.getElementById('annotation-modal-close').addEventListener('click', () => this.closeModal());
+                // Click on the backdrop (outside the content card) dismisses the modal.
+                this.modal.addEventListener('click', (e) => {
+                    if (e.target === this.modal) this.closeModal();
                 });
+                document.getElementById('annotation-download').addEventListener('click', () => this.downloadImage());
+                document.getElementById('annotation-copy').addEventListener('click', () => this.copyImage());
+                // "Email Joan" opens the visitor's own mail client pre-addressed with a
+                // section-aware subject. The image is already on the clipboard (Copy image);
+                // the visitor pastes it in and sends — there is no backend.
+                document.getElementById('annotation-email').addEventListener('click', () => {
+                    const subject = 'Portfolio feedback — ' + this.capturedSectionName();
+                    window.location.href = 'mailto:Joan.llbab@gmail.com?subject=' + encodeURIComponent(subject);
+                });
+            }
 
-                this.form.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    this.sendFeedback();
-                });
+            closeModal() {
+                this.modal.classList.remove('active');
+                if (this.loader) this.loader.classList.remove('active');
+                this.previewContainer.classList.remove('visible');
+                this.unavailableEl.style.display = 'none';
+                this.setStatus('');
             }
 
             setupKeyboardShortcuts() {
@@ -4320,9 +4573,14 @@
                         e.preventDefault();
                     }
 
-                    // Close
+                    // Close — if the feedback modal is open, Esc dismisses it;
+                    // otherwise it exits annotation mode.
                     if (e.key === 'Escape') {
-                        this.toggle();
+                        if (this.modal.classList.contains('active')) {
+                            this.closeModal();
+                        } else {
+                            this.toggle();
+                        }
                         e.preventDefault();
                     }
                 });
@@ -4653,77 +4911,192 @@
                 const bboxH = maxY - minY;
                 if (bboxW <= 0 || bboxH <= 0) return null;
 
+                // Publish the bbox now (page-space) so detectSection() — used below to build
+                // the caption — can hit-test the marked section before submit() sets it. Also
+                // (re)init the page-capture flag so a fall-through to a strokes-only image is
+                // recorded honestly; the status UI reads this.usedPageCapture to warn the user
+                // that the page itself was NOT captured.
+                this.compositeBbox = { minX, minY, bboxW, bboxH };
+                this.usedPageCapture = false;
+
                 let sourceCanvas = null;
                 let sourceW, sourceH;
                 let usedPageCapture = false;
 
-                if (typeof html2canvas === 'function') {
-                    try {
-                        const hideEls = [
-                            this.overlay,
-                            this.toolbar,
-                            this.colorPicker,
-                            this.toggleBtn,
-                            document.querySelector('.custom-cursor')
-                        ].filter(Boolean);
-                        const savedDisplay = hideEls.map(el => el.style.display);
-                        hideEls.forEach(el => el.style.display = 'none');
+                const resolvedBg = getComputedStyle(document.body).backgroundColor || '#0a0a0a';
+                const captureScale = Math.min(window.devicePixelRatio || 1, 2);
 
+                // Pick the page SECTION under the annotation's centroid and capture THAT
+                // element (not the whole <body>): modern-screenshot inlines one section in
+                // <1s, whereas inlining the entire body takes ~35s and blew the old timeout.
+                // The strokes live on a full-document, page-space (1:1) canvas, so we later
+                // overlay the section's page-region of that canvas to keep the drawing
+                // aligned over the captured content.
+                const hideEls = [
+                    this.overlay, this.toolbar, this.colorPicker, this.toggleBtn,
+                    this.modal,
+                    document.querySelector('.custom-cursor'),
+                    document.querySelector('.custom-cursor-dot')
+                ].filter(Boolean);
+                const heroCanvas = document.getElementById('hero-canvas');
+
+                const withTimeout = (p, ms) => Promise.race([
+                    p,
+                    new Promise((_, rej) => setTimeout(() => rej(new Error('capture timeout')), ms))
+                ]);
+
+                // The element under the annotation centroid, plus its page-space origin and
+                // size. getBoundingClientRect() is viewport-relative, so add the scroll
+                // offsets to convert it into the page-space coordinate system the stroke
+                // canvas uses.
+                const captureCenterY = minY + bboxH / 2;
+                const captureTarget = this.getCaptureTarget(captureCenterY) || document.body;
+                const targetRect = captureTarget.getBoundingClientRect();
+                const targetLeft = targetRect.left + window.scrollX;
+                const targetTop = targetRect.top + window.scrollY;
+                const targetW = Math.max(1, targetRect.width);
+                const targetH = Math.max(1, targetRect.height);
+
+                // Capture ONLY the target section. PRIMARY: modern-screenshot — it parses
+                // this page's color-mix() CSS natively and inlines a single section in well
+                // under a second. SECONDARY: html2canvas — kept only as a last resort; it
+                // cannot parse color-mix() and is structurally unreliable here, so it must
+                // never run first.
+                const captureRegion = async () => {
+                    // Retina where cheap; drop to 1x on a very tall section to cap memory.
+                    const scale = targetH > 3000 ? 1 : captureScale;
+
+                    if (window.modernScreenshot && typeof window.modernScreenshot.domToCanvas === 'function') {
+                        return await withTimeout(window.modernScreenshot.domToCanvas(captureTarget, {
+                            backgroundColor: resolvedBg, scale, font: false,
+                            filter: (node) => node.tagName !== 'CANVAS' && !(node.nodeType === 1 && node.hasAttribute && node.hasAttribute('data-no-capture'))
+                        }), 8000);
+                    }
+
+                    if (typeof html2canvas === 'function') {
+                        return await withTimeout(html2canvas(captureTarget, {
+                            useCORS: true, logging: false, backgroundColor: resolvedBg, scale,
+                            ignoreElements: (el) => el.nodeType === 1 && el.hasAttribute && el.hasAttribute('data-no-capture')
+                        }), 8000);
+                    }
+
+                    throw new Error('no capture engine available');
+                };
+
+                {
+                    const savedDisplay = hideEls.map(el => el.style.display);
+                    const heroSaved = heroCanvas ? heroCanvas.style.display : null;
+                    let captureFix = null;
+                    try {
+                        hideEls.forEach(el => el.style.display = 'none');
+                        // The WebGL hero background blocks the main thread when rasterized;
+                        // it's purely decorative, so hide it and let the bg color show.
+                        if (heroCanvas) heroCanvas.style.display = 'none';
+
+                        // One override sheet for the capture:
+                        //  • force scroll-reveal / animated elements to their visible state
+                        //    (off-screen they sit at opacity:0 and would capture blank/black);
+                        //  • neutralize color-mix() on the captured section: swap the .skill-item
+                        //    pills' color-mix() box-shadow/border for plain colors and hide the
+                        //    .custom-cursor, so the html2canvas fallback (which can't parse
+                        //    color-mix) stays clean. Capture is section-scoped via
+                        //    getCaptureTarget, not page-wide.
+                        captureFix = document.createElement('style');
+                        captureFix.textContent =
+                            '[class*="scroll-reveal"],.animate-fadeInUp,[class*="animate-delay"]{' +
+                            'opacity:1!important;transform:none!important;animation:none!important;' +
+                            'transition:none!important;filter:none!important;}' +
+                            '.skill-item{box-shadow:none!important;border-color:rgba(148,163,184,0.45)!important;}' +
+                            '.custom-cursor,.custom-cursor-dot{display:none!important;}';
+                        document.head.appendChild(captureFix);
                         void document.documentElement.offsetHeight;
 
-                        const resolvedBg = getComputedStyle(document.body).backgroundColor || '#0a0a0a';
-
-                        const pageCapture = await html2canvas(document.documentElement, {
-                            x: minX,
-                            y: minY,
-                            width: bboxW,
-                            height: bboxH,
-                            scrollX: 0,
-                            scrollY: 0,
-                            useCORS: true,
-                            logging: false,
-                            backgroundColor: resolvedBg
-                        });
-
-                        hideEls.forEach((el, i) => el.style.display = savedDisplay[i]);
+                        const pageCapture = await captureRegion();
 
                         const composite = document.createElement('canvas');
                         composite.width = pageCapture.width;
                         composite.height = pageCapture.height;
                         const compCtx = composite.getContext('2d');
-
+                        compCtx.fillStyle = resolvedBg;
+                        compCtx.fillRect(0, 0, composite.width, composite.height);
                         compCtx.drawImage(pageCapture, 0, 0);
+
+                        // Overlay the strokes. The stroke canvas is full-document and page-space
+                        // at 1:1; the captured section starts at (targetLeft, targetTop) in that
+                        // same page space and was rendered at `s` device-px per CSS-px. So lift
+                        // the section's page-region out of the stroke canvas and stretch it over
+                        // the whole composite — keeping the drawing aligned to the page content.
+                        const s = pageCapture.width / targetW;
                         compCtx.drawImage(
                             this.canvas,
-                            minX, minY, bboxW, bboxH,
-                            0, 0, pageCapture.width, pageCapture.height
+                            targetLeft, targetTop, targetW, targetH,
+                            0, 0, composite.width, composite.height
                         );
+
+                        // Burn a subtle context caption (section · url) into the bottom of the
+                        // composite so the pasted image is self-explanatory to the recipient.
+                        try {
+                            const secName = this.capturedSectionName();
+                            const shortUrl = location.href.replace(/^https?:\/\//, '').replace(/\/+$/, '');
+                            let label = secName + ' · ' + shortUrl;
+                            const fs = Math.max(14, Math.round(14 * s));
+                            const padX = Math.round(fs * 0.85);
+                            const barH = Math.round(fs * 1.9);
+                            compCtx.save();
+                            compCtx.font = '600 ' + fs + 'px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+                            const maxTextW = composite.width - padX * 2;
+                            if (compCtx.measureText(label).width > maxTextW) {
+                                while (label.length > 1 && compCtx.measureText(label + '…').width > maxTextW) {
+                                    label = label.slice(0, -1);
+                                }
+                                label += '…';
+                            }
+                            compCtx.fillStyle = 'rgba(10,10,10,0.72)';
+                            compCtx.fillRect(0, composite.height - barH, composite.width, barH);
+                            compCtx.fillStyle = 'rgba(255,255,255,0.92)';
+                            compCtx.textBaseline = 'middle';
+                            compCtx.textAlign = 'left';
+                            compCtx.fillText(label, padX, composite.height - Math.round(barH / 2));
+                            compCtx.restore();
+                        } catch (capErr) {
+                            console.warn('caption draw failed:', capErr);
+                        }
 
                         sourceCanvas = composite;
                         sourceW = composite.width;
                         sourceH = composite.height;
                         usedPageCapture = true;
                     } catch (e) {
-                        console.warn('html2canvas failed, falling back to annotations only:', e);
+                        console.warn('Page snapshot failed, using annotation-only image:', (e && e.message) || e);
+                    } finally {
+                        if (captureFix) captureFix.remove();
+                        if (heroCanvas) heroCanvas.style.display = heroSaved;
+                        hideEls.forEach((el, i) => el.style.display = savedDisplay[i]);
                     }
                 }
 
+                // Fallback: the drawing alone on a solid background — never a transparent
+                // canvas flattened to black (that was the old "black background" bug).
                 if (!sourceCanvas) {
                     try {
                         const temp = document.createElement('canvas');
                         temp.width = bboxW;
                         temp.height = bboxH;
                         const tempCtx = temp.getContext('2d');
+                        tempCtx.fillStyle = resolvedBg;
+                        tempCtx.fillRect(0, 0, bboxW, bboxH);
                         tempCtx.drawImage(this.canvas, minX, minY, bboxW, bboxH, 0, 0, bboxW, bboxH);
                         sourceCanvas = temp;
                         sourceW = bboxW;
                         sourceH = bboxH;
                     } catch (e) {
-                        if (e.name === 'SecurityError') this.securityError = true;
                         return null;
                     }
                 }
 
+                // Sync the instance flag to the actual outcome so the status UI can tell a
+                // real page-capture from an honest strokes-only fallback (page NOT captured).
+                this.usedPageCapture = usedPageCapture;
                 return { canvas: sourceCanvas, width: sourceW, height: sourceH, bbox: { minX, minY, bboxW, bboxH }, usedPageCapture };
             }
 
@@ -4733,110 +5106,223 @@
                     return;
                 }
 
-                this.compositeResult = await this.captureComposite();
+                this.compositeImage = null;
+                this.compositeBlob = null;
 
-                if (this.securityError) {
-                    this.previewContainer.classList.remove('visible');
-                    this.unavailableEl.style.display = 'block';
-                } else if (this.compositeResult) {
-                    // Stash a downscaled JPEG of the real page+drawing composite BEFORE
-                    // the canvas is released below. html2canvas can taint the canvas via
-                    // cross-origin fonts (Google Fonts / FontAwesome) so toDataURL may throw
-                    // SecurityError — guard it and degrade gracefully if so.
-                    this.compositeImage = null;
-                    this.compositeBbox = this.compositeResult.bbox || null;
-                    try {
-                        const srcCanvas = this.compositeResult.canvas;
-                        const srcW = srcCanvas.width;
-                        const srcH = srcCanvas.height;
-                        const maxSide = 1600;
-                        const scale = Math.min(1, maxSide / Math.max(srcW, srcH));
-                        const outW = Math.max(1, Math.round(srcW * scale));
-                        const outH = Math.max(1, Math.round(srcH * scale));
-                        const tempCanvas = document.createElement('canvas');
-                        tempCanvas.width = outW;
-                        tempCanvas.height = outH;
-                        const tempCtx = tempCanvas.getContext('2d');
-                        tempCtx.drawImage(srcCanvas, 0, 0, srcW, srcH, 0, 0, outW, outH);
-                        this.compositeImage = tempCanvas.toDataURL('image/jpeg', 0.8);
-                        tempCanvas.width = 0;
-                        tempCanvas.height = 0;
-                    } catch (e) {
-                        console.warn('Composite image capture failed (likely tainted canvas), falling back to drawing-only screenshot:', e);
-                        this.compositeImage = null;
+                // Capture FIRST, while the modal is still CLOSED, so the modal can never
+                // end up inside the screenshot. Show the animated loader meanwhile so the
+                // page never looks frozen (the loader is excluded from the capture).
+                if (this.loader) this.loader.classList.add('active');
+                const submitBtn = document.getElementById('annotation-submit');
+                let prevBtnHTML = null;
+                if (submitBtn) {
+                    prevBtnHTML = submitBtn.innerHTML;
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating…';
+                }
+                // Let the loader paint before the (main-thread-heavy) capture begins.
+                await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+                try {
+                    this.compositeResult = await this.captureComposite();
+                    this.compositeBbox = this.compositeResult ? this.compositeResult.bbox : null;
+
+                    if (this.compositeResult && this.compositeResult.canvas) {
+                        try {
+                            const srcCanvas = this.compositeResult.canvas;
+                            const srcW = srcCanvas.width, srcH = srcCanvas.height;
+                            const maxSide = 1800;
+                            const scale = Math.min(1, maxSide / Math.max(srcW, srcH));
+                            const outW = Math.max(1, Math.round(srcW * scale));
+                            const outH = Math.max(1, Math.round(srcH * scale));
+                            const out = document.createElement('canvas');
+                            out.width = outW;
+                            out.height = outH;
+                            out.getContext('2d').drawImage(srcCanvas, 0, 0, srcW, srcH, 0, 0, outW, outH);
+
+                            this.compositeImage = out.toDataURL('image/png');
+                            this.compositeBlob = await new Promise(res => out.toBlob(res, 'image/png'));
+                            out.width = 0;
+                            out.height = 0;
+                        } catch (e) {
+                            console.warn('Composite image export failed (tainted canvas?):', e);
+                            this.compositeImage = null;
+                            this.compositeBlob = null;
+                        }
+
+                        // Release the source canvas.
+                        this.compositeResult.canvas.width = 0;
+                        this.compositeResult.canvas.height = 0;
+                        this.compositeResult.canvas = null;
                     }
 
-                    // Release canvas after conversion
-                    this.compositeResult.canvas.width = 0;
-                    this.compositeResult.canvas.height = 0;
-                    this.compositeResult.canvas = null;
+                    // Capture done — populate and open the modal.
+                    this.previewContainer.classList.remove('visible');
+                    this.unavailableEl.style.display = 'none';
 
                     if (this.compositeImage) {
-                        // Show the real captured screenshot as the preview.
                         this.previewImage.src = this.compositeImage;
-                        // Re-trigger reveal/shimmer animations on resubmit
-                        this.previewContainer.classList.remove('visible');
+                        // Re-trigger reveal/shimmer animations.
                         const shimmer = this.previewContainer.querySelector('.annotation-preview-shimmer');
                         const frame = this.previewContainer.querySelector('.annotation-preview-frame');
                         if (shimmer) { shimmer.remove(); void this.previewContainer.offsetWidth; }
                         if (shimmer && frame) { frame.appendChild(shimmer); }
                         this.previewContainer.classList.add('visible');
-                        this.unavailableEl.style.display = 'none';
+                        this.setActionState(true);
+                        if (this.usedPageCapture) {
+                            this.setStatus('Copy the image (or download it) and paste it into an email to Joan.llbab@gmail.com.');
+                        } else {
+                            this.setStatus('Couldn\'t capture the page this time — only your drawing was saved. You can still copy or download it and email it to me.', 'error');
+                        }
                     } else {
-                        // Capture succeeded but the image was tainted/unavailable.
-                        this.previewContainer.classList.remove('visible');
                         this.unavailableEl.style.display = 'block';
+                        this.setActionState(false);
+                        this.setStatus('Couldn\'t generate an image — please try again.', 'error');
                     }
-                } else {
-                    this.previewContainer.classList.remove('visible');
-                    this.unavailableEl.style.display = 'none';
-                }
 
-                this.modal.classList.add('active');
+                    this.modal.classList.add('active');
+                } finally {
+                    // Always restore the submit button and hide the full-screen loader —
+                    // even if capture/export threw — so the UI can never get stuck showing
+                    // "Generating…" behind a permanent overlay (reload-only state otherwise).
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = prevBtnHTML;
+                    }
+                    if (this.loader) this.loader.classList.remove('active');
+                }
+            }
+
+            setStatus(text, kind) {
+                const el = document.getElementById('annotation-copy-status');
+                if (!el) return;
+                el.textContent = text || '';
+                el.className = 'annotation-copy-status' + (kind ? ' ' + kind : '');
+            }
+
+            setActionState(enabled) {
+                ['annotation-copy', 'annotation-download'].forEach(id => {
+                    const b = document.getElementById(id);
+                    if (!b) return;
+                    b.disabled = !enabled;
+                    b.style.opacity = enabled ? '' : '0.45';
+                    b.style.pointerEvents = enabled ? '' : 'none';
+                });
+            }
+
+            downloadImage() {
+                if (!this.compositeImage) return;
+                // Re-entrancy guard: a fast double-click would fire multiple identical
+                // downloads (same image, repeated save prompts/files). Bail if a download
+                // just fired; the flag self-clears shortly after so re-saves still work.
+                if (this._downloading) return;
+                this._downloading = true;
+                setTimeout(() => { this._downloading = false; }, 1000);
+                const a = document.createElement('a');
+                a.href = this.compositeImage;
+                a.download = `portfolio-feedback-${Date.now()}.png`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                this.setStatus('Image downloaded — attach it to your email to me.', 'success');
+            }
+
+            copyImage() {
+                if (!this.compositeImage) { this.setStatus('No image to copy — try again.', 'error'); return; }
+                const copyBtn = document.getElementById('annotation-copy');
+                // Re-entrancy guard: a fast double-click would fire a second clipboard.write
+                // while the first is still pending. Chromium rejects the 2nd write, which used
+                // to surface as a false "Couldn't copy" error + a surprise download even though
+                // the first copy actually succeeded. Bail if a copy is already in flight.
+                if (this._copying || (copyBtn && copyBtn.disabled)) return;
+                // Note: when we fall back to downloadImage() below, the download SUCCEEDED — the
+                // user just has to attach it — so those statuses use the calm 'success' kind, not
+                // the alarming 'error' kind.
+                if (!navigator.clipboard || !window.ClipboardItem) {
+                    this.downloadImage();
+                    this.setStatus('Couldn\'t copy here — downloaded it instead; attach it to your email.', 'success');
+                    return;
+                }
+                // Prefer the PNG Blob already encoded during capture (this.compositeBlob); only
+                // re-encode the data URL if it's missing/wrong type. Same pixels either way, so
+                // the clipboard payload is identical — this just avoids a redundant encode. Both
+                // paths are synchronous, so the button-click user gesture isn't lost before write().
+                let blob;
+                if (this.compositeBlob instanceof Blob && this.compositeBlob.type === 'image/png') {
+                    blob = this.compositeBlob;
+                } else {
+                    try { blob = this.dataURLtoBlob(this.compositeImage); }
+                    catch (e) { this.downloadImage(); this.setStatus('Couldn\'t copy — downloaded it instead; attach it to your email.', 'success'); return; }
+                }
+                // Mark in-flight + disable the button so a second click can't race this write;
+                // re-enable/clear in BOTH outcomes.
+                this._copying = true;
+                if (copyBtn) copyBtn.disabled = true;
+                const release = () => { this._copying = false; if (copyBtn) copyBtn.disabled = false; };
+                navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })])
+                    .then(() => { release(); this.setStatus('Copied! Paste it into an email to Joan.llbab@gmail.com. ✔', 'success'); })
+                    .catch((err) => {
+                        release();
+                        console.error('Clipboard copy failed:', err);
+                        this.downloadImage();
+                        this.setStatus('Couldn\'t copy — downloaded it instead; attach it to your email.', 'success');
+                    });
+            }
+
+            // data: URL -> Blob, synchronously (no await before clipboard.write, so the
+            // browser still counts it as part of the button-click user gesture).
+            dataURLtoBlob(dataURL) {
+                const comma = dataURL.indexOf(',');
+                const header = dataURL.slice(0, comma);
+                const match = header.match(/data:(.*?);/);
+                const mime = match ? match[1] : 'image/png';
+                const binary = atob(dataURL.slice(comma + 1));
+                const bytes = new Uint8Array(binary.length);
+                for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+                return new Blob([bytes], { type: mime });
+            }
+
+            // Pick the page section under the annotation so the snapshot has real context.
+            // Coordinates are page-space (the canvas spans the full document height).
+            getCaptureTarget(centerY) {
+                const candidates = document.querySelectorAll('.hero, section, footer');
+                let containing = null, containingArea = Infinity;
+                let nearest = null, nearestDist = Infinity;
+                candidates.forEach(el => {
+                    const r = el.getBoundingClientRect();
+                    if (r.width === 0 || r.height === 0) return;
+                    const top = r.top + window.scrollY;
+                    const bottom = top + r.height;
+                    const area = r.width * r.height;
+                    if (centerY >= top && centerY <= bottom && area < containingArea) {
+                        containing = el;
+                        containingArea = area;
+                    }
+                    const dist = centerY < top ? top - centerY : centerY - bottom;
+                    if (dist < nearestDist) { nearestDist = dist; nearest = el; }
+                });
+                return containing || nearest || document.body;
             }
 
             resetAnnotationState() {
                 this.compositeResult = null;
                 this.compositeImage = null;
+                this.compositeBlob = null;
                 this.compositeBbox = null;
+                if (this.loader) this.loader.classList.remove('active');
                 this.previewImage.removeAttribute('src');
                 this.previewContainer.classList.remove('visible');
                 const shimmer = this.previewContainer.querySelector('.annotation-preview-shimmer');
                 if (shimmer) shimmer.getAnimations().forEach(a => a.cancel());
                 this.unavailableEl.style.display = 'none';
-                this.securityError = false;
+                this.setStatus('');
                 this.modal.classList.remove('active');
-                this.form.reset();
                 this.strokes = [];
                 this.redraw();
                 this.overlay.classList.remove('active', 'viewing');
                 this.isActive = false;
                 this.toggleBtn.style.display = 'flex';
                 document.body.classList.remove('annotation-active');
-            }
-
-            buildMailtoFallback(name, email, message) {
-                let emailBody = `Name: ${name}\nEmail: ${email}\nMessage: ${message}`;
-
-                // Add page context. The composite bbox is still available here because
-                // resetAnnotationState() runs after this in openMailtoFallback().
-                const sectionInfo = this.detectSection();
-                if (sectionInfo) emailBody += `\nSection: ${sectionInfo.name}`;
-                emailBody += `\nPage: ${location.href}`;
-
-                // A screenshot of the annotated page was captured, but a mailto URL
-                // can't carry an image — note it so the recipient knows to expect it.
-                emailBody += this.compositeImage
-                    ? '\n\n(A screenshot of the annotated page was captured. The mailto fallback can\'t attach it — please reply and I\'ll resend with the image.)'
-                    : '\n\n(A screenshot could not be captured for this submission.)';
-
-                return emailBody;
-            }
-
-            openMailtoFallback(name, email, message) {
-                const emailBody = this.buildMailtoFallback(name, email, message);
-                this.resetAnnotationState();
-                window.location.href = `mailto:Joan.llbab@gmail.com?subject=Portfolio Feedback from ${name}&body=${encodeURIComponent(emailBody)}`;
             }
 
             // Hit-test the annotation bbox center against section[id] elements to give the
@@ -4848,103 +5334,42 @@
                     if (!this.compositeBbox) return null;
                     const b = this.compositeBbox;
                     const centerY = b.minY + b.bboxH / 2;
-                    const sections = Array.from(document.querySelectorAll('section[id]'));
-                    if (sections.length === 0) return null;
-
-                    let containing = null;
-                    let nearest = null;
-                    let nearestDist = Infinity;
-
-                    for (const sec of sections) {
-                        const rect = sec.getBoundingClientRect();
-                        const top = rect.top + window.scrollY;
-                        const bottom = top + rect.height;
-                        if (centerY >= top && centerY <= bottom) {
-                            containing = sec;
-                            break;
-                        }
-                        const dist = centerY < top ? top - centerY : centerY - bottom;
-                        if (dist < nearestDist) {
-                            nearestDist = dist;
-                            nearest = sec;
-                        }
-                    }
-
-                    const sec = containing || nearest;
-                    if (!sec) return null;
-
-                    const id = sec.id;
-                    // Prefer a readable heading inside the section, else humanize the id
-                    const heading = sec.querySelector('.section-title, h1, h2, h3');
-                    const name = heading && heading.textContent.trim()
-                        ? heading.textContent.trim().replace(/\s+/g, ' ')
-                        : id.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-
-                    return { id, name };
+                    // Hit-test via the SAME getCaptureTarget() the capture used (it considers
+                    // .hero / section / footer), instead of a separate section[id]-only scan.
+                    // The old scan ignored the hero (a <section class="hero"> with no id) and
+                    // mislabeled hero annotations as the next section ("About Me"); now the name
+                    // always matches the region that was actually captured.
+                    const el = this.getCaptureTarget(centerY);
+                    if (!el || el === document.body) return null;
+                    const name = this.sectionNameFor(el);
+                    if (!name) return null;
+                    return { id: el.id || null, name };
                 } catch (e) {
                     console.warn('detectSection failed:', e);
                     return null;
                 }
             }
 
-            async sendFeedback() {
-                const name = document.getElementById('feedback-name').value;
-                const email = document.getElementById('feedback-email').value;
-                const message = document.getElementById('feedback-message').value;
-
-                // Prefer the real page+drawing composite (downscaled JPEG); fall back to the
-                // drawing-only overlay PNG if the composite was tainted/unavailable so the
-                // submission still works either way.
-                const screenshotData = this.compositeImage || this.canvas.toDataURL('image/png');
-                const base64Content = screenshotData.split(',')[1];
-
-                // Context for the recipient: where on the page the annotation lives
-                const sectionInfo = this.detectSection();
-                const sectionName = sectionInfo ? sectionInfo.name : null;
-
-                const submitBtn = this.form.querySelector('button[type="submit"]');
-                const originalText = submitBtn.textContent;
-                submitBtn.textContent = 'Sending...';
-                submitBtn.disabled = true;
-
-                try {
-                    // Send via serverless proxy to protect API key
-                    const response = await fetch('https://portfolio-email-proxy.joan-llompart.workers.dev/send', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            name: name,
-                            email: email,
-                            message: message || 'No additional comments',
-                            screenshot: base64Content,
-                            pageUrl: location.href,
-                            pageTitle: document.title,
-                            section: sectionName,
-                            bbox: this.compositeBbox
-                        })
-                    });
-
-                    if (response.ok) {
-                        const data = await response.json();
-                        console.log('Feedback sent successfully:', data);
-                        alert('Feedback sent successfully! Thank you for your input.');
-                        this.resetAnnotationState();
-                    } else {
-                        const errorData = await response.json().catch(() => ({}));
-                        console.error('Failed to send feedback:', errorData);
-                        alert('Failed to send feedback. Opening email client as fallback...');
-                        this.openMailtoFallback(name, email, message);
-                    }
-                } catch (error) {
-                    console.error('Error sending feedback:', error);
-                    alert('Network error. Opening email client as fallback...');
-                    this.openMailtoFallback(name, email, message);
-                } finally {
-                    submitBtn.textContent = originalText;
-                    submitBtn.disabled = false;
+            // Derive a readable label for a captured element: prefer an inner heading, else a
+            // humanized id, else a sensible generic for the hero / footer.
+            sectionNameFor(el) {
+                const heading = el.querySelector && el.querySelector('.section-title, h1, h2, h3');
+                if (heading && heading.textContent.trim()) {
+                    return heading.textContent.trim().replace(/\s+/g, ' ');
                 }
+                if (el.id) {
+                    return el.id.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                }
+                if (el.classList && el.classList.contains('hero')) return 'Intro';
+                if (el.tagName === 'FOOTER') return 'Footer';
+                return null;
+            }
+
+            // Single source of truth for the captured-section name (with a safe fallback), used
+            // by BOTH the burned-in caption and the "Email Joan" subject so they can't disagree.
+            capturedSectionName() {
+                const sec = this.detectSection();
+                return (sec && sec.name) ? sec.name : 'this page';
             }
         }
 
@@ -4958,7 +5383,16 @@
         class CustomCursor {
             constructor() {
                 this.cursor = document.querySelector('.custom-cursor');
+                this.dot = document.querySelector('.custom-cursor-dot');
                 this.visible = false;
+
+                // Latest pointer position (updated on every mousemove) and the
+                // ring's smoothed position (eased toward the pointer each frame).
+                this.targetX = window.innerWidth / 2;
+                this.targetY = window.innerHeight / 2;
+                this.ringX = this.targetX;
+                this.ringY = this.targetY;
+                this.rafId = null;
 
                 // Check if device supports hover (desktop)
                 if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
@@ -4967,18 +5401,27 @@
             }
 
             init() {
-                // Track mouse movement — direct transform, no animation loop
                 document.addEventListener('mousemove', (e) => {
+                    this.targetX = e.clientX;
+                    this.targetY = e.clientY;
+
+                    // Dot is precise: snap it to the pointer immediately, every move.
+                    this.dot.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+
                     if (!this.visible) {
                         this.cursor.classList.add('visible');
+                        this.dot.classList.add('visible');
                         this.visible = true;
+                        // Start the ring at the pointer so it doesn't fly in from center.
+                        this.ringX = e.clientX;
+                        this.ringY = e.clientY;
                     }
-                    this.cursor.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
-                });
+                }, { passive: true });
 
                 // Hide cursor when leaving window
                 document.addEventListener('mouseleave', () => {
                     this.cursor.classList.remove('visible');
+                    this.dot.classList.remove('visible');
                     this.visible = false;
                 });
 
@@ -4988,14 +5431,28 @@
                 document.addEventListener('mouseover', (e) => {
                     if (e.target.closest(hoverableElements)) {
                         this.cursor.classList.add('hover');
+                        this.dot.classList.add('hover');
                     }
                 });
 
                 document.addEventListener('mouseout', (e) => {
                     if (e.target.closest(hoverableElements)) {
                         this.cursor.classList.remove('hover');
+                        this.dot.classList.remove('hover');
                     }
                 });
+
+                // Single rAF loop eases the ring toward the pointer — smooth, GPU
+                // transform only, decoupled from mousemove frequency and main-thread
+                // jank from the 3D background.
+                const loop = () => {
+                    // Lerp factor: high enough to feel responsive, low enough to glide.
+                    this.ringX += (this.targetX - this.ringX) * 0.28;
+                    this.ringY += (this.targetY - this.ringY) * 0.28;
+                    this.cursor.style.transform = `translate(${this.ringX}px, ${this.ringY}px)`;
+                    this.rafId = requestAnimationFrame(loop);
+                };
+                loop();
             }
         }
 
