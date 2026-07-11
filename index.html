@@ -240,10 +240,10 @@
             <h3>RF amplifier, from simulation to measured board</h3>
             <p class="case-desc">A discrete RF amplifier designed against explicit gain and bandwidth targets. I simulated it in ADS and SPICE, laid out the board in KiCad with 50 ohm matching and disciplined return paths, assembled the SMD and through-hole parts by hand, then characterized the result on a Keysight PNA-X and a spectrum analyzer.</p>
             <div class="chip-row">
-              <span class="chip">KiCad</span>
-              <span class="chip">ADS / SPICE</span>
-              <span class="chip">VNA + spectrum analyzer</span>
-              <span class="chip">SMD assembly</span>
+              <button type="button" class="chip" data-skill="KiCad" title="See related skills">KiCad</button>
+              <button type="button" class="chip" data-skill="LTspice" title="See related skills">ADS / SPICE</button>
+              <button type="button" class="chip" data-skill="RF circuit analysis" title="See related skills">VNA + spectrum analyzer</button>
+              <button type="button" class="chip" data-skill="Prototype development" title="See related skills">SMD assembly</button>
             </div>
             <div class="case-actions">
               <button class="text-link" type="button" data-modal="modal-rf">Project details
@@ -276,9 +276,9 @@
               <h3>Flexible PCB design study</h3>
               <p class="case-desc">Polyimide stackups, bend radius rules, stiffeners, coverlay, and the DFM constraints flex fabs actually enforce. Finished panels were verified electrically with VNA measurements.</p>
               <div class="chip-row">
-                <span class="chip">Polyimide</span>
-                <span class="chip">Stackup design</span>
-                <span class="chip">DFM</span>
+                <button type="button" class="chip" data-group="PCB and RF" title="See related skills">Polyimide</button>
+                <button type="button" class="chip" data-group="PCB and RF" title="See related skills">Stackup design</button>
+                <button type="button" class="chip" data-skill="Quality control" title="See related skills">DFM</button>
               </div>
               <button class="text-link case-open" type="button" data-modal="modal-flex">Project details
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -296,9 +296,9 @@
               <h3>Electric bike retrofit</h3>
               <p class="case-desc">A standard bicycle converted to electric assist: BLDC hub motor, VESC controller, a lithium-ion pack with battery management, and regenerative braking. Tuned on real hills.</p>
               <div class="chip-row">
-                <span class="chip">BLDC motor</span>
-                <span class="chip">VESC</span>
-                <span class="chip">Li-ion + BMS</span>
+                <button type="button" class="chip" data-skill="Electric motor construction" title="See related skills">BLDC motor</button>
+                <button type="button" class="chip" data-skill="Electric motor construction" title="See related skills">VESC</button>
+                <button type="button" class="chip" data-skill="Electrical systems design" title="See related skills">Li-ion + BMS</button>
               </div>
               <button class="text-link case-open" type="button" data-modal="modal-ebike">Project details
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -316,9 +316,9 @@
               <h3>Raspberry Pi handheld console</h3>
               <p class="case-desc">A portable console with an integrated LCD, custom wiring harness, audio amplifier, and LiPo power management, packed into a 3D-printed shell modeled in Fusion 360.</p>
               <div class="chip-row">
-                <span class="chip">Raspberry Pi</span>
-                <span class="chip">RetroPie / Lakka</span>
-                <span class="chip">3D printing</span>
+                <button type="button" class="chip" data-group="Software and infrastructure" title="See related skills">Raspberry Pi</button>
+                <button type="button" class="chip" data-group="Software and infrastructure" title="See related skills">RetroPie / Lakka</button>
+                <button type="button" class="chip" data-skill="Fusion 360" title="See related skills">3D printing</button>
               </div>
               <button class="text-link case-open" type="button" data-modal="modal-retropie">Project details
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -336,9 +336,9 @@
               <h3>Connected dog treat dispenser</h3>
               <p class="case-desc">An ESP32 device that dispenses treats remotely or on a schedule: servo-driven auger, MQTT over WiFi, app control, and a sensor that reports when the hopper runs low.</p>
               <div class="chip-row">
-                <span class="chip">ESP32</span>
-                <span class="chip">MQTT</span>
-                <span class="chip">Mobile app</span>
+                <button type="button" class="chip" data-group="Software and infrastructure" title="See related skills">ESP32</button>
+                <button type="button" class="chip" data-group="Software and infrastructure" title="See related skills">MQTT</button>
+                <button type="button" class="chip" data-skill="React Native" title="See related skills">Mobile app</button>
               </div>
               <button class="text-link case-open" type="button" data-modal="modal-treat">Project details
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -480,9 +480,9 @@
             <a href="https://linkedin.com/in/jllb" target="_blank" rel="noopener">
               <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46zM5.34 7.43a2.07 2.07 0 1 1 0-4.13 2.07 2.07 0 0 1 0 4.13zM7.12 20.45H3.55V9h3.57zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.55C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.72C24 .77 23.2 0 22.22 0z"/></svg>
               linkedin.com/in/jllb</a>
-            <span>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:15px;height:15px;vertical-align:-2px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              Portland, Oregon</span>
+            <a href="https://www.google.com/maps/place/Portland,+OR" target="_blank" rel="noopener" title="Open in Google Maps">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              Portland, Oregon</a>
           </div>
         </div>
       </div>

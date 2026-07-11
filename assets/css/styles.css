@@ -332,6 +332,7 @@ ol {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text-2);
+  touch-action: manipulation;
   transition: color 0.2s ease, border-color 0.2s ease, transform 0.3s var(--ease);
 }
 
@@ -367,6 +368,7 @@ ol {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 0 0.55rem;
+  touch-action: manipulation;
 }
 
 .nav-burger span {
@@ -395,6 +397,7 @@ ol {
 .btn {
   display: inline-flex;
   align-items: center;
+  touch-action: manipulation;
   gap: 0.55rem;
   font-family: var(--font-mono);
   font-size: var(--text-sm);
@@ -459,6 +462,19 @@ ol {
   white-space: nowrap;
 }
 
+/* Chips rendered as buttons jump to the matching skill */
+button.chip {
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: border-color 0.2s ease, color 0.2s ease, box-shadow 0.25s ease;
+}
+
+button.chip:hover {
+  border-color: var(--copper);
+  color: var(--copper);
+  box-shadow: 0 0 18px -8px var(--copper-dim);
+}
+
 /* --------------------------------------------------------------------------
    5. Sections
    -------------------------------------------------------------------------- */
@@ -521,6 +537,7 @@ h3 {
 
 .hero {
   position: relative;
+  min-height: 100vh;
   min-height: 100svh;
   display: flex;
   align-items: center;
@@ -685,9 +702,18 @@ h3 {
 }
 
 .hero-circuit .pulse {
+  /* Hidden unless offset-path is supported, otherwise the dots
+     would sit motionless at the SVG origin */
+  display: none;
   fill: var(--copper-2);
   opacity: 0;
   filter: drop-shadow(0 0 6px var(--copper-2));
+}
+
+@supports (offset-path: path("M0 0 H10")) {
+  .hero-circuit .pulse {
+    display: block;
+  }
 }
 
 /* Draw-in animation, staggered per trace via --d custom property */
@@ -941,6 +967,12 @@ h3 {
   box-shadow: var(--shadow-sm), var(--card-glow-hover);
 }
 
+/* The whole card opens its project */
+.case-card.is-clickable,
+.feature-case.is-clickable {
+  cursor: pointer;
+}
+
 .case-card .photo-frame {
   border: 0;
   border-bottom: 1px solid var(--border);
@@ -1012,7 +1044,9 @@ dialog.project-modal {
   /* The global margin reset removes the UA's auto-centering, so restore it */
   margin: auto;
   width: min(920px, calc(100vw - 2rem));
+  max-height: calc(100vh - 3rem);
   max-height: min(88svh, 60rem);
+  transition: transform 0.3s var(--ease), opacity 0.3s ease;
   border: 1px solid var(--border-2);
   border-radius: var(--radius-lg);
   background: var(--bg-2);
@@ -1022,6 +1056,11 @@ dialog.project-modal {
   color: var(--text);
   padding: 0;
   box-shadow: var(--shadow), var(--card-glow);
+}
+
+dialog.project-modal[data-drag] {
+  /* No easing while the finger is down */
+  transition: none;
 }
 
 dialog.project-modal::backdrop {
@@ -1058,6 +1097,7 @@ dialog.project-modal::backdrop {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text-2);
+  touch-action: manipulation;
   transition: color 0.2s ease, border-color 0.2s ease;
 }
 
@@ -1073,6 +1113,7 @@ dialog.project-modal::backdrop {
 
 .modal-scroll {
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 1.6rem 1.4rem 2rem;
 }
 
@@ -1083,6 +1124,8 @@ dialog.project-modal::backdrop {
 }
 
 .modal-gallery-main {
+  position: relative;
+  touch-action: pan-y;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background-color: var(--bg);
@@ -1097,9 +1140,56 @@ dialog.project-modal::backdrop {
 
 .modal-gallery-main img {
   width: 100%;
+  height: min(50vh, 440px);
   height: min(50svh, 440px);
   object-fit: contain;
   padding: 0.9rem;
+}
+
+.modal-gallery-main.has-multi img[data-gallery-main] {
+  cursor: pointer;
+}
+
+/* Gallery arrows, injected only when a project has several photos */
+.gal-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid var(--border-2);
+  border-radius: 50%;
+  background: var(--frost-strong);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  color: var(--text-2);
+  box-shadow: var(--shadow-sm);
+  opacity: 0.85;
+  touch-action: manipulation;
+  transition: color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+}
+
+.gal-nav:hover {
+  color: var(--copper);
+  border-color: var(--copper-dim);
+  opacity: 1;
+}
+
+.gal-nav.prev {
+  left: 0.7rem;
+}
+
+.gal-nav.next {
+  right: 0.7rem;
+}
+
+.gal-nav svg {
+  width: 17px;
+  height: 17px;
 }
 
 .modal-thumbs {
@@ -1117,6 +1207,7 @@ dialog.project-modal::backdrop {
   overflow: hidden;
   padding: 0;
   opacity: 0.65;
+  touch-action: manipulation;
   transition: opacity 0.2s ease, border-color 0.2s ease;
 }
 
@@ -1310,6 +1401,23 @@ dialog.project-modal::backdrop {
   background: var(--copper-dim);
   border-radius: 1px;
   transform: rotate(45deg);
+}
+
+/* Brief highlight when a project chip points here */
+.skill-flash {
+  border-radius: 6px;
+  animation: skill-flash 1.8s ease-out;
+}
+
+@keyframes skill-flash {
+  0% {
+    box-shadow: 0 0 0 3px var(--copper-dim), 0 0 30px -4px var(--copper-dim);
+    background-color: var(--copper-glow);
+  }
+  100% {
+    box-shadow: 0 0 0 3px transparent, 0 0 30px -4px transparent;
+    background-color: transparent;
+  }
 }
 
 /* --------------------------------------------------------------------------
@@ -1633,6 +1741,26 @@ dialog.project-modal::backdrop {
 @media (max-width: 560px) {
   .skills-grid {
     grid-template-columns: 1fr;
+  }
+
+  .spec-table th,
+  .spec-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .spec-table th {
+    border-bottom: 0;
+    padding-bottom: 0.1rem;
+  }
+
+  .spec-table td {
+    padding-top: 0.1rem;
+  }
+
+  .gal-nav {
+    width: 2.5rem;
+    height: 2.5rem;
   }
 
   .about-facts {
