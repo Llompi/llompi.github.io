@@ -53,6 +53,16 @@
   --shadow: 0 24px 60px -18px rgba(0, 0, 0, 0.55);
   --shadow-sm: 0 10px 28px -12px rgba(0, 0, 0, 0.5);
   --header-bg: rgba(13, 13, 15, 0.78);
+
+  /* Glow and frost */
+  --glow-line: rgba(224, 157, 102, 0.5);
+  --card-glow: 0 0 38px -10px rgba(208, 134, 80, 0.17);
+  --card-glow-hover: 0 0 46px -8px rgba(208, 134, 80, 0.28);
+  --ambient-a: rgba(208, 134, 80, 0.06);
+  --ambient-b: rgba(208, 134, 80, 0.035);
+  --frost: rgba(26, 26, 31, 0.58);
+  --frost-strong: rgba(19, 19, 23, 0.78);
+  --scroll-thumb: #3b3b44;
 }
 
 [data-theme="light"] {
@@ -76,6 +86,16 @@
   --shadow: 0 24px 55px -20px rgba(48, 40, 28, 0.28);
   --shadow-sm: 0 10px 24px -12px rgba(48, 40, 28, 0.22);
   --header-bg: rgba(245, 243, 238, 0.82);
+
+  /* Glow and frost */
+  --glow-line: rgba(164, 86, 42, 0.22);
+  --card-glow: 0 0 32px -12px rgba(164, 86, 42, 0.14);
+  --card-glow-hover: 0 0 40px -10px rgba(164, 86, 42, 0.22);
+  --ambient-a: rgba(164, 86, 42, 0.045);
+  --ambient-b: rgba(164, 86, 42, 0.028);
+  --frost: rgba(253, 252, 250, 0.62);
+  --frost-strong: rgba(251, 250, 247, 0.82);
+  --scroll-thumb: #c5bfb1;
 }
 
 /* --------------------------------------------------------------------------
@@ -103,6 +123,52 @@ body {
   background-color: var(--bg);
   transition: background-color 0.35s ease, color 0.35s ease;
   overflow-x: hidden;
+}
+
+/* Ambient layer: fine grid plus faint copper light, fixed behind everything.
+   Frosted surfaces pick this up through backdrop-filter. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(42rem 30rem at 82% 12%, var(--ambient-a), transparent 70%),
+    radial-gradient(36rem 28rem at 12% 55%, var(--ambient-b), transparent 70%),
+    radial-gradient(40rem 30rem at 65% 95%, var(--ambient-b), transparent 70%),
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: auto, auto, auto, 44px 44px, 44px 44px;
+  transition: opacity 0.35s ease;
+}
+
+/* Slim, theme-aware scrollbars */
+html {
+  scrollbar-color: var(--scroll-thumb) transparent;
+  scrollbar-width: thin;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scroll-thumb);
+  border-radius: 8px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-3);
+  border: 3px solid transparent;
+  background-clip: content-box;
 }
 
 img,
@@ -348,12 +414,13 @@ ol {
 .btn-primary {
   background: var(--copper);
   color: var(--copper-ink);
+  box-shadow: 0 0 26px -10px var(--copper-dim);
 }
 
 .btn-primary:hover {
   background: var(--copper-2);
   transform: translateY(-2px);
-  box-shadow: 0 10px 24px -10px var(--copper-dim);
+  box-shadow: 0 10px 24px -10px var(--copper-dim), 0 0 36px -8px var(--copper-dim);
 }
 
 .btn-ghost {
@@ -365,6 +432,7 @@ ol {
   border-color: var(--copper);
   color: var(--copper);
   transform: translateY(-2px);
+  box-shadow: 0 0 26px -12px var(--copper-dim);
 }
 
 .btn-sm {
@@ -458,20 +526,6 @@ h3 {
   align-items: center;
   padding-top: 4rem;
   overflow: hidden;
-  background-image:
-    linear-gradient(var(--grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-  background-size: 44px 44px;
-}
-
-.hero::after {
-  /* Fade the grid toward the bottom so the next section starts clean */
-  content: "";
-  position: absolute;
-  inset: auto 0 0 0;
-  height: 30%;
-  background: linear-gradient(to bottom, transparent, var(--bg));
-  pointer-events: none;
 }
 
 .hero-inner {
@@ -509,6 +563,7 @@ h3 {
 .hero h1 em {
   font-style: normal;
   color: var(--copper);
+  text-shadow: 0 0 24px var(--copper-dim);
 }
 
 .hero-sub {
@@ -566,6 +621,7 @@ h3 {
 .hero-circuit svg {
   width: 100%;
   height: 100%;
+  filter: drop-shadow(0 0 5px var(--glow-line));
 }
 
 .hero-circuit .trace {
@@ -603,9 +659,35 @@ h3 {
   opacity: 0;
 }
 
+.hero-circuit .ic-pin {
+  fill: var(--copper-dim);
+  opacity: 0;
+}
+
+.hero-circuit .ic-die {
+  fill: none;
+  stroke: var(--copper-dim);
+  stroke-width: 1;
+  opacity: 0;
+}
+
+.hero-circuit .ic-dot {
+  fill: var(--text-3);
+  opacity: 0;
+}
+
+.hero-circuit .ic-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  fill: var(--text-3);
+  opacity: 0;
+}
+
 .hero-circuit .pulse {
   fill: var(--copper-2);
   opacity: 0;
+  filter: drop-shadow(0 0 6px var(--copper-2));
 }
 
 /* Draw-in animation, staggered per trace via --d custom property */
@@ -616,7 +698,11 @@ h3 {
 
 .hero-loaded .hero-circuit .pad,
 .hero-loaded .hero-circuit .via,
-.hero-loaded .hero-circuit .ic {
+.hero-loaded .hero-circuit .ic,
+.hero-loaded .hero-circuit .ic-pin,
+.hero-loaded .hero-circuit .ic-die,
+.hero-loaded .hero-circuit .ic-dot,
+.hero-loaded .hero-circuit .ic-label {
   animation: node-in 0.6s ease forwards;
   animation-delay: var(--d, 1.2s);
 }
@@ -764,6 +850,11 @@ h3 {
   aspect-ratio: 4 / 4.6;
 }
 
+.feature-case .photo-frame,
+.about-portrait .photo-frame {
+  box-shadow: var(--shadow-sm), var(--card-glow);
+}
+
 .case-meta {
   display: flex;
   align-items: center;
@@ -835,6 +926,10 @@ h3 {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: var(--surface);
+  background: var(--frost);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--card-glow);
   overflow: hidden;
   transition: border-color 0.25s ease, transform 0.35s var(--ease),
     box-shadow 0.35s ease;
@@ -843,7 +938,7 @@ h3 {
 .case-card:hover {
   border-color: var(--border-2);
   transform: translateY(-4px);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-sm), var(--card-glow-hover);
 }
 
 .case-card .photo-frame {
@@ -893,7 +988,7 @@ h3 {
   padding: clamp(1.8rem, 3vw, 2.6rem);
   background:
     radial-gradient(ellipse at 85% 20%, var(--copper-glow), transparent 55%),
-    var(--surface);
+    var(--frost);
 }
 
 .case-card--text .case-body {
@@ -914,14 +1009,19 @@ h3 {
    -------------------------------------------------------------------------- */
 
 dialog.project-modal {
+  /* The global margin reset removes the UA's auto-centering, so restore it */
+  margin: auto;
   width: min(920px, calc(100vw - 2rem));
   max-height: min(88svh, 60rem);
   border: 1px solid var(--border-2);
   border-radius: var(--radius-lg);
   background: var(--bg-2);
+  background: var(--frost-strong);
+  -webkit-backdrop-filter: blur(22px);
+  backdrop-filter: blur(22px);
   color: var(--text);
   padding: 0;
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow), var(--card-glow);
 }
 
 dialog.project-modal::backdrop {
@@ -985,15 +1085,21 @@ dialog.project-modal::backdrop {
 .modal-gallery-main {
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  background: var(--bg);
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(26rem 16rem at 50% 10%, var(--ambient-a), transparent 70%),
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: auto, 28px 28px, 28px 28px;
   overflow: hidden;
   margin-bottom: 0.8rem;
 }
 
 .modal-gallery-main img {
   width: 100%;
-  height: min(52svh, 460px);
+  height: min(50svh, 440px);
   object-fit: contain;
+  padding: 0.9rem;
 }
 
 .modal-thumbs {
@@ -1156,7 +1262,17 @@ dialog.project-modal::backdrop {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: var(--surface);
+  background: var(--frost);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--card-glow);
   padding: 1.5rem 1.5rem 1.7rem;
+  transition: border-color 0.25s ease, box-shadow 0.35s ease;
+}
+
+.skill-group:hover {
+  border-color: var(--border-2);
+  box-shadow: var(--card-glow-hover);
 }
 
 .skill-group header {
@@ -1220,13 +1336,14 @@ dialog.project-modal::backdrop {
   color: var(--text);
   border-bottom: 1.5px solid var(--copper-dim);
   padding-bottom: 0.35rem;
-  transition: color 0.2s ease, border-color 0.2s ease;
+  transition: color 0.2s ease, border-color 0.2s ease, text-shadow 0.25s ease;
   overflow-wrap: anywhere;
 }
 
 .contact-email:hover {
   color: var(--copper);
   border-color: var(--copper);
+  text-shadow: 0 0 22px var(--copper-dim);
 }
 
 .contact-rows {
@@ -1309,10 +1426,6 @@ dialog.project-modal::backdrop {
 .article-hero {
   padding: clamp(3.5rem, 8vh, 6rem) 0 clamp(2rem, 4vh, 3rem);
   border-bottom: 1px solid var(--border);
-  background-image:
-    linear-gradient(var(--grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-  background-size: 44px 44px;
 }
 
 .article-hero .container {
@@ -1400,8 +1513,11 @@ dialog.project-modal::backdrop {
   margin: 1.6rem 0;
   padding: 1rem 1.4rem;
   border-left: 2px solid var(--copper);
-  background: var(--surface);
+  background: var(--frost);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  box-shadow: var(--card-glow);
 }
 
 .article-body blockquote p {
@@ -1559,7 +1675,11 @@ dialog.project-modal::backdrop {
 
   .hero-circuit .pad,
   .hero-circuit .via,
-  .hero-circuit .ic {
+  .hero-circuit .ic,
+  .hero-circuit .ic-pin,
+  .hero-circuit .ic-die,
+  .hero-circuit .ic-dot,
+  .hero-circuit .ic-label {
     opacity: 1;
   }
 
