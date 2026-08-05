@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>404 · Joan Llompart</title>
   <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#0d0d0f">
   <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
   <script>
     (function () {
@@ -12,11 +13,12 @@
       try { stored = localStorage.getItem("theme"); } catch (e) {}
       var theme = stored || (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
       document.documentElement.setAttribute("data-theme", theme);
+      var m = document.querySelector('meta[name="theme-color"]');
+      if (m) m.setAttribute("content", theme === "light" ? "#f1f1ef" : "#0d0d0f");
     })();
   </script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="preload" href="/assets/fonts/archivo-400-800-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/assets/fonts/ibm-plex-mono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/assets/css/styles.css">
   <style>
     .lost {
@@ -25,15 +27,11 @@
       flex-direction: column;
       align-items: flex-start;
       justify-content: center;
-      background-image:
-        linear-gradient(var(--grid-line) 1px, transparent 1px),
-        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-      background-size: 44px 44px;
     }
     .lost-code {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      letter-spacing: 0.18em;
+      letter-spacing: 0.14em;
       color: var(--copper);
       margin-bottom: 1rem;
     }
@@ -51,9 +49,9 @@
 <body>
   <main class="lost">
     <div class="container">
-      <p class="lost-code">ERROR 404 / OPEN CIRCUIT</p>
+      <p class="lost-code">Error 404</p>
       <h1>This trace doesn't connect to anything.</h1>
-      <p>The page you're after may have moved during the redesign. Everything worth seeing is back on the main board.</p>
+      <p>That page doesn't exist, or it moved. The projects and contact details are on the home page.</p>
       <a class="btn btn-primary" href="/">Back to the portfolio</a>
     </div>
   </main>
