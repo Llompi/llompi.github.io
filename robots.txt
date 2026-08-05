@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /legacy/
+Disallow: /docs/assets/img/
+
+Sitemap: https://llompi.github.io/sitemap.xml
