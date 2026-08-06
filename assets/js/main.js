@@ -272,9 +272,16 @@
      Project dialogs: galleries, gestures, dismissal
      ---------------------------------------------------------------- */
 
+  /* The browser must not also try to restore scroll on history moves;
+     the modal code below knows the real position and applies it itself. */
+  if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+
   /* Root overflow alone does not hold on iOS Safari, so the body is pinned
      at its current offset and restored on release. */
   var lockedAt = 0;
+  /* Set while a popstate is being handled, so the close handler does not
+     also rewrite history for a navigation the browser is already doing */
+  var poppingBack = false;
 
   function lockScroll(lock) {
     if (lock) {
@@ -295,7 +302,9 @@
   }
 
   document.querySelectorAll("dialog.project-modal").forEach(function (dialog) {
-    var scroller = dialog.querySelector(".modal-scroll");
+    /* The dialog is the scroll container, so the dismiss drag only arms
+       when it is already scrolled to the top */
+    var scroller = dialog;
     var gal = dialog.querySelector(".modal-gallery-main");
     var main = dialog.querySelector("[data-gallery-main]");
     var status = dialog.querySelector("[data-gallery-status]");
@@ -436,13 +445,20 @@
       delete dialog.dataset.drag;
       /* Next open should start at photo one, not wherever the last visit ended */
       show(0);
-      /* Only rewind the entry this dialog pushed; never navigate off the site */
+      /* Drop this dialog's hash without navigating. history.back() would
+         hand the browser a previous entry to restore, and it would take the
+         scroll position (or the previous #hash target) with it. */
       if (
+        !poppingBack &&
         location.hash === "#" + dialog.id &&
         history.state &&
         history.state.modal === dialog.id
       ) {
-        history.back();
+        history.replaceState(
+          { y: lockedAt },
+          "",
+          location.pathname + location.search
+        );
       }
     });
 
@@ -552,15 +568,9 @@
     dialog.querySelectorAll('img[loading="lazy"]').forEach(function (img) {
       img.loading = "eager";
     });
-    /* The body is the part worth reading, and it is the part that scrolls,
-       so give it focus rather than leaving the arrow keys with nothing to do */
-    var scroller = dialog.querySelector(".modal-scroll");
-    if (scroller) {
-      scroller.scrollTop = 0;
-      scroller.focus({ preventScroll: true });
-    }
+    dialog.scrollTop = 0;
     if (push) {
-      history.pushState({ modal: dialog.id }, "", "#" + dialog.id);
+      history.pushState({ modal: dialog.id, y: lockedAt }, "", "#" + dialog.id);
     }
   }
 
@@ -572,13 +582,32 @@
 
   window.addEventListener("popstate", function (e) {
     var wanted = e.state && e.state.modal;
+    var wasOpen = null;
+    poppingBack = true;
     document.querySelectorAll("dialog.project-modal").forEach(function (d) {
-      if (d.open && d.id !== wanted) d.close();
+      if (d.open && d.id !== wanted) {
+        wasOpen = d;
+        d.close();
+      }
     });
+    poppingBack = false;
+
     if (wanted) {
       openModal(document.getElementById(wanted), false);
-    } else if (e.state && typeof e.state.y === "number") {
-      window.scrollTo({ top: e.state.y, behavior: "auto" });
+      return;
+    }
+
+    /* Back out of a modal should land on the card it was opened from, not
+       wherever the entry behind it happens to point. */
+    var y = e.state && typeof e.state.y === "number" ? e.state.y : null;
+    if (y === null && wasOpen) y = lockedAt;
+    if (y !== null) {
+      window.scrollTo(0, y);
+      /* A fragment in the restored URL makes the browser scroll after this
+         turn of the loop, so re-apply once it has had its go. */
+      requestAnimationFrame(function () {
+        window.scrollTo(0, y);
+      });
     }
   });
 
