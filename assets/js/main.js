@@ -295,7 +295,9 @@
   }
 
   document.querySelectorAll("dialog.project-modal").forEach(function (dialog) {
-    var scroller = dialog.querySelector(".modal-scroll");
+    /* The dialog is the scroll container, so the dismiss drag only arms
+       when it is already scrolled to the top */
+    var scroller = dialog;
     var gal = dialog.querySelector(".modal-gallery-main");
     var main = dialog.querySelector("[data-gallery-main]");
     var status = dialog.querySelector("[data-gallery-status]");
@@ -552,13 +554,7 @@
     dialog.querySelectorAll('img[loading="lazy"]').forEach(function (img) {
       img.loading = "eager";
     });
-    /* The body is the part worth reading, and it is the part that scrolls,
-       so give it focus rather than leaving the arrow keys with nothing to do */
-    var scroller = dialog.querySelector(".modal-scroll");
-    if (scroller) {
-      scroller.scrollTop = 0;
-      scroller.focus({ preventScroll: true });
-    }
+    dialog.scrollTop = 0;
     if (push) {
       history.pushState({ modal: dialog.id }, "", "#" + dialog.id);
     }

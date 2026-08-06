@@ -1138,6 +1138,10 @@ dialog.project-modal {
   margin: auto;
   width: min(920px, calc(100vw - 2rem));
   max-height: min(88svh, 60rem);
+  /* The dialog is the only scroll container. Nesting a second one inside it
+     produced two scrollbars and clipped anything drawn at its edge. */
+  overflow-y: auto;
+  overscroll-behavior: contain;
   border: 0;
   border-radius: var(--radius-lg);
   background: var(--bg-2);
@@ -1182,15 +1186,19 @@ dialog.project-modal::backdrop {
 .modal-shell {
   display: flex;
   flex-direction: column;
-  max-height: inherit;
 }
 
+/* Stays put while the body scrolls, so the close button is always reachable */
 .modal-top {
+  position: sticky;
+  top: 0;
+  z-index: 3;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
   padding: 1.1rem 1.4rem;
+  background: var(--bg-2);
   border-bottom: 1px solid var(--border);
 }
 
@@ -1223,20 +1231,7 @@ dialog.project-modal::backdrop {
 }
 
 .modal-scroll {
-  overflow-y: auto;
-  overscroll-behavior: contain;
   padding: 1.6rem 1.4rem 2rem;
-}
-
-/* The scroll region takes focus so the keyboard can page through it,
-   but it should not draw a ring around the whole modal body */
-.modal-scroll:focus {
-  outline: none;
-}
-
-.modal-scroll:focus-visible {
-  outline: 2px solid var(--copper);
-  outline-offset: -2px;
 }
 
 @media (min-width: 700px) {
