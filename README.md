@@ -21,7 +21,7 @@ docs/assets/                Resume PDF and original photo files
 legacy/                     Archived earlier iterations
 ```
 
-Design notes: graphite and paper themes with a PCB-copper accent, Archivo and IBM Plex Mono type, and a circuit-trace hero drawn in SVG. Fonts are self-hosted, so the page makes no third-party requests. The theme toggle respects `prefers-color-scheme` and remembers the choice in `localStorage`. Animations respect `prefers-reduced-motion`, and content is readable with JavaScript disabled.
+Design notes: graphite and paper themes, Archivo and IBM Plex Mono type, and a circuit-trace hero drawn in SVG. Two colours with separate jobs: copper depicts the board (traces, pads, vias, registration marks, the brand mark) and never moves; verdigris, what copper oxidises into, carries the interface (action, state, focus, wayfinding) and is spent on nothing decorative. Fonts are self-hosted, so the page makes no third-party requests. The theme toggle respects `prefers-color-scheme` and remembers the choice in `localStorage`. Animations respect `prefers-reduced-motion`, and content is readable with JavaScript disabled.
 
 Projects open in `<dialog>` elements that carry their own URL (`/#modal-rf`), so a project can be linked directly and the browser Back button or a back-swipe closes it. Card images ship a 400w variant through `srcset`; dialog photos are deferred until a dialog opens.
 
