@@ -24,8 +24,10 @@
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const ROOT = new URL("..", import.meta.url).pathname;
+/* fileURLToPath, not .pathname: on Windows .pathname gives /C:/... */
+const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const CONFIG = join(ROOT, "data/threads.config.json");
 const DATA = join(ROOT, "data/threads.json");
 const SECRETS = join(ROOT, ".claude/secrets.local.json");
@@ -44,7 +46,7 @@ function token() {
   if (existsSync(SECRETS)) {
     const entry = JSON.parse(readFileSync(SECRETS, "utf8")).THREADS_ACCESS_TOKEN;
     if (entry && entry.cmd) {
-      const r = spawnSync("/bin/sh", ["-c", entry.cmd], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], timeout: 60000 });
+      const r = spawnSync(entry.cmd, { shell: entry.shell || true, cwd: ROOT, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], timeout: 60000, windowsHide: true });
       if (r.status === 0 && r.stdout.trim()) return r.stdout.trim();
     }
   }

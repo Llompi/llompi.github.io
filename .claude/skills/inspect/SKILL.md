@@ -2,7 +2,7 @@
 name: inspect
 description: Strict design and writing inspection of the site or one page, by the owner's working manual and impeccable.style, ranked P0 to P3. Critique only; it changes nothing. Use when the owner asks for a design review, a writing review, an audit, "is this AI slop", or before publishing a significant change.
 argument-hint: "[page or section, e.g. lab/ or #keep-out; default: whole site]"
-allowed-tools: Bash(node tools/disclosure-check.mjs), Bash(node tools/disclosure-check.mjs *), Bash(npx impeccable detect *), Bash(git diff *), Bash(git log *), Read, Grep, Glob
+allowed-tools: Bash(node tools/disclosure-check.mjs), Bash(node tools/disclosure-check.mjs *), Bash(npx impeccable detect *), Bash(git diff *), Bash(git log *), Read, Grep, Glob, PowerShell(node tools/disclosure-check.mjs), PowerShell(node tools/disclosure-check.mjs *), PowerShell(npx impeccable detect *), PowerShell(git diff *), PowerShell(git log *)
 ---
 
 # Inspect

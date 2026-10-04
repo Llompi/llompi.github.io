@@ -16,8 +16,10 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const ROOT = new URL("..", import.meta.url).pathname;
+/* fileURLToPath, not .pathname: on Windows .pathname gives /C:/... */
+const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const args = new Set(process.argv.slice(2));
 const DAY = 86400000;
 

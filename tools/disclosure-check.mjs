@@ -17,15 +17,19 @@
    on a public repository do not print what they were protecting.
 
    Usage:
-     node tools/disclosure-check.mjs            check the whole site
-     node tools/disclosure-check.mjs file ...   check specific files
+     node tools/disclosure-check.mjs            everything git would publish (tracked
+                                                and untracked, minus ignored files)
+     node tools/disclosure-check.mjs --tracked  only committed and staged files
+     node tools/disclosure-check.mjs file ...   specific files
    Exit code 1 on any finding. */
 
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, relative, extname, resolve } from "node:path";
 import { execFileSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 
-const ROOT = new URL("..", import.meta.url).pathname;
+/* fileURLToPath, not .pathname: on Windows .pathname gives /C:/... */
+const ROOT = fileURLToPath(new URL("..", import.meta.url));
 
 /* Used only when git is unavailable. Everything else in the repository is
    public, tooling and Claude Code config included, so it is all scanned
@@ -64,9 +68,12 @@ function walk(dir, out = []) {
 /* Everything git would publish: tracked files plus new files that are not
    ignored. Ignored files (the denylist itself, local secrets config,
    CLAUDE.local.md) never leave this computer, so they are not scanned. */
-function publishable() {
+function publishable(trackedOnly) {
   try {
-    const out = execFileSync("git", ["ls-files", "--cached", "--others", "--exclude-standard", "-z"], { cwd: ROOT, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+    /* --tracked: only what is committed or staged, for the commit and push
+       hooks, so an unrelated draft sitting untracked does not block them */
+    const which = trackedOnly ? ["--cached"] : ["--cached", "--others", "--exclude-standard"];
+    const out = execFileSync("git", ["ls-files", ...which, "-z"], { cwd: ROOT, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
     return out.split("\0").filter(Boolean).map((f) => join(ROOT, f)).filter((f) => existsSync(f));
   } catch (e) {
     return walk(ROOT);
@@ -190,8 +197,9 @@ function checkPng(buf) {
 function main() {
   const terms = loadTerms();
   const matchers = termMatchers(terms);
-  const args = process.argv.slice(2);
-  const files = args.length ? args.map((f) => resolve(f)) : publishable();
+  const flags = process.argv.slice(2).filter((a) => a.startsWith("--"));
+  const args = process.argv.slice(2).filter((a) => !a.startsWith("--"));
+  const files = args.length ? args.map((f) => resolve(f)) : publishable(flags.includes("--tracked"));
   let total = 0;
 
   for (const file of files) {
@@ -219,4 +227,6 @@ function main() {
   console.log("Disclosure check passed: " + files.length + " files, " + note + ".");
 }
 
-if (import.meta.url === "file://" + process.argv[1]) main();
+/* Run only when executed directly, not when imported by threads-sync.
+   Compare real paths: on Windows argv[1] is C:\\... while the URL is file:///C:/... */
+if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) main();

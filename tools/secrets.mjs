@@ -9,18 +9,21 @@
    `gh secret set` on stdin. Only names, lengths, and dates are printed.
 
    Where each value comes from is set in .claude/secrets.local.json (never
-   committed). Each entry is a shell command that prints the value:
+   committed). Each entry is a command that prints the value. It runs in the
+   platform shell (cmd.exe on Windows, sh elsewhere), so quote with double
+   quotes; set "shell": "powershell.exe" on an entry to use PowerShell:
 
      {
-       "DISCLOSURE_TERMS":     { "cmd": "op read 'op://Private/Site denylist/notesPlain'" },
-       "THREADS_ACCESS_TOKEN": { "cmd": "op read 'op://Private/Threads API/token'" },
-       "THREADS_APP_SECRET":   { "cmd": "op read 'op://Private/Threads API/app secret'", "github": false },
-       "SECRETS_WRITE_TOKEN":  { "cmd": "op read 'op://Private/GitHub site PAT/token'" }
+       "DISCLOSURE_TERMS":     { "cmd": "op read \"op://Private/Site denylist/notesPlain\"" },
+       "THREADS_ACCESS_TOKEN": { "cmd": "op read \"op://Private/Threads API/token\"" },
+       "THREADS_APP_SECRET":   { "cmd": "op read \"op://Private/Threads API/app secret\"", "github": false },
+       "SECRETS_WRITE_TOKEN":  { "cmd": "op read \"op://Private/GitHub site PAT/token\"" }
      }
 
    Works with any manager that has a CLI: 1Password (op read), Bitwarden
    (bw get password / bw get notes), pass (pass show), macOS Keychain
-   (security find-generic-password -w -s NAME). "github": false keeps an
+   (security find-generic-password -w -s NAME), Windows Credential Manager
+   through PowerShell's CredentialManager module. "github": false keeps an
    entry local; it is used by this script but never uploaded.
 
    Usage:
@@ -36,8 +39,10 @@
 import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const ROOT = new URL("..", import.meta.url).pathname;
+/* fileURLToPath, not .pathname: on Windows .pathname gives /C:/... */
+const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const CONFIG = join(ROOT, ".claude/secrets.local.json");
 const [cmd, ...rest] = process.argv.slice(2);
 
@@ -71,12 +76,14 @@ function loadConfig() {
 function readValue(name, config, { keepNewlines = false } = {}) {
   const entry = config[name];
   if (!entry || !entry.cmd) die(name + " has no command in .claude/secrets.local.json");
-  const r = spawnSync("/bin/sh", ["-c", entry.cmd], { cwd: ROOT, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], timeout: 60000 });
+  const r = spawnSync(entry.cmd, { shell: entry.shell || true, cwd: ROOT, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], timeout: 60000, windowsHide: true });
   if (r.status !== 0) {
     /* stderr from a password manager is about locking or sign-in, not the value */
     die(name + ": the command failed (" + (r.stderr || "").trim().split("\n")[0] + "). Is the password manager unlocked?");
   }
-  const value = keepNewlines ? r.stdout.replace(/\s+$/, "") + "\n" : r.stdout.trim();
+  /* Normalise Windows line endings so terms match on every platform */
+  const out = r.stdout.replace(/\r\n/g, "\n");
+  const value = keepNewlines ? out.replace(/\s+$/, "") + "\n" : out.trim();
   if (!value.trim()) die(name + ": the command printed nothing.");
   return value;
 }

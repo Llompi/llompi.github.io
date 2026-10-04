@@ -2,7 +2,7 @@
 name: site
 description: Status and day-to-day operations for this website. Use when the owner asks how the site is doing, what needs attention, whether Threads is syncing, wants to curate which Threads posts appear, run the sync, preview a change, or publish.
 argument-hint: "[status | notes | curate | sync | publish]"
-allowed-tools: Bash(node tools/site-status.mjs), Bash(node tools/site-status.mjs *), Bash(node tools/threads-curate.mjs shown), Bash(node tools/threads-curate.mjs topics), Bash(node tools/threads-curate.mjs recent), Bash(node tools/threads-curate.mjs recent *), Bash(gh run list *), Bash(gh run view *), Bash(git status), Bash(git diff *), Bash(git log *)
+allowed-tools: Bash(node tools/site-status.mjs), Bash(node tools/site-status.mjs *), Bash(node tools/threads-curate.mjs shown), Bash(node tools/threads-curate.mjs topics), Bash(node tools/threads-curate.mjs recent), Bash(node tools/threads-curate.mjs recent *), Bash(gh run list *), Bash(gh run view *), Bash(git status), Bash(git diff *), Bash(git log *), PowerShell(node tools/site-status.mjs), PowerShell(node tools/site-status.mjs *), PowerShell(node tools/threads-curate.mjs shown), PowerShell(node tools/threads-curate.mjs topics), PowerShell(node tools/threads-curate.mjs recent), PowerShell(node tools/threads-curate.mjs recent *), PowerShell(gh run list *), PowerShell(gh run view *), PowerShell(git status), PowerShell(git diff *), PowerShell(git log *)
 ---
 
 # Site console

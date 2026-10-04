@@ -30,9 +30,11 @@
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { loadTerms, termMatchers, checkText } from "./disclosure-check.mjs";
 
-const ROOT = new URL("..", import.meta.url).pathname;
+/* fileURLToPath, not .pathname: on Windows .pathname gives /C:/... */
+const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const API = "https://graph.threads.net/v1.0";
 const CONFIG = join(ROOT, "data/threads.config.json");
 const OUT = join(ROOT, "data/threads.json");

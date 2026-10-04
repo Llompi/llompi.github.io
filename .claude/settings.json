@@ -22,7 +22,28 @@
       "Bash(git status)",
       "Bash(git diff *)",
       "Bash(git diff)",
-      "Bash(git log *)"
+      "Bash(git log *)",
+      "PowerShell(node tools/site-status.mjs)",
+      "PowerShell(node tools/site-status.mjs *)",
+      "PowerShell(node tools/disclosure-check.mjs)",
+      "PowerShell(node tools/disclosure-check.mjs *)",
+      "PowerShell(node tools/secrets.mjs status)",
+      "PowerShell(node tools/secrets.mjs check)",
+      "PowerShell(node tools/secrets.mjs link *)",
+      "PowerShell(node tools/threads-curate.mjs shown)",
+      "PowerShell(node tools/threads-curate.mjs recent *)",
+      "PowerShell(node tools/threads-curate.mjs recent)",
+      "PowerShell(node tools/threads-curate.mjs topics)",
+      "PowerShell(gh run list *)",
+      "PowerShell(gh run view *)",
+      "PowerShell(gh pr view *)",
+      "PowerShell(gh pr list *)",
+      "PowerShell(gh pr checks *)",
+      "PowerShell(git status *)",
+      "PowerShell(git status)",
+      "PowerShell(git diff *)",
+      "PowerShell(git diff)",
+      "PowerShell(git log *)"
     ],
     "deny": [
       "Read(./.disclosure-terms)",
@@ -36,7 +57,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/tools/site-status.mjs\" --brief",
+            "command": "node \"${CLAUDE_PROJECT_DIR}/tools/site-status.mjs\" --brief",
             "timeout": 30
           }
         ]
@@ -47,7 +68,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-prompt.mjs\"",
+            "command": "node \"${CLAUDE_PROJECT_DIR}/.claude/hooks/guard-prompt.mjs\"",
             "timeout": 10
           }
         ]
@@ -55,11 +76,11 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "Bash",
+        "matcher": "Bash|PowerShell",
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-bash.mjs\"",
+            "command": "node \"${CLAUDE_PROJECT_DIR}/.claude/hooks/guard-bash.mjs\"",
             "timeout": 90
           }
         ]

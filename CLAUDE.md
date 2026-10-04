@@ -4,6 +4,8 @@ Joan Llompart's personal site. Plain HTML, CSS, and JavaScript served by GitHub 
 
 The owner often drives this project from a phone through Remote Control. Keep replies short and narrow, lead with what needs doing, and ask one question at a time.
 
+The owner's computer is Windows, so commands there run in PowerShell. Everything in `tools/` is plain Node with no dependencies and runs the same on Windows, macOS, Linux, and in GitHub Actions; prefer it over shell one-liners.
+
 ## Rules that are not negotiable
 
 - Everything pushed is public, history included. Read PUBLISHING.md before adding anything about the owner's work. Employer work is keep-out at most. Home projects in the employer's field are not published at all without the owner's written clearance.

@@ -2,7 +2,7 @@
 name: secrets
 description: Set up, check, upload, or renew the site's secrets (the private disclosure denylist, the Threads token, the GitHub token that lets the workflow renew it) without any value passing through the conversation. Use when the owner mentions secrets, tokens, the denylist, Threads setup, or an expiring token.
 argument-hint: "[status | setup | push NAME | denylist | threads | link NAME]"
-allowed-tools: Bash(node tools/secrets.mjs status), Bash(node tools/secrets.mjs check), Bash(node tools/secrets.mjs link *), Bash(node tools/site-status.mjs)
+allowed-tools: Bash(node tools/secrets.mjs status), Bash(node tools/secrets.mjs check), Bash(node tools/secrets.mjs link *), Bash(node tools/site-status.mjs), PowerShell(node tools/secrets.mjs status), PowerShell(node tools/secrets.mjs check), PowerShell(node tools/secrets.mjs link *), PowerShell(node tools/site-status.mjs)
 ---
 
 # Secrets
