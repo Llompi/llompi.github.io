@@ -113,9 +113,16 @@ async function resolve(ref) {
   return hit ? hit.id : code;
 }
 
-function setList(id, add, remove) {
-  config[add] = Array.from(new Set([...(config[add] || []).map(String), id]));
-  config[remove] = (config[remove] || []).map(String).filter((x) => x !== id);
+/* A post can sit in a list as its id or as its link code; clear both */
+function forms(ref, id) {
+  const code = (String(ref).match(/\/(?:post|t)\/([A-Za-z0-9_-]+)/) || [])[1];
+  return new Set([String(id), String(ref), code].filter(Boolean));
+}
+
+function setList(id, add, remove, ref) {
+  const all = forms(ref, id);
+  config[add] = Array.from(new Set([...(config[add] || []).map(String).filter((x) => !all.has(x)), id]));
+  config[remove] = (config[remove] || []).map(String).filter((x) => !all.has(x));
 }
 
 const after = "Commit and push data/threads.config.json, then: gh workflow run threads-sync.yml";
@@ -150,7 +157,7 @@ switch (cmd) {
   case "include":
   case "exclude": {
     const id = await resolve(rest[0]);
-    setList(id, cmd, cmd === "include" ? "exclude" : "include");
+    setList(id, cmd, cmd === "include" ? "exclude" : "include", rest[0]);
     save();
     console.log((cmd === "include" ? "Will always show " : "Will never show ") + id + ". " + after);
     break;
@@ -158,8 +165,9 @@ switch (cmd) {
 
   case "reset": {
     const id = await resolve(rest[0]);
-    config.include = (config.include || []).map(String).filter((x) => x !== id);
-    config.exclude = (config.exclude || []).map(String).filter((x) => x !== id);
+    const all = forms(rest[0], id);
+    config.include = (config.include || []).map(String).filter((x) => !all.has(x));
+    config.exclude = (config.exclude || []).map(String).filter((x) => !all.has(x));
     save();
     console.log(id + " follows the topic and hashtag rules again. " + after);
     break;

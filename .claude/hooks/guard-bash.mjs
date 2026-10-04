@@ -28,7 +28,20 @@ try {
   process.exit(0);
 }
 if (input.tool_name && !["Bash", "PowerShell"].includes(input.tool_name)) process.exit(0);
-const command = String((input.tool_input && input.tool_input.command) || "");
+/* Heredocs and here-strings that feed a commit message or a file are data,
+   not commands: drop their bodies so a commit message that mentions a
+   command isn't judged as running it. A body fed to a shell or an
+   interpreter is code and stays in. */
+const CODE_CONSUMER = /\b(?:(?:ba|z|da)?sh|python3?|py|node|deno|bun|perl|ruby|pwsh|powershell|cmd|iex|invoke-expression)\b/i;
+function dropDataBodies(text) {
+  return text
+    .replace(/^([^\n]*<<-?\s*(['"]?)(\w+)\2[^\n]*)\n([\s\S]*?)\n[ \t]*\3[ \t]*(?=\n|$)/gm, (all, head, q, tag) =>
+      /* the consumer is the command that owns the heredoc, the last one on the line before << */
+      CODE_CONSUMER.test(head.split("<<")[0].split(/&&|\|\||;|\|/).pop()) ? all : head + "\n" + tag)
+    .replace(/(^|\n)([^\n]*)@(['"])\n([\s\S]*?)\n\3@/g, (all, lead, head, q) =>
+      CODE_CONSUMER.test(head) ? all : lead + head + "@" + q + q + "@");
+}
+const command = dropDataBodies(String((input.tool_input && input.tool_input.command) || ""));
 const root = process.env.CLAUDE_PROJECT_DIR || input.cwd || process.cwd();
 
 function block(msg) {
@@ -40,6 +53,7 @@ function block(msg) {
    second one, then peel off wrappers (rtk, sudo, env, bash -c, the
    PowerShell call operator) so "rtk cat x" is judged as "cat x". */
 const WRAPPER = /^(?:(?:rtk|sudo|time|nice|nohup|command|exec|xargs(?:\s+-\S+)*|env(?:\s+\w+=\S*)*|&|\.|(?:ba|z)?sh\s+-c|cmd(?:\.exe)?\s+\/[ck]|(?:powershell|pwsh)(?:\.exe)?(?:\s+-\w+)*\s+-c(?:ommand)?)\s+)+/i;
+const rawParts = command.split(/&&|\|\||;|\||\r?\n/).map((p) => p.trim()).filter(Boolean);
 const parts = command
   .split(/&&|\|\||;|\||\r?\n/)
   .map((p) => p.trim().replace(/^["'(]+|["')]+$/g, "").replace(WRAPPER, "").replace(/^["']|["']$/g, ""))
@@ -54,22 +68,38 @@ for (const p of parts) {
 
   /* The denylist lives outside the repository; refuse anything that would
      show its contents. Naming it to ls, Test-Path, or in docs is fine. */
-  const namesDenylist = /disclosure-terms|llompi-site[\\/]/i.test(p);
+  const namesDenylist = /disclosure-terms|llompi-site|DISCLOSURE_TERMS_FILE|TERMS_FILE|loadTerms/i.test(p);
   const reader = /^(?:\S*[\\/])?(cat|tac|less|more|head|tail|grep|egrep|fgrep|rg|ag|ack|sed|awk|jq|bat|xxd|od|hexdump|strings|base64|nl|sort|uniq|cut|tr|tee|cp|mv|copy|scp|rsync|curl|wget|find|python3?|py|node|perl|ruby|diff|cmp|fc|git\s+diff|vi|vim|nano|notepad|code|open|start|pbcopy|xclip|clip|gh\s+gist|type|gc|get-content|select-string|sls|findstr|copy-item|cpi|import-csv|format-hex|get-item|gi)\b/i;
-  if (namesDenylist && (reader.test(p) || /<\s*\S*disclosure-terms/i.test(p) || /\[(?:system\.)?io\.file\]::read/i.test(p))) {
+  if (namesDenylist && (reader.test(p) || /<\s*\S*disclosure-terms/i.test(p) || /\[(?:system\.)?io\.file\]::read/i.test(p) || /=\s*(?:get-content|gc|cat|type)\b/i.test(p))) {
     block("Blocked: that would show the private denylist in the conversation. To test it, run `node tools/disclosure-check.mjs`, which reports matches by number only. The owner edits the list themselves at the computer.");
   }
 
-  if (/^(?:\S*[\\/])?(?:op(?:\.exe)?\s+(?:read|item\s+get|inject|signin)|bw(?:\.exe)?\s+(?:get|export|unlock)|pass\s+(?:show\s+)?\S|security\s+find-(?:generic|internet)-password|lpass\s+show|keepassxc-cli\s+show|get-storedcredential|get-secret\b|cmdkey\s+\/list)/i.test(p) && !/"cmd"\s*:/.test(p)) {
+  const bare = p.replace(/^"?[^"]*?[\\/]((?:op|bw|gh|git)(?:\.exe)?)"?(?=\s)/i, "$1");
+  if (/^(?:\S*[\\/])?(?:op(?:\.exe)?\s+(?:read|item\s+get|inject|signin)|bw(?:\.exe)?\s+(?:get|export|unlock)|pass\s+(?:show\s+)?\S|security\s+find-(?:generic|internet)-password|lpass\s+show|keepassxc-cli\s+show|get-storedcredential|get-secret\b|cmdkey\s+\/list)/i.test(bare) && !/"cmd"\s*:/.test(p)) {
     block("Blocked: calling the password manager directly would print a secret into the conversation. Use `node tools/secrets.mjs check|push`, which reads it without printing it, or give the owner a GitHub link with `node tools/secrets.mjs link NAME`.");
+  }
+
+  if (/^(?:\S*[\\/])?gh(?:\.exe)?\s+auth\s+(?:token\b|status\b.*--show-token)/i.test(p) ||
+      /^(?:\S*[\\/])?git(?:\.exe)?\s+credential\s+fill\b/i.test(p) ||
+      /\.getnetworkcredential\(\)\.password|\bop\s+document\s+get\b|\bbw\s+list\b/i.test(p) ||
+      (/\.git-credentials\b|gh[\\/]hosts\.yml\b/i.test(p) && /^(?:\S*[\\/])?(?:cat|type|gc|get-content|less|more|head|tail)\b/i.test(p))) {
+    block("Blocked: that would print a stored credential (GitHub or a password manager) into the conversation.");
   }
 
   if (/^(?:\S*[\\/])?gh(?:\.exe)?\s+secret\s+set\b/i.test(p) && /\s(?:-b\S*|--body\b)/.test(p)) {
     block("Blocked: a secret on the command line ends up in the transcript and shell history. The owner pastes it at the page from `node tools/secrets.mjs link NAME`.");
   }
 
-  /* Whole-environment dumps carry every secret at once */
-  if (/^(?:env|printenv|export\s+-p|set|declare\s+-x|compgen\s+-e)$/i.test(p) ||
+  /* Whole-environment dumps carry every secret at once. Judged on the part
+     before wrappers are peeled too, since "env -0" is itself the wrapper. */
+  const original = (rawParts.find((r) => r.endsWith(p)) || p).trim();
+  if (/^(?:\S*[\\/])?(?:env|printenv)(?:\s+-\S+)*\s*$/i.test(original) ||/^(?:\S*[\\/])?(?:env|printenv)(?:\s+-\S+)*\s*$/i.test(p) ||
+      /^(?:export|declare|typeset|set|compgen\s+-e)(?:\s+-[px]+)*\s*$/i.test(p) ||
+      /\/proc\/\S*\/environ/.test(p) ||
+      /^ps\s+\S*e\S*\b/.test(p) ||
+      /json\.stringify\(\s*process\.env\b/i.test(p) ||
+      /(?:get-childitem|gci|dir|ls|get-item|gi)\s+(?:-path\s+|-literalpath\s+)?['"]?env:\\?['"]?\s*(?:\*|$|\))/i.test(p) ||
+      /\(\s*(?:get-childitem|gci|dir|ls)\s+env:[^)]*\)\.value/i.test(p) ||
       /^(?:get-childitem|gci|dir|ls)\s+env:\s*(?:\*|$)/i.test(p) ||
       /^(?:get-childitem|gci|dir|ls)\s+env:\S*[*?]/i.test(p) ||
       /\[(?:system\.)?environment\]::getenvironmentvariables\(/i.test(p) ||
@@ -100,14 +130,27 @@ for (const p of pipelines) {
   }
 }
 
+/* Interpreter one-liners: quoted code can contain ; which split the
+   pipelines above, so test the whole command */
+if (/\b(?:python3?|py|node|perl|ruby|deno|bun)\b/.test(command) && !parts.every(isTool) &&
+    new RegExp("(?:print|console\\.log|puts|getenv|os\\.environ|process\\.env|ENV\\[)[^\\n]*\\b(?:" + SECRETS + ")\\b", "i").test(command)) {
+  block("Blocked: that would print a secret's value. Check presence instead (`Test-Path env:NAME` or `[ -n \"$NAME\" ]`).");
+}
+
 /* ---- keep the git disclosure checks on ---- */
+
+if (/\bGIT_CONFIG_(?:COUNT|KEY_\d+|PARAMETERS|GLOBAL|SYSTEM|NOSYSTEM)\b|\bgit(?:\.exe)?\b[^;&|]*\s-c\s*core\.hookspath/i.test(command)) {
+  block("Blocked: that would point git away from the disclosure checks in .githooks/. Leave core.hooksPath as it is.");
+}
 
 const GIT = /(?:^|[\s;&|(])(?:\S*[\\/])?git(?:\.exe)?\b((?:\s+(?:-C|-c|--git-dir|--work-tree)\s+\S+|\s+--\S+)*)\s+([\w-]+)/gi;
 const gitCalls = [...command.matchAll(GIT)].map((m) => ({ sub: m[2].toLowerCase(), rest: command.slice(m.index) }));
 
 for (const g of gitCalls) {
   if (["commit", "push", "merge", "cherry-pick", "revert", "am", "rebase"].includes(g.sub)) {
-    if (/\s--no-verify\b/.test(g.rest.split(/&&|\|\||;|\|/)[0]) || (g.sub === "commit" && /\s-\w*n\w*\b/.test(g.rest.split(/&&|\|\||;|\|/)[0].replace(/-m\s+("[^"]*"|'[^']*'|\S+)/g, "")))) {
+    /* Quoted text (a commit message) can't hold a flag */
+    const own = g.rest.split(/&&|\|\||;|\|/)[0].replace(/"[^"]*"|'[^']*'/g, "''");
+    if (/\s--no-v(?:e(?:r(?:i(?:f(?:y)?)?)?)?)?(?![\w-])/.test(own) || (g.sub === "commit" && /\s-[a-zA-Z]*n[a-zA-Z]*(?![\w-])/.test(own))) {
       block("Blocked: --no-verify skips the disclosure checks that keep private terms and photo locations off the public site. Fix what the check reports instead.");
     }
   }

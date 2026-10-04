@@ -11,8 +11,8 @@
    shows up without a restart. */
 
 import { createServer } from "node:http";
-import { readFileSync, existsSync, statSync } from "node:fs";
-import { join, extname } from "node:path";
+import { readFileSync, existsSync, statSync, realpathSync } from "node:fs";
+import { join, extname, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
 
@@ -28,8 +28,24 @@ const TYPES = {
 };
 
 function publishable() {
-  const out = execFileSync("git", ["ls-files", "--cached", "--others", "--exclude-standard", "-z"], { cwd: ROOT, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
-  return new Set(out.split("\0").filter(Boolean));
+  try {
+    const out = execFileSync("git", ["ls-files", "--cached", "--others", "--exclude-standard", "-z"], { cwd: ROOT, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+    return new Set(out.split("\0").filter(Boolean));
+  } catch (e) {
+    return new Set();
+  }
+}
+
+const REAL_ROOT = realpathSync(ROOT);
+/* A symlink inside the repository can point anywhere; serve only files
+   whose real location is inside it */
+function inside(full) {
+  try {
+    const real = realpathSync(full);
+    return real.startsWith(REAL_ROOT.endsWith(sep) ? REAL_ROOT : REAL_ROOT + sep);
+  } catch (e) {
+    return false;
+  }
 }
 
 createServer((req, res) => {
@@ -47,7 +63,7 @@ createServer((req, res) => {
     return;
   }
   const full = join(ROOT, rel);
-  if (rel.split("/").includes("..") || !files.has(rel) || !existsSync(full) || !statSync(full).isFile()) {
+  if (rel.split("/").includes("..") || !files.has(rel) || !existsSync(full) || !inside(full) || !statSync(full).isFile()) {
     const notFound = join(ROOT, "404.html");
     res.writeHead(404, { "Content-Type": "text/html; charset=utf-8" });
     res.end(existsSync(notFound) ? readFileSync(notFound) : "Not found");

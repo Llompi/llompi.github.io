@@ -92,7 +92,7 @@ try {
 /* Only the count; the terms stay in the file, outside the repository */
 report.local.denylist = existsSync(TERMS_FILE) ? loadTerms().length : 0;
 report.local.oldDenylist = existsSync(join(ROOT, ".disclosure-terms"));
-report.local.hooks = sh("git", ["config", "core.hooksPath"]) === ".githooks";
+report.local.hooks = sh("git", ["config", "core.hooksPath"]) === ".githooks" && existsSync(join(ROOT, ".githooks", "pre-commit"));
 report.local.secretsConfig = existsSync(join(ROOT, ".claude/secrets.local.json"));
 report.local.branch = sh("git", ["rev-parse", "--abbrev-ref", "HEAD"]);
 report.local.dirty = (sh("git", ["status", "--porcelain"]) || "").split("\n").filter(Boolean).length;

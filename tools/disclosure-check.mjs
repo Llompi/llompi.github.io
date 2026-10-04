@@ -18,7 +18,7 @@ import { readFileSync } from "node:fs";
 import { relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
-  TERMS_FILE, loadTerms, termMatchers, checkText, checkFile, kindOf,
+  TERMS_FILE, loadTerms, termMatchers, checkText, checkFile, kindOf, looksLikeText,
   stagedFiles, outgoingCommits, commitContents, workingFiles, git
 } from "./lib/disclosure.mjs";
 
@@ -30,6 +30,13 @@ const value = (name) => {
   return i >= 0 ? argv[i + 1] : null;
 };
 
+const KNOWN = ["--staged", "--push", "--range", "--message"];
+const unknown = argv.filter((a) => a.startsWith("--") && !KNOWN.includes(a));
+if (unknown.length) {
+  console.error("Unknown option " + unknown.join(", ") + ". Options: " + KNOWN.join(", ") + ".");
+  process.exit(2);
+}
+
 const terms = loadTerms();
 const matchers = termMatchers(terms);
 const report = [];
@@ -40,7 +47,8 @@ let scope = "files";
 function scan(files, { drafts = true, label, changed } = {}) {
   for (const f of files) {
     scanned++;
-    if (kindOf(f.rel) === "opaque" && (!changed || changed.has(f.rel))) opaque.push(f.rel);
+    const unread = kindOf(f.rel) === "opaque" || (kindOf(f.rel) === "other" && !looksLikeText(f.buf));
+    if (unread && (!changed || changed.has(f.rel))) opaque.push(f.rel);
     for (const x of checkFile(f.rel, f.buf, matchers, { drafts })) {
       report.push((label ? label(f) : "") + f.rel + (x.line ? ":" + x.line : "") + "  " + x.kind + "  " + x.detail);
     }
@@ -71,7 +79,9 @@ if (flag("--staged")) {
   }
 } else if (flag("--message")) {
   scope = "commit message";
-  const text = readFileSync(value("--message"), "utf8").replace(/^#.*$/gm, "");
+  /* Keep # lines (git keeps them in -m messages); drop the diff that
+     `git commit -v` appends below the scissors line */
+  const text = readFileSync(value("--message"), "utf8").split(/^# -+ >8 -+$/m)[0];
   for (const x of checkText(text, matchers, { drafts: false })) report.push("commit message:" + x.line + "  " + x.kind + "  " + x.detail);
 } else {
   const paths = argv.filter((a) => !a.startsWith("--"));

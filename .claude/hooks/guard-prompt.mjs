@@ -13,13 +13,15 @@ import { readFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 
 const PATTERNS = [
-  ["a GitHub token", /(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{40,}/],
-  ["a 1Password service account token", /ops_[A-Za-z0-9_-]{40,}/],
-  ["a Threads or Meta access token", /(?:TH[A-Z]{2}|EAA)[A-Za-z0-9_-]{80,}/],
-  ["an Anthropic API key", /sk-ant-[A-Za-z0-9_-]{20,}/],
-  ["an OpenAI API key", /sk-(?:proj-)?[A-Za-z0-9_-]{32,}/],
-  ["an AWS access key", /AKIA[0-9A-Z]{16}/],
-  ["a Slack token", /xox[abprs]-[A-Za-z0-9-]{10,}/],
+  /* Each prefix has to start a word, so "risk-assessment-for-..." isn't an
+     "sk-" key, and a key body must mix digits and capitals like real keys */
+  ["a GitHub token", /(?<![A-Za-z0-9_])(?:(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{40,})/],
+  ["a 1Password service account token", /(?<![A-Za-z0-9_])ops_[A-Za-z0-9_-]{40,}/],
+  ["a Threads or Meta access token", /(?<![A-Za-z0-9_])(?:TH[A-Z]{2}|EAA)[A-Za-z0-9_-]{80,}/],
+  ["an Anthropic API key", /(?<![A-Za-z0-9_])sk-ant-[A-Za-z0-9_-]{20,}/],
+  ["an OpenAI API key", /(?<![A-Za-z0-9_-])sk-(?:proj-)?(?=[A-Za-z0-9_-]*\d)(?=[A-Za-z0-9_-]*[A-Z])[A-Za-z0-9_-]{32,}/],
+  ["an AWS access key", /(?<![A-Za-z0-9])AKIA[0-9A-Z]{16}(?![A-Za-z0-9])/],
+  ["a Slack token", /(?<![A-Za-z0-9])xox[abprs]-[A-Za-z0-9-]{10,}/],
   ["a private key", /-----BEGIN [A-Z ]*PRIVATE KEY-----/],
   /* Meta app secrets are 32 hex characters with no prefix. Git hashes are
      40 (or short), so an exact 32 run is worth stopping. */
@@ -35,8 +37,6 @@ try {
 }
 /* The field has been called both prompt and user_message across versions */
 const prompt = String(input.prompt || input.user_message || "");
-/* A phone can break a long paste across lines; check a copy without spaces too */
-const squeezed = prompt.replace(/\s+/g, "");
 
 function repo() {
   try {
@@ -60,7 +60,7 @@ if (/@\S*disclosure-terms/i.test(prompt)) {
 }
 
 for (const [kind, re] of PATTERNS) {
-  if (re.test(prompt) || (!["a secret assignment", "what looks like an app secret"].includes(kind) && re.test(squeezed))) {
+  if (re.test(prompt)) {
     const r = repo();
     stop(
       "Not sent to Claude: this looks like it contains " + kind + ".\n" +

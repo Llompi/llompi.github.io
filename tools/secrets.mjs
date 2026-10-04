@@ -37,7 +37,7 @@
      node tools/secrets.mjs link NAME            GitHub page to set it by hand from a phone */
 
 import { execFileSync, spawnSync } from "node:child_process";
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync, mkdirSync, chmodSync } from "node:fs";
 import { join, delimiter, dirname } from "node:path";
 import { TERMS_FILE } from "./lib/disclosure.mjs";
 import { fileURLToPath } from "node:url";
@@ -155,7 +155,7 @@ switch (cmd) {
     const names = new Set([...Object.keys(config), ...Object.keys(remote || {}), "DISCLOSURE_TERMS", "THREADS_ACCESS_TOKEN", "SECRETS_WRITE_TOKEN"]);
     const op = onPath("op");
     const sa = Boolean(process.env.OP_SERVICE_ACCOUNT_TOKEN);
-    console.log("1Password CLI: " + (op ? "installed" : "not found") + (op ? ", service account " + (sa ? "set" : "not set (run tools/setup-1password.ps1 at the computer)") : ""));
+    if (op) console.log("1Password CLI: installed, service account " + (sa ? "set" : "not set") + " (optional; see the /secrets skill)");
     console.log("");
     console.log("name".padEnd(24) + "source here".padEnd(16) + "on GitHub");
     for (const n of names) {
@@ -194,6 +194,9 @@ switch (cmd) {
     const v = readValue("DISCLOSURE_TERMS", config, { keepNewlines: true });
     mkdirSync(dirname(TERMS_FILE), { recursive: true });
     writeFileSync(TERMS_FILE, v, { mode: 0o600 });
+    try {
+      chmodSync(TERMS_FILE, 0o600); /* an existing file keeps its old mode otherwise */
+    } catch (e) {}
     console.log("Wrote the local denylist (" + describe("DISCLOSURE_TERMS", v) + ") outside the repository.");
     break;
   }
@@ -227,7 +230,7 @@ switch (cmd) {
         expires = body.expires_in;
         console.log("Refreshed the long-lived token.");
       } catch (e) {
-        console.log("Using the token as it is (" + e.message.replace(token, "[token]") + ").");
+        console.log("Using the token as it is (" + e.message.split(token).join("[token]") + ").");
       }
     }
 
@@ -235,7 +238,7 @@ switch (cmd) {
     try {
       me = await threadsGet(`${API}/v1.0/me?fields=username&access_token=${encodeURIComponent(token)}`);
     } catch (e) {
-      die("Threads rejected the token: " + e.message.replace(token, "[token]") + ". Nothing was uploaded.");
+      die("Threads rejected the token: " + e.message.split(token).join("[token]") + ". Nothing was uploaded.");
     }
     ghSecretSet(repo, "THREADS_ACCESS_TOKEN", token);
     const until = expires ? new Date(Date.now() + expires * 1000).toISOString().slice(0, 10) : "unknown";

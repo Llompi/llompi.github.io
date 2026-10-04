@@ -20,7 +20,7 @@
    One term per line, # for comments. Matches are reported by term number,
    never by the term, so public CI logs don't print what they protect. */
 
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, statSync } from "node:fs";
 import { join, extname, basename } from "node:path";
 import { homedir } from "node:os";
 import { execFileSync } from "node:child_process";
@@ -64,8 +64,14 @@ export function kindOf(rel) {
   const ext = extname(rel).toLowerCase();
   if (TEXT_EXT.has(ext) || TEXT_NAMES.has(basename(rel))) return "text";
   if (IMAGE_EXT.has(ext)) return "image";
-  if (OPAQUE_EXT.has(ext)) return "opaque";
+  if (OPAQUE_EXT.has(ext) || [".woff2", ".woff", ".ttf", ".otf", ".ico"].includes(ext)) return "opaque";
   return "other";
+}
+
+/* Unknown file types are read as text when they look like text (no NUL
+   bytes in the first 8 KB); otherwise they are listed as not checked */
+export function looksLikeText(buf) {
+  return !buf.subarray(0, 8192).includes(0);
 }
 
 export function draftsApply(rel) {
@@ -76,25 +82,40 @@ function escapeRe(s) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-/* Whole-word and case-insensitive, so a short term doesn't fire inside
-   ordinary words. Words of a multi-word term may be separated by any
-   whitespace, a line break, or a non-breaking space, as HTML allows. */
+/* Case-insensitive, starting at a word boundary. The words of a multi-word
+   term may be separated by any whitespace or none, since markup removed
+   from the text (readable() below) can leave them touching. */
 export function termMatchers(terms) {
-  const gap = "(?:\\s|&nbsp;|&#160;|&#xa0;|\\u00a0)+";
-  return terms.map(
-    (t) => new RegExp("(?<![\\p{L}\\p{N}])" + t.split(/\s+/).map(escapeRe).join(gap) + "(?![\\p{L}\\p{N}])", "giu")
-  );
+  return terms.map((t) => new RegExp("(?<![\\p{L}\\p{N}])" + t.split(/\s+/).map(escapeRe).join("\\s*"), "giu"));
+}
+
+/* What a reader sees, not what the source says: markup and invisible
+   characters can split a word in the source while it reads whole on the
+   page. Tags are removed (keeping their line breaks, so line numbers hold),
+   whitespace entities become spaces, invisible characters disappear. */
+function readable(text) {
+  return String(text)
+    .replace(/<[^>]*>/g, (m) => m.replace(/[^\n]/g, ""))
+    .replace(/&(?:nbsp|ensp|emsp|thinsp|#32|#160|#x20|#xa0|#8194|#8195|#8201);/gi, " ")
+    .replace(/&(?:shy|zwj|zwnj|#173|#xad|#8203|#x200b|#8204|#8205|#x200c|#x200d|#8288|#x2060);/gi, "")
+    .replace(/[­​-‍⁠﻿]/g, "")
+    .replace(/[  -  ]/g, " ");
 }
 
 export function checkText(text, matchers, { drafts = true } = {}) {
   const findings = [];
-  /* Soft hyphens are invisible on the page but split a word in the source */
-  const norm = String(text).replace(/&shy;|­/gi, "");
+  const raw = String(text);
+  const norm = readable(raw);
   const lineAt = (i) => norm.slice(0, i).split("\n").length;
   matchers.forEach((re, n) => {
     re.lastIndex = 0;
     const seen = new Set();
     for (const m of norm.matchAll(re)) {
+      /* The term has to end a word, except that camelCase or digits may
+         follow: "ZephyrcorpRetrofit" and "zephyrcorp2025" count,
+         "zephyrcorps" doesn't */
+      const next = norm[m.index + m[0].length] || "";
+      if (/\p{Ll}/u.test(next)) continue;
       const line = lineAt(m.index);
       if (seen.has(line)) continue;
       seen.add(line);
@@ -102,7 +123,7 @@ export function checkText(text, matchers, { drafts = true } = {}) {
     }
   });
   if (drafts) {
-    norm.split("\n").forEach((line, i) => {
+    raw.split("\n").forEach((line, i) => {
       for (const re of DRAFT_PATTERNS) {
         if (re.test(line)) {
           findings.push({ line: i + 1, kind: "draft", detail: "draft marker " + re.source.replace(/\\b/g, "") });
@@ -193,7 +214,9 @@ function checkPng(buf) {
 /* One file's findings, from its repository path and its bytes */
 export function checkFile(rel, buf, matchers, { drafts = true } = {}) {
   const kind = kindOf(rel);
-  if (kind === "text") return checkText(buf.toString("utf8"), matchers, { drafts: drafts && draftsApply(rel) });
+  if (kind === "text" || (kind === "other" && looksLikeText(buf))) {
+    return checkText(buf.toString("utf8"), matchers, { drafts: drafts && kind === "text" && draftsApply(rel) });
+  }
   if (kind === "image") return /\.png$/i.test(rel) ? checkPng(buf) : checkJpeg(buf);
   return [];
 }
@@ -201,7 +224,7 @@ export function checkFile(rel, buf, matchers, { drafts = true } = {}) {
 /* ------------------------------------------------------------- sources */
 
 export function git(root, args, opts = {}) {
-  return execFileSync("git", args, { cwd: root, maxBuffer: 256 * 1024 * 1024, ...opts });
+  return execFileSync("git", args, { cwd: root, maxBuffer: 1024 * 1024 * 1024, ...opts });
 }
 
 /* Read many blobs in one git process: [{ rel, sha }] -> [{ rel, buf }] */
@@ -224,19 +247,24 @@ export function readBlobs(root, entries) {
   return result;
 }
 
-/* What is staged: the index, exactly as it will be committed */
+/* What this commit adds or changes, exactly as staged. Files the commit
+   doesn't touch were checked when they were committed (or are already
+   public), so one old problem can't block every later commit. Binary types
+   the check can't read come back without content. */
 export function stagedFiles(root) {
-  const raw = git(root, ["ls-files", "-s", "-z"]).toString("utf8");
-  const entries = raw
-    .split("\0")
-    .filter(Boolean)
-    .map((line) => {
-      const tab = line.indexOf("\t");
-      const [mode, sha] = line.slice(0, tab).split(" ");
-      return { mode, sha, rel: line.slice(tab + 1) };
-    })
-    .filter((e) => e.mode !== "160000"); /* submodules */
-  return readBlobs(root, entries);
+  const raw = git(root, ["diff", "--cached", "--raw", "-z", "--no-renames", "--diff-filter=ACMT"]).toString("utf8").split("\0");
+  const entries = [];
+  for (let i = 0; i + 1 < raw.length; i += 2) {
+    const meta = raw[i].trim().split(" ");
+    if (meta[1] === "160000") continue; /* submodules */
+    entries.push({ sha: meta[3], rel: raw[i + 1] });
+  }
+  return withContent(root, entries);
+}
+
+function withContent(root, entries) {
+  const opaque = (e) => kindOf(e.rel) === "opaque";
+  return readBlobs(root, entries.filter((e) => !opaque(e))).concat(entries.filter(opaque).map((e) => ({ ...e, buf: Buffer.alloc(0) })));
 }
 
 const ZERO = /^0+$/;
@@ -252,7 +280,11 @@ export function outgoingCommits(root, { prePushInput, range } = {}) {
       return null;
     }
   };
-  if (range) lists.push(revList([range]) || []);
+  if (range) {
+    /* After a force push the old tip may be unknown here: check the whole
+       history of the new tip rather than nothing */
+    lists.push(revList([range]) || revList([range.split("..").pop()]) || []);
+  }
   for (const line of String(prePushInput || "").split("\n")) {
     const [, localSha, , remoteSha] = line.trim().split(/\s+/);
     if (!localSha || ZERO.test(localSha)) continue; /* deleting a branch */
@@ -267,7 +299,10 @@ export function commitContents(root, commits) {
   const entries = [];
   const seen = new Set();
   for (const c of commits) {
-    const raw = git(root, ["diff-tree", "-r", "-z", "--no-commit-id", "--root", "-m", c]).toString("utf8").split("\0");
+    /* A merge's diff is the other side's commits, which are already public
+       or in this list themselves; only its message is new */
+    if (git(root, ["rev-list", "--parents", "-n", "1", c]).toString("utf8").trim().split(" ").length > 2) continue;
+    const raw = git(root, ["diff-tree", "-r", "-z", "--no-commit-id", "--root", "--no-renames", c]).toString("utf8").split("\0");
     for (let i = 0; i + 1 < raw.length; i += 2) {
       const meta = raw[i].trim().split(" ");
       const sha = meta[3];
@@ -280,7 +315,7 @@ export function commitContents(root, commits) {
       entries.push({ rel, sha, commit: c });
     }
   }
-  const files = readBlobs(root, entries);
+  const files = withContent(root, entries);
   const messages = commits.map((c) => ({ commit: c, text: git(root, ["log", "-1", "--format=%B", c]).toString("utf8") }));
   return { files, messages };
 }
@@ -290,5 +325,13 @@ export function commitContents(root, commits) {
    every platform. */
 export function workingFiles(root) {
   const list = git(root, ["ls-files", "--cached", "--others", "--exclude-standard", "-z"]).toString("utf8").split("\0").filter(Boolean);
-  return list.filter((rel) => existsSync(join(root, rel))).map((rel) => ({ rel, buf: readFileSync(join(root, rel)) }));
+  return list
+    .filter((rel) => {
+      try {
+        return statSync(join(root, rel)).isFile();
+      } catch (e) {
+        return false;
+      }
+    })
+    .map((rel) => ({ rel, buf: kindOf(rel) === "opaque" ? Buffer.alloc(0) : readFileSync(join(root, rel)) }));
 }
