@@ -23,17 +23,21 @@
 
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, relative, extname, resolve } from "node:path";
+import { execFileSync } from "node:child_process";
 
 const ROOT = new URL("..", import.meta.url).pathname;
 
-/* Archived iterations are not linked or indexed, but they are still served,
-   so they are scanned like everything else. Only tooling is skipped. */
-const SKIP_DIRS = new Set([".git", "node_modules", ".github", "tools"]);
+/* Used only when git is unavailable. Everything else in the repository is
+   public, tooling and Claude Code config included, so it is all scanned
+   for denylisted terms. */
+const SKIP_DIRS = new Set([".git", "node_modules"]);
 const TEXT_EXT = new Set([".html", ".htm", ".css", ".js", ".mjs", ".json", ".md", ".txt", ".xml", ".svg"]);
 const IMAGE_EXT = new Set([".jpg", ".jpeg", ".png"]);
-/* Markdown under the repo root documents the tooling and is allowed to
-   talk about drafts; it is still scanned for denylisted terms. */
-const DRAFT_EXEMPT = new Set(["README.md", "CONTRIBUTING.md", "PUBLISHING.md", "LICENSE"]);
+/* Draft markers only matter on pages the site serves. Docs, tooling, and
+   Claude Code config are allowed to talk about drafts; they are still
+   scanned for denylisted terms. */
+const DRAFT_EXEMPT = new Set(["README.md", "CONTRIBUTING.md", "PUBLISHING.md", "CLAUDE.md", "LICENSE"]);
+const DRAFT_EXEMPT_DIRS = [".github/", ".claude/", "tools/", "legacy/", "assets/vendor/"];
 const DRAFT_PATTERNS = [/\bTODO\b/, /\bDRAFT\b/, /\[redact/i, /\bTBD\b/];
 
 export function loadTerms() {
@@ -55,6 +59,18 @@ function walk(dir, out = []) {
     else out.push(full);
   }
   return out;
+}
+
+/* Everything git would publish: tracked files plus new files that are not
+   ignored. Ignored files (the denylist itself, local secrets config,
+   CLAUDE.local.md) never leave this computer, so they are not scanned. */
+function publishable() {
+  try {
+    const out = execFileSync("git", ["ls-files", "--cached", "--others", "--exclude-standard", "-z"], { cwd: ROOT, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+    return out.split("\0").filter(Boolean).map((f) => join(ROOT, f)).filter((f) => existsSync(f));
+  } catch (e) {
+    return walk(ROOT);
+  }
 }
 
 function escapeRe(s) {
@@ -175,7 +191,7 @@ function main() {
   const terms = loadTerms();
   const matchers = termMatchers(terms);
   const args = process.argv.slice(2);
-  const files = args.length ? args.map((f) => resolve(f)) : walk(ROOT);
+  const files = args.length ? args.map((f) => resolve(f)) : publishable();
   let total = 0;
 
   for (const file of files) {
@@ -183,7 +199,7 @@ function main() {
     const ext = extname(file).toLowerCase();
     let findings = [];
     if (TEXT_EXT.has(ext)) {
-      const drafts = !DRAFT_EXEMPT.has(rel) && !rel.startsWith("legacy/") && !rel.startsWith("assets/vendor/");
+      const drafts = !DRAFT_EXEMPT.has(rel) && !DRAFT_EXEMPT_DIRS.some((d) => rel.startsWith(d));
       findings = checkText(readFileSync(file, "utf8"), matchers, { drafts });
     } else if (IMAGE_EXT.has(ext)) {
       const buf = readFileSync(file);

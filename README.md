@@ -20,8 +20,9 @@ assets/fonts/               Self-hosted Archivo and IBM Plex Mono (SIL OFL)
 assets/img/                 Processed photos and brand assets
 writeup/                    Long-form case studies
 data/                       Threads mirror and its curation rules
-tools/                      Disclosure check and Threads sync (Node, no deps)
+tools/                      Disclosure check, Threads sync and curation, secrets, status (Node, no deps)
 .github/workflows/          Disclosure check on push, Threads sync on a schedule
+CLAUDE.md, .claude/         Claude Code project: rules, skills, agents, guard hooks
 robots.txt, sitemap.xml     Crawl rules; /legacy/ is excluded
 docs/assets/                Resume PDF and original photo files
 legacy/                     Archived earlier iterations
@@ -36,6 +37,16 @@ The lab is three.js, self-hosted and loaded only on `/lab/`. It renders only whi
 Notes are a curated mirror of Threads, written to `data/threads.json` by a scheduled workflow. The page reads that file from its own origin, so it makes no request to Meta. Only my own posts on work topics are copied, and no counts are shown. The section stays hidden while the file is empty.
 
 Projects open in `<dialog>` elements that carry their own URL (`/#modal-rf`), so a project can be linked directly and the browser Back button or a back-swipe closes it. Card images ship a 400w variant through `srcset`; dialog photos are deferred until a dialog opens.
+
+## Running it from a phone
+
+The repository is a Claude Code project. On the computer, in this folder, run `claude remote-control`; the session then appears in the Claude app. From there:
+
+- `/site` shows what is set up, what is failing, and what to do next. `/site curate` picks which Threads posts appear; `/site sync` runs the mirror; `/site publish` checks, commits, and opens a pull request.
+- `/secrets` moves tokens and the denylist from a password manager to GitHub with `tools/secrets.mjs`. Values are never typed into the chat: a hook stops messages that look like credentials, and another stops commands that would print one.
+- `/inspect` reviews design and copy against the working manual and impeccable.style. `/writeup` and `/deai` help write without handing over the voice.
+
+The computer has to stay awake with the session running. It needs Node 18 or newer, the GitHub CLI signed in (`gh auth login`), and optionally a password manager CLI. Personal settings go in `.claude/settings.local.json` and `CLAUDE.local.md`, both git-ignored.
 
 ## Checks
 

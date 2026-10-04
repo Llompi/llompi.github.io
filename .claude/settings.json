@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(node tools/site-status.mjs)",
+      "Bash(node tools/site-status.mjs *)",
+      "Bash(node tools/disclosure-check.mjs)",
+      "Bash(node tools/disclosure-check.mjs *)",
+      "Bash(node tools/secrets.mjs status)",
+      "Bash(node tools/secrets.mjs check)",
+      "Bash(node tools/secrets.mjs link *)",
+      "Bash(node tools/threads-curate.mjs shown)",
+      "Bash(node tools/threads-curate.mjs recent *)",
+      "Bash(node tools/threads-curate.mjs recent)",
+      "Bash(node tools/threads-curate.mjs topics)",
+      "Bash(gh run list *)",
+      "Bash(gh run view *)",
+      "Bash(gh pr view *)",
+      "Bash(gh pr list *)",
+      "Bash(gh pr checks *)",
+      "Bash(git status *)",
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Bash(git diff)",
+      "Bash(git log *)"
+    ],
+    "deny": [
+      "Read(./.disclosure-terms)",
+      "Read(./.env)",
+      "Read(./.env.*)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/tools/site-status.mjs\" --brief",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-prompt.mjs\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-bash.mjs\"",
+            "timeout": 90
+          }
+        ]
+      }
+    ]
+  }
+}
