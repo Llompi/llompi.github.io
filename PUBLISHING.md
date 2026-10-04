@@ -10,7 +10,7 @@ Decide the level before writing a word.
 |---|---|---|---|
 | Open | Mine outright, no one else has a claim. Full detail, photos, numbers. | Project cards and dialogs | RF amplifier, treat dispenser |
 | Generalized | Real work, told as method. The how and why, never the what or where. | Write-ups under `writeup/` | The agent case study |
-| Keep-out | Exists and I did it; the substance belongs to someone else. Role, kind of work, tools. Nothing else. | Keep-out cards on the home page | Employer hardware, the intranet |
+| Keep-out | Exists and I did it; the substance belongs to someone else. Role, kind of work, tools. Nothing else. | Short "At work" cards in Selected work | Employer hardware, the intranet |
 | Not at all | Too close to someone else's IP, still unprotected, or legally controlled. | Nowhere, not even a hint | See below |
 
 **Home projects in the employer's field default to "not at all."** An invention assignment agreement can reach work done on your own time with your own equipment when it relates to the employer's business. Read the agreement, and get written clearance before a project like that appears anywhere public, including Threads. Once something is published it can also count as public disclosure for patent purposes, so anything that might be patented gets filed (or deliberately abandoned) first.
