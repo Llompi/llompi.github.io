@@ -189,7 +189,7 @@ switch (cmd) {
     if (!ghAvailable()) die("Sign in to the GitHub CLI on this computer first: gh auth login");
     const config = loadConfig();
     let token = readValue("THREADS_ACCESS_TOKEN", config);
-    const API = "https://graph.threads.net";
+    const API = "https://graph.threads.com";
     let expires = null;
 
     /* A token copied from Meta's dashboard may be short-lived (an hour).

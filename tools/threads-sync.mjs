@@ -23,10 +23,18 @@
    tools/disclosure-check.mjs, and a match drops the post. Posts are already
    public on Threads, but the site is where your employer looks.
 
+   Tokens: the Graph API Explorer hands out short-lived tokens (one hour).
+   With the Threads app secret available, the first run exchanges that for a
+   long-lived token (60 days); every later run refreshes it, so it never
+   lapses as long as the workflow keeps running and can save the new token
+   back into the secret (SECRETS_WRITE_TOKEN in the workflow).
+
    Environment:
-     THREADS_ACCESS_TOKEN   long-lived Threads user token (required)
+     THREADS_ACCESS_TOKEN   Threads user token, short- or long-lived (required)
+     THREADS_APP_SECRET     Threads app secret, to exchange a short-lived token (optional)
      DISCLOSURE_TERMS       newline-separated private denylist (optional)
-     THREADS_REFRESH_OUT    file to write a refreshed token into (optional) */
+     THREADS_REFRESH_OUT    file to write a new token into, for the workflow to save (optional)
+     THREADS_CAN_STORE      "true" when the workflow can save that token (optional) */
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -35,11 +43,13 @@ import { loadTerms, termMatchers, checkText } from "./disclosure-check.mjs";
 
 /* fileURLToPath, not .pathname: on Windows .pathname gives /C:/... */
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
-const API = "https://graph.threads.net/v1.0";
+const HOST = "https://graph.threads.com";
+const API = HOST + "/v1.0";
 const CONFIG = join(ROOT, "data/threads.config.json");
 const OUT = join(ROOT, "data/threads.json");
 
-const token = process.env.THREADS_ACCESS_TOKEN;
+let token = process.env.THREADS_ACCESS_TOKEN;
+const appSecret = process.env.THREADS_APP_SECRET || "";
 if (!token) {
   console.error("THREADS_ACCESS_TOKEN is not set. Nothing synced.");
   process.exit(1);
@@ -54,8 +64,15 @@ const exclude = new Set((config.exclude || []).map(String));
 const maxItems = config.maxItems || 24;
 const matchers = termMatchers(loadTerms());
 
-/* Errors from the Graph API echo the request URL, token included, so only
-   the message is ever printed. */
+/* Errors from the Graph API can echo the request, so every credential this
+   process has seen is scrubbed from any message before it is printed. */
+const original = token;
+function scrub(msg) {
+  let out = String(msg);
+  for (const s of [original, token, appSecret]) if (s) out = out.split(s).join("[redacted]");
+  return out;
+}
+
 async function get(path, params = {}) {
   const url = new URL(path.startsWith("http") ? path : API + path);
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
@@ -64,7 +81,7 @@ async function get(path, params = {}) {
   const body = await res.json().catch(() => ({}));
   if (!res.ok || body.error) {
     const msg = (body.error && body.error.message) || res.status + " " + res.statusText;
-    throw new Error(msg.replace(token, "[token]"));
+    throw new Error(scrub(msg));
   }
   return body;
 }
@@ -127,22 +144,49 @@ function shape(item, kind) {
   };
 }
 
-async function refreshToken() {
-  /* A long-lived token lasts 60 days and can be refreshed once it is a day
-     old. The workflow stores the new one back into the secret if it can. */
-  if (!process.env.THREADS_REFRESH_OUT) return;
-  try {
-    const body = await get("https://graph.threads.net/refresh_access_token", { grant_type: "th_refresh_token" });
-    if (body.access_token) {
-      writeFileSync(process.env.THREADS_REFRESH_OUT, body.access_token, { mode: 0o600 });
-      console.log("Token refreshed, valid for another " + Math.round(body.expires_in / 86400) + " days");
+/* Make sure the token is long-lived, and keep it fresh:
+   1. exchange it with the app secret (works only on a short-lived token;
+      a long-lived one is rejected, which is fine)
+   2. otherwise refresh it (works on a long-lived token at least a day old)
+   A new token is used for this run and handed to the workflow to save. */
+async function ensureToken() {
+  let kind = null;
+  let days = 0;
+  if (appSecret) {
+    try {
+      const body = await get(HOST + "/access_token", { grant_type: "th_exchange_token", client_secret: appSecret });
+      if (body.access_token) {
+        token = body.access_token;
+        kind = "exchanged for a long-lived token";
+        days = Math.round(body.expires_in / 86400);
+      }
+    } catch (e) {}
+  }
+  if (!kind) {
+    try {
+      const body = await get(HOST + "/refresh_access_token", { grant_type: "th_refresh_token" });
+      if (body.access_token) {
+        token = body.access_token;
+        kind = "refreshed";
+        days = Math.round(body.expires_in / 86400);
+      }
+    } catch (e) {
+      /* Too new to refresh (under a day old) or short-lived without a secret */
     }
-  } catch (e) {
-    console.warn("Token refresh skipped: " + e.message);
+  }
+  if (!kind) return;
+  console.log("Token " + kind + ", valid for " + days + " days.");
+  if (process.env.THREADS_REFRESH_OUT) writeFileSync(process.env.THREADS_REFRESH_OUT, token, { mode: 0o600 });
+  if (process.env.THREADS_CAN_STORE !== "true") {
+    const why = kind.startsWith("exchanged")
+      ? "The pasted token is short-lived and this new one can't be saved, so the next run will fail."
+      : "It can't be saved, so the stored token will still expire on its original date.";
+    console.log("::warning::" + why + " Add the SECRETS_WRITE_TOKEN secret (see PUBLISHING.md, Threads).");
   }
 }
 
 async function main() {
+  await ensureToken();
   const me = await get("/me", { fields: "username" });
   const posts = await fetchWithTopic("/me/threads", "id,media_type,text,permalink,timestamp,is_quote_post");
   let replies = [];
@@ -190,10 +234,9 @@ async function main() {
     (same ? " (no change)" : "")
   );
 
-  await refreshToken();
 }
 
 main().catch((e) => {
-  console.error("Threads sync failed: " + e.message);
+  console.error("Threads sync failed: " + scrub(e.message));
   process.exit(1);
 });

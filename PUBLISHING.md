@@ -72,14 +72,17 @@ Every post also goes through the denylist. A post that mentions a denylisted ter
 
 ### Setup
 
-1. Create an app at developers.facebook.com with the Threads API use case. Request `threads_basic` and `threads_read_replies`.
-2. Add your Threads account as a tester, authorize the app, and exchange the short-lived token for a long-lived one (valid 60 days).
-3. In this repository: add the secret `THREADS_ACCESS_TOKEN`, and add the variable `THREADS_SYNC_ENABLED` with the value `true` (Settings, Secrets and variables, Actions, Variables).
-4. Run the workflow once by hand: Actions, Threads sync, Run workflow (or `gh workflow run threads-sync.yml`).
+Once, about fifteen minutes, all of it possible from a phone browser. The workflow only exists on GitHub after this branch is merged into `main`, so do step 5 after the merge.
+
+1. **Meta app.** At developers.facebook.com, create an app with the use case "Access the Threads API". Under Use cases, customize it and add the `threads_read_replies` permission (`threads_basic` is already there).
+2. **Tester.** App roles, Roles, Add People, Threads Tester: add your Threads account. Accept the invite in Threads under Settings, Account, Website permissions.
+3. **App secret.** App settings, Basic: copy the **Threads** app secret (there are two app secrets; use the Threads one). Save it in this repository as the secret `THREADS_APP_SECRET` (Settings, Secrets and variables, Actions, New repository secret).
+4. **Save-back token.** On GitHub: Settings, Developer settings, Personal access tokens, Fine-grained. Limit it to this repository, with the single permission **Secrets: Read and write**. Save it as the secret `SECRETS_WRITE_TOKEN`. This lets the workflow store the renewed Threads token, so you never renew it by hand.
+5. **Connect.** Add the variable `THREADS_SYNC_ENABLED` = `true` (same page, Variables tab). Then open the Graph API Explorer (developers.facebook.com/tools/explorer), choose your app, switch it to Threads, and generate a token with `threads_basic` and `threads_read_replies`. It is valid for one hour. Save it as the secret `THREADS_ACCESS_TOKEN`, then run the workflow within that hour (Actions, Threads sync, Run workflow).
+
+The first run exchanges the one-hour token for a 60-day token and saves it; every later run refreshes it. If the sync ever stops for more than 60 days, repeat step 5.
 
 Curation can be done without editing JSON: `node tools/threads-curate.mjs recent` lists your latest posts as shown or hidden and why, and `include`, `exclude`, `topic add`, and `hashtag add` change the rules.
-
-The workflow refreshes the token on each run. To have it store the refreshed token automatically, add a fine-grained personal access token limited to this repository with **Secrets: read and write** as the secret `SECRETS_WRITE_TOKEN`. Without it, the sync stops after 60 days until a new token is pasted in.
 
 ## Lab demos
 

@@ -32,14 +32,16 @@ jobs:
       - name: Sync curated posts
         env:
           THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          THREADS_APP_SECRET: ${{ secrets.THREADS_APP_SECRET }}
           DISCLOSURE_TERMS: ${{ secrets.DISCLOSURE_TERMS }}
           THREADS_REFRESH_OUT: ${{ runner.temp }}/threads-token
+          THREADS_CAN_STORE: ${{ secrets.SECRETS_WRITE_TOKEN != '' }}
         run: node tools/threads-sync.mjs
 
-      # Long-lived tokens expire after 60 days. With a fine-grained token that
-      # can write this repository's secrets stored as SECRETS_WRITE_TOKEN, the
-      # refreshed one is saved back and the sync never lapses. Without it,
-      # the step is skipped and the token has to be renewed by hand.
+      # The sync swaps a pasted short-lived token for a long-lived one, then
+      # refreshes it on later runs. A fine-grained token that can write this
+      # repository's secrets, stored as SECRETS_WRITE_TOKEN, saves the new one
+      # back so the sync never lapses.
       - name: Store refreshed token
         env:
           GH_TOKEN: ${{ secrets.SECRETS_WRITE_TOKEN }}

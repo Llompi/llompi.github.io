@@ -36,13 +36,15 @@ You may suggest kinds of terms. Never ask for the terms.
 
 ## threads
 
-1. At developers.facebook.com: create an app (or open the existing one) with the use case "Access the Threads API". Under its Threads API settings, add the owner's Threads account as a tester. In the Threads app, accept the invite (Settings, Account, Website permissions, Invites).
-2. In the same settings page, use the User Token Generator to generate a token for that account, with `threads_basic` and `threads_read_replies`.
-3. Run `node tools/secrets.mjs link THREADS_ACCESS_TOKEN` and give the owner the page. They paste the token there and save.
-4. Turn the sync on: ask, then run `gh variable set THREADS_SYNC_ENABLED --body true`. Or give them https://github.com/Llompi/llompi.github.io/settings/variables/actions/new (name `THREADS_SYNC_ENABLED`, value `true`).
-5. Offer to run the sync (`/site sync`). The workflow only exists once this project's branch is merged into `main`; if `gh workflow run` says it can't find it, say so.
+Per Meta's docs, test tokens come from the Graph API Explorer and last one hour. The sync workflow exchanges that for a 60-day token with the Threads app secret, then refreshes it on every run and saves it back with `SECRETS_WRITE_TOKEN`. So the setup is once, and there is no renewal chore. Walk the owner through it one step at a time; PUBLISHING.md (Threads, Setup) has the same steps.
 
-The token lasts 60 days. Renewal is the same paste (steps 2 and 3). If the dashboard says the token expires within hours rather than days, tell the owner the workflow needs to exchange it for a long-lived one and that this is a change to make in the repo.
+1. Meta app at developers.facebook.com with the use case "Access the Threads API". Under Use cases, customize, and add `threads_read_replies` (`threads_basic` is already there).
+2. App roles, Roles, Add People, Threads Tester: the owner's Threads account. They accept in Threads: Settings, Account, Website permissions.
+3. App settings, Basic: the **Threads** app secret (there are two; use the Threads one). `node tools/secrets.mjs link THREADS_APP_SECRET`, and they paste it there.
+4. A fine-grained GitHub token limited to this repository, permission "Secrets: Read and write" only. `node tools/secrets.mjs link SECRETS_WRITE_TOKEN`, and they paste it there.
+5. Only after this branch is merged into `main` (the workflow doesn't exist before that): turn the sync on (ask, then `gh variable set THREADS_SYNC_ENABLED --body true`). Then the owner opens the Graph API Explorer, picks the app, switches to Threads, and generates a token with both permissions. `node tools/secrets.mjs link THREADS_ACCESS_TOKEN`, they paste it, and within the hour you run the sync (`/site sync`). Check the run log for "Token exchanged for a long-lived token" and no warning.
+
+If the sync stops for more than 60 days, repeat step 5.
 
 ## link NAME
 

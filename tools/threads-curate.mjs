@@ -55,7 +55,7 @@ function token() {
 }
 
 async function fetchAll(tok, path, fields) {
-  const url = new URL("https://graph.threads.net/v1.0" + path);
+  const url = new URL("https://graph.threads.com/v1.0" + path);
   url.searchParams.set("fields", fields);
   url.searchParams.set("limit", "50");
   url.searchParams.set("access_token", tok);
