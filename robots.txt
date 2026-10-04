@@ -2,5 +2,7 @@ User-agent: *
 Allow: /
 Disallow: /legacy/
 Disallow: /docs/assets/img/
+Disallow: /data/
+Disallow: /tools/
 
 Sitemap: https://llompi.github.io/sitemap.xml

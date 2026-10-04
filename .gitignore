@@ -100,3 +100,5 @@ storybook-static/
 
 # Review/debug screenshots (root only)
 /*.png
+# Private disclosure denylist, never committed (see PUBLISHING.md)
+.disclosure-terms

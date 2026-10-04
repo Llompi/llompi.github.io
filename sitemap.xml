@@ -6,6 +6,11 @@
     <priority>1.0</priority>
   </url>
   <url>
+    <loc>https://llompi.github.io/lab/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://llompi.github.io/writeup/secure-agent-deployment/</loc>
     <changefreq>yearly</changefreq>
     <priority>0.7</priority>

@@ -1,0 +1,76 @@
+name: Threads sync
+
+# Mirrors the curated part of the Threads profile into data/threads.json.
+# Setup and curation rules: PUBLISHING.md, section "Threads".
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: threads-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    # Stays quiet until the token secret exists, so the schedule does not
+    # fail every six hours on a fork or before setup
+    if: ${{ vars.THREADS_SYNC_ENABLED == 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Sync curated posts
+        env:
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          DISCLOSURE_TERMS: ${{ secrets.DISCLOSURE_TERMS }}
+          THREADS_REFRESH_OUT: ${{ runner.temp }}/threads-token
+        run: node tools/threads-sync.mjs
+
+      # Long-lived tokens expire after 60 days. With a fine-grained token that
+      # can write this repository's secrets stored as SECRETS_WRITE_TOKEN, the
+      # refreshed one is saved back and the sync never lapses. Without it,
+      # the step is skipped and the token has to be renewed by hand.
+      - name: Store refreshed token
+        env:
+          GH_TOKEN: ${{ secrets.SECRETS_WRITE_TOKEN }}
+          TOKEN_FILE: ${{ runner.temp }}/threads-token
+        run: |
+          if [ -z "$GH_TOKEN" ] || [ ! -s "$TOKEN_FILE" ]; then
+            echo "No refreshed token to store."
+            exit 0
+          fi
+          echo "::add-mask::$(cat "$TOKEN_FILE")"
+          gh secret set THREADS_ACCESS_TOKEN --repo "$GITHUB_REPOSITORY" < "$TOKEN_FILE"
+          rm -f "$TOKEN_FILE"
+
+      - name: Check before publishing
+        env:
+          DISCLOSURE_TERMS: ${{ secrets.DISCLOSURE_TERMS }}
+        run: node tools/disclosure-check.mjs data/threads.json
+
+      - name: Commit if changed
+        run: |
+          if git diff --quiet -- data/threads.json; then
+            echo "No change."
+            exit 0
+          fi
+          git config user.name "threads-sync"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/threads.json
+          git commit -m "data: sync Threads notes"
+          git push
+          # A push made with the workflow token may not start a Pages build
+          # by itself, so ask for one
+          gh api -X POST "repos/$GITHUB_REPOSITORY/pages/builds" >/dev/null || echo "Pages build request skipped"
+        env:
+          GH_TOKEN: ${{ github.token }}
