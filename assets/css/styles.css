@@ -2146,7 +2146,8 @@ dialog.project-modal::backdrop {
   display: block;
   width: 100%;
   height: 100%;
-  touch-action: none;
+  /* Vertical swipes scroll the page; sideways drags tilt the board */
+  touch-action: pan-y pinch-zoom;
   cursor: grab;
 }
 

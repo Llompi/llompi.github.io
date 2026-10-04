@@ -124,18 +124,18 @@
             </div>
 
             <div class="lab-controls">
-              <label class="lab-range">
-                <span class="lab-range-head"><span>Resistance</span><output data-out="r">50 ohm</output></span>
-                <input type="range" min="0" max="1000" step="1" value="566" data-in="r">
-              </label>
-              <label class="lab-range">
-                <span class="lab-range-head"><span>Reactance</span><output data-out="x">0 ohm</output></span>
-                <input type="range" min="-500" max="500" step="1" value="0" data-in="x">
-              </label>
-              <label class="lab-range">
-                <span class="lab-range-head"><span>Line length</span><output data-out="len">1.50 wavelengths</output></span>
-                <input type="range" min="0.25" max="3" step="0.05" value="1.5" data-in="len">
-              </label>
+              <div class="lab-range">
+                <span class="lab-range-head"><label for="lab-r">Resistance</label><output for="lab-r" data-out="r">50 ohm</output></span>
+                <input id="lab-r" type="range" min="0" max="1000" step="1" value="566" data-in="r">
+              </div>
+              <div class="lab-range">
+                <span class="lab-range-head"><label for="lab-x">Reactance</label><output for="lab-x" data-out="x">0 ohm</output></span>
+                <input id="lab-x" type="range" min="-500" max="500" step="1" value="0" data-in="x">
+              </div>
+              <div class="lab-range">
+                <span class="lab-range-head"><label for="lab-len">Line length</label><output for="lab-len" data-out="len">1.50 wavelengths</output></span>
+                <input id="lab-len" type="range" min="0.25" max="3" step="0.05" value="1.5" data-in="len">
+              </div>
             </div>
 
             <table class="spec-table lab-readout">

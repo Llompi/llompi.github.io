@@ -756,6 +756,30 @@
   var notesSection = document.getElementById("notes");
   var notesList = document.querySelector("[data-notes]");
   if (notesSection && notesList && window.fetch) {
+    /* Notes appears after the page has loaded, which pushes everything below
+       it down. If the visitor arrived on a link to a section below Notes
+       (/#skills, /#contact) and hasn't started scrolling, put them back on
+       it. Scroll events can't tell us that, since the browser's own jump to
+       the anchor fires them, so input events are watched instead. */
+    var visitorMoved = false;
+    var markMoved = function () {
+      visitorMoved = true;
+    };
+    ["wheel", "touchstart", "keydown", "mousedown"].forEach(function (type) {
+      window.addEventListener(type, markMoved, { once: true, passive: true });
+    });
+    var keepAnchor = function () {
+      if (visitorMoved || !location.hash || location.hash.length < 2) return;
+      var target = null;
+      try {
+        target = document.querySelector(location.hash);
+      } catch (e) {}
+      if (!target || target.tagName === "DIALOG") return;
+      if (notesSection.compareDocumentPosition(target) & Node.DOCUMENT_POSITION_FOLLOWING) {
+        target.scrollIntoView({ block: "start" });
+      }
+    };
+
     var URL_RE = /https?:\/\/[^\s<>"']+[^\s<>"'.,;:!?)\]]/g;
     var dateFmt = new Intl.DateTimeFormat(undefined, { year: "numeric", month: "short", day: "numeric" });
 
@@ -874,6 +898,7 @@
         document.querySelectorAll("[data-notes-link]").forEach(function (link) {
           link.hidden = false;
         });
+        keepAnchor();
       })
       .catch(function () {
         /* No notes is a normal state; the section simply stays hidden */

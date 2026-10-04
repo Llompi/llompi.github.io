@@ -239,6 +239,13 @@ function initThree() {
   key.position.set(-3, 6, 5);
   world.add(key);
 
+  /* Ask for one frame. The render loop is set up further down, so the guard
+     matters: applyTheme runs once before it exists. */
+  function invalidate() {
+    scene.dirty = true;
+    if (scene.loop) scene.loop();
+  }
+
   /* Board: solder mask over substrate, ground plane under it, one trace */
   const mat = {
     mask: new THREE.MeshStandardMaterial({ roughness: 0.75, metalness: 0 }),
@@ -327,7 +334,7 @@ function initThree() {
     mat.part.opacity = 0.9;
     mat.base.color.set(token("--rule"));
     mat.base.opacity = 0.55;
-    scene.dirty = true;
+    invalidate();
   }
   applyTheme();
   new MutationObserver(applyTheme).observe(document.documentElement, {
@@ -357,7 +364,7 @@ function initThree() {
     orbit.az = Math.max(-0.9, Math.min(0.9, drag.az - (e.clientX - drag.x) * 0.005));
     orbit.el = Math.max(0.12, Math.min(0.95, drag.el + (e.clientY - drag.y) * 0.005));
     placeCamera();
-    scene.dirty = true;
+    invalidate();
   });
   const endDrag = () => {
     drag = null;
@@ -377,7 +384,7 @@ function initThree() {
     orbit.dist = Math.max(10, fit);
     camera.updateProjectionMatrix();
     placeCamera();
-    scene.dirty = true;
+    invalidate();
   }
   new ResizeObserver(resize).observe(canvas);
 
