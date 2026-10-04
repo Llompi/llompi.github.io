@@ -1,8 +1,8 @@
 ---
 name: secrets
-description: Set up, check, upload, or renew the site's secrets (the private disclosure denylist, the Threads token, the GitHub token that lets the workflow renew it) without any value passing through the conversation. Use when the owner mentions secrets, tokens, the denylist, Threads setup, or an expiring token.
-argument-hint: "[status | setup | push NAME | denylist | threads | link NAME]"
-allowed-tools: Bash(node tools/secrets.mjs status), Bash(node tools/secrets.mjs check), Bash(node tools/secrets.mjs link *), Bash(node tools/site-status.mjs), PowerShell(node tools/secrets.mjs status), PowerShell(node tools/secrets.mjs check), PowerShell(node tools/secrets.mjs link *), PowerShell(node tools/site-status.mjs)
+description: Help the owner set or renew the site's secrets (the Threads token, the optional private denylist) without any value passing through the conversation. Use when the owner mentions secrets, tokens, the denylist, Threads setup, or an expiring token.
+argument-hint: "[status | denylist | threads | link NAME]"
+allowed-tools: Bash(node tools/secrets.mjs status), Bash(node tools/secrets.mjs link *), Bash(node tools/site-status.mjs), PowerShell(node tools/secrets.mjs status), PowerShell(node tools/secrets.mjs link *), PowerShell(node tools/site-status.mjs)
 ---
 
 # Secrets
@@ -11,53 +11,43 @@ Request: $ARGUMENTS
 
 ## The one rule
 
-Never ask for a secret value, never print one, and never accept one in the chat. Everything typed here goes to the model and stays in the transcript. Values live in the owner's password manager; `tools/secrets.mjs` reads them on this computer and hands them to GitHub on stdin, printing only names, lengths, and dates.
+Never ask for a secret value, never print one, and never accept one in the chat. Everything typed here goes to the model and stays in the transcript. The owner pastes values directly into GitHub's secret pages in a browser (on the phone is fine), or types the denylist into a local file at the computer. Your job is to give the right link and the right steps.
 
-If the owner offers to paste a value, decline and use the steps below. A hook blocks messages that look like tokens, but it can miss one. If a value does reach the conversation, tell the owner to revoke and reissue it now, and where (GitHub: Settings, Developer settings, Personal access tokens; Meta: the app's Threads API settings).
+If the owner offers to paste a value here, decline and give the link instead. A hook blocks messages that look like tokens, but it can miss one. If a value does reach the conversation, tell the owner to revoke and reissue it now, and where (Meta: the app's Threads API settings; GitHub: Settings, Developer settings, Personal access tokens).
 
-Don't read the denylist file or call a password manager CLI directly; the Bash hook blocks both, and `tools/secrets.mjs` is the way through.
+Never read the denylist file; the command hook blocks it. `node tools/disclosure-check.mjs` uses it and reports matches by number only.
+
+Keep it short. Everything here is optional: the site works without any secret, and the Notes section stays hidden until Threads is connected.
 
 ## status (default)
 
-Run `node tools/secrets.mjs status` and `node tools/site-status.mjs`. Report what's missing or expiring, then the next step.
-
-## setup (first time on this computer)
-
-The owner uses 1Password, and this computer runs Windows. The desktop-app unlock needs a Windows Hello prompt on the computer's own screen, which can't be answered from a phone, so this project uses a 1Password service account: a read-only token limited to one vault.
-
-Run `node tools/secrets.mjs status` first and pick up from the first step that isn't done.
-
-1. CLI: if `op` is not found, ask, then run `winget install --id AgileBits.1Password.CLI -e --accept-source-agreements --accept-package-agreements`.
-2. In 1Password, on the phone or at 1password.com (the owner does this; you give the steps):
-   - Create a vault named `Site automation` that holds only this site's secrets.
-   - In it, create a Secure Note `Site denylist` (one term per line in the note) and an item `Threads API` with fields `token` and `app secret`. `GitHub site PAT` with a `token` field is optional (see threads below).
-   - At 1password.com, Developer, Service Accounts: create one with read access to `Site automation` only. Save its token in 1Password itself; it is shown once.
-3. At the computer, not through this chat: the owner runs `powershell -ExecutionPolicy Bypass -File tools\setup-1password.ps1` and pastes the service account token at its hidden prompt. It checks the token and saves it as a Windows user variable. Then they restart `claude remote-control`. This is the only step that needs the owner at the computer, and it happens once.
-4. Copy `.claude/secrets.example.json` to `.claude/secrets.local.json` (git-ignored). The example already points at the names above; change it only if the owner named things differently. Item and vault names aren't secret, so you may ask for them.
-5. Run `node tools/secrets.mjs check`. It prints only lengths and term counts. A failure usually means a wrong vault, item, or field name.
-6. Offer `push --all`, then `pull-denylist`.
-
-Never check or print `OP_SERVICE_ACCOUNT_TOKEN`; `secrets.mjs status` reports only whether it is set. Other managers (Bitwarden, pass, macOS Keychain) work too: change the `cmd` entries; Bitwarden needs `BW_SESSION` set in the shell that started Claude Code.
-
-## push NAME, push --all
-
-Ask first, then run `node tools/secrets.mjs push NAME`. Report the one line it prints.
+Run `node tools/site-status.mjs`. Report only what the owner might want to do next, marked optional where it is.
 
 ## denylist
 
-The denylist is a note in the password manager, one term per line, `#` for comments. The owner edits it there, on the phone if they like. Then `node tools/secrets.mjs push DISCLOSURE_TERMS` updates CI and `node tools/secrets.mjs pull-denylist` updates local checks. You may suggest kinds of terms that belong in it (PUBLISHING.md lists them). Never ask for the terms.
+The private list of terms the disclosure check blocks (code names, sponsor and customer names, hostnames, coworkers' names, unpublished project names). One term per line, `#` for comments, whole-word and case-insensitive.
+
+- On this computer (what protects a push): the owner runs, at the computer,
+  `notepad "$env:USERPROFILE\Documents\Projects\GitHub\llompi.github.io\.disclosure-terms"`
+  types the terms, and saves. The file is git-ignored. Don't open it yourself.
+- In CI (optional, a second net after a push): `node tools/secrets.mjs link DISCLOSURE_TERMS` and the owner pastes the same list there.
+
+You may suggest kinds of terms. Never ask for the terms.
 
 ## threads
 
-Getting a token is the only step that needs a browser:
+1. At developers.facebook.com: create an app (or open the existing one) with the use case "Access the Threads API". Under its Threads API settings, add the owner's Threads account as a tester. In the Threads app, accept the invite (Settings, Account, Website permissions, Invites).
+2. In the same settings page, use the User Token Generator to generate a token for that account, with `threads_basic` and `threads_read_replies`.
+3. Run `node tools/secrets.mjs link THREADS_ACCESS_TOKEN` and give the owner the page. They paste the token there and save.
+4. Turn the sync on: ask, then run `gh variable set THREADS_SYNC_ENABLED --body true`. Or give them https://github.com/Llompi/llompi.github.io/settings/variables/actions/new (name `THREADS_SYNC_ENABLED`, value `true`).
+5. Offer to run the sync (`/site sync`). The workflow only exists once this project's branch is merged into `main`; if `gh workflow run` says it can't find it, say so.
 
-1. At developers.facebook.com, open the app that has the Threads use case. In its Threads API settings, add the owner's Threads account as a tester, then accept the invite in the Threads app (Settings, Account, Website permissions).
-2. Generate a user access token with `threads_basic` and `threads_read_replies`, and save it in the password manager item that `THREADS_ACCESS_TOKEN` points at. If the app secret is saved too (`THREADS_APP_SECRET`, local only), a short-lived token is exchanged for a long-lived one automatically.
-3. Ask first, then run `node tools/secrets.mjs threads --enable`. It exchanges or refreshes the token, checks it against Threads, uploads it, and turns the sync on.
-4. Offer to run the sync (`/site sync`).
+The token lasts 60 days. Renewal is the same paste (steps 2 and 3). If the dashboard says the token expires within hours rather than days, tell the owner the workflow needs to exchange it for a long-lived one and that this is a change to make in the repo.
 
-Long-lived tokens last 60 days. For automatic renewal, the owner creates a fine-grained GitHub token limited to this repository with "Secrets: read and write", stores it in the manager, and runs `push SECRETS_WRITE_TOKEN`.
+## link NAME
 
-## link NAME (no password manager, or away from the computer)
+Run `node tools/secrets.mjs link NAME` and give the owner the page.
 
-Run `node tools/secrets.mjs link NAME` and give the owner the GitHub page. They paste the value there, in the browser on their phone, never here.
+## Optional: from a password manager
+
+`tools/secrets.mjs` can also read values from a password manager CLI (1Password, Bitwarden, pass, Keychain) via `.claude/secrets.local.json` and push them with `push NAME`. Only set this up if the owner asks for it; it is more setup than pasting a link.

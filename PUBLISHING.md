@@ -47,7 +47,7 @@ The list of things that must not be said cannot live in a public repository; it 
 - **In CI:** a repository secret named `DISCLOSURE_TERMS`, one term per line. Settings, Secrets and variables, Actions, New repository secret.
 - **Locally:** a file named `.disclosure-terms` in the repository root, same format. It is in `.gitignore`.
 
-The easiest way to keep both in step is to hold the list as a note in a password manager and let `node tools/secrets.mjs push DISCLOSURE_TERMS` and `node tools/secrets.mjs pull-denylist` copy it (see the `/secrets` skill). In Claude Code, the Bash hook runs the check before every commit and push.
+The local file is the one that protects you, because it runs before anything leaves the computer; CI only sees a push after it is public. In Claude Code, the command hook runs the check before every commit and push. (`tools/secrets.mjs` can also copy the list from a password manager, if you ever want that.)
 
 Matching is whole-word and case-insensitive. Findings are reported as "term #3", never by the term, so public CI logs don't print it. Good candidates: program and project code names, customer, sponsor and partner names, internal hostnames and IP ranges, part numbers of custom parts, colleagues' names, the name of any home project that isn't public yet.
 
@@ -74,7 +74,7 @@ Every post also goes through the denylist. A post that mentions a denylisted ter
 
 1. Create an app at developers.facebook.com with the Threads API use case. Request `threads_basic` and `threads_read_replies`.
 2. Add your Threads account as a tester, authorize the app, and exchange the short-lived token for a long-lived one (valid 60 days).
-3. In this repository: add the secret `THREADS_ACCESS_TOKEN`, and add the variable `THREADS_SYNC_ENABLED` with the value `true` (Settings, Secrets and variables, Actions, Variables). With the token saved in a password manager, `node tools/secrets.mjs threads --enable` does this step: it makes the token long-lived, checks it, uploads it, and sets the variable.
+3. In this repository: add the secret `THREADS_ACCESS_TOKEN`, and add the variable `THREADS_SYNC_ENABLED` with the value `true` (Settings, Secrets and variables, Actions, Variables).
 4. Run the workflow once by hand: Actions, Threads sync, Run workflow (or `gh workflow run threads-sync.yml`).
 
 Curation can be done without editing JSON: `node tools/threads-curate.mjs recent` lists your latest posts as shown or hidden and why, and `include`, `exclude`, `topic add`, and `hashtag add` change the rules.

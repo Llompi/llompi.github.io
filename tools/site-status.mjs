@@ -90,18 +90,20 @@ report.local.dirty = (sh("git", ["status", "--porcelain"]) || "").split("\n").fi
 const settings = repo ? `https://github.com/${repo}/settings/secrets/actions` : null;
 if (!hasGh) report.next.push("Install the GitHub CLI on this computer (https://cli.github.com), then: gh auth login");
 else if (!ghAuthed) report.next.push("Sign in to the GitHub CLI on this computer: gh auth login");
-if (ghAuthed && !report.secrets.DISCLOSURE_TERMS) report.next.push("Set the private denylist: /secrets push DISCLOSURE_TERMS (or add it at " + settings + ")");
-if (ghAuthed && !report.secrets.THREADS_ACCESS_TOKEN) report.next.push("Threads is not connected: /secrets threads");
-const tokenAge = report.secrets.THREADS_ACCESS_TOKEN ? (Date.now() - new Date(report.secrets.THREADS_ACCESS_TOKEN).getTime()) / DAY : null;
-if (tokenAge !== null && !report.secrets.SECRETS_WRITE_TOKEN && tokenAge > 50) {
-  report.next.push("Threads token expires in about " + Math.max(0, Math.round(60 - tokenAge)) + " days; renew with /secrets threads, or add SECRETS_WRITE_TOKEN so it renews itself");
-}
-if (report.secrets.THREADS_ACCESS_TOKEN && report.variables.THREADS_SYNC_ENABLED !== "true") report.next.push("Turn the sync on: gh variable set THREADS_SYNC_ENABLED --body true");
 const sync = report.runs["threads-sync.yml"];
 if (sync && sync.conclusion === "failure") report.next.push("The last Threads sync failed: " + sync.url);
 const check = report.runs["disclosure-check.yml"];
 if (check && check.conclusion === "failure") report.next.push("The last disclosure check failed on " + check.branch + ": " + check.url);
-if (!report.local.denylist) report.next.push("No local denylist, so local checks only catch photo metadata and drafts: /secrets pull-denylist");
+const tokenAge = report.secrets.THREADS_ACCESS_TOKEN ? (Date.now() - new Date(report.secrets.THREADS_ACCESS_TOKEN).getTime()) / DAY : null;
+if (tokenAge !== null && !report.secrets.SECRETS_WRITE_TOKEN && tokenAge > 50) {
+  report.next.push("Threads token expires in about " + Math.max(0, Math.round(60 - tokenAge)) + " days; renew it with /secrets threads");
+}
+if (report.secrets.THREADS_ACCESS_TOKEN && report.variables.THREADS_SYNC_ENABLED !== "true") report.next.push("Turn the Threads sync on: gh variable set THREADS_SYNC_ENABLED --body true");
+/* Optional extras last, and only once nothing above is waiting */
+if (!report.next.length) {
+  if (!report.local.denylist) report.next.push("Optional: a private denylist on this computer (/secrets denylist)");
+  if (ghAuthed && !report.secrets.THREADS_ACCESS_TOKEN) report.next.push("Optional: connect Threads so Notes appear (/secrets threads)");
+}
 
 if (args.has("--json")) {
   console.log(JSON.stringify(report, null, 2));
@@ -120,8 +122,8 @@ const lines = [];
 lines.push("Site: " + (repo || "unknown repo") + "   branch " + report.local.branch + (report.local.dirty ? " (" + report.local.dirty + " uncommitted)" : ""));
 lines.push("");
 lines.push("Secrets (names and dates only)");
-for (const name of ["DISCLOSURE_TERMS", "THREADS_ACCESS_TOKEN", "SECRETS_WRITE_TOKEN"]) {
-  lines.push("  " + tick(report.secrets[name]) + name.padEnd(22) + (report.secrets[name] ? "set " + ago(report.secrets[name]) : "missing"));
+for (const name of ["THREADS_ACCESS_TOKEN", "DISCLOSURE_TERMS", "SECRETS_WRITE_TOKEN"]) {
+  lines.push("  " + tick(report.secrets[name]) + name.padEnd(22) + (report.secrets[name] ? "set " + ago(report.secrets[name]) : "not set (optional)"));
 }
 lines.push("  " + tick(report.variables.THREADS_SYNC_ENABLED === "true") + "THREADS_SYNC_ENABLED".padEnd(22) + (report.variables.THREADS_SYNC_ENABLED || "not set"));
 lines.push("");
@@ -135,8 +137,8 @@ lines.push("Threads mirror");
 lines.push("  " + (report.threads && report.threads.synced ? report.threads.items + " notes from @" + report.threads.handle + ", synced " + ago(report.threads.synced) : "not synced yet (the Notes section stays hidden)"));
 lines.push("");
 lines.push("This computer");
-lines.push("  " + tick(report.local.denylist) + "denylist".padEnd(22) + (report.local.denylist ? report.local.denylist + " terms (values not shown)" : "missing"));
-lines.push("  " + tick(report.local.secretsConfig) + "secrets config".padEnd(22) + (report.local.secretsConfig ? "present" : "missing (.claude/secrets.local.json)"));
+lines.push("  " + tick(report.local.denylist) + "denylist".padEnd(22) + (report.local.denylist ? report.local.denylist + " terms (values not shown)" : "none (optional)"));
+if (report.local.secretsConfig) lines.push("  ok " + "password manager".padEnd(22) + "configured (.claude/secrets.local.json)");
 lines.push("");
 lines.push(report.next.length ? "Next:\n" + report.next.map((n, i) => "  " + (i + 1) + ". " + n).join("\n") : "Nothing waiting.");
 console.log(lines.join("\n"));

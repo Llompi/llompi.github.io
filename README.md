@@ -43,10 +43,10 @@ Projects open in `<dialog>` elements that carry their own URL (`/#modal-rf`), so
 The repository is a Claude Code project. On the computer, in this folder, run `claude remote-control`; the session then appears in the Claude app. From there:
 
 - `/site` shows what is set up, what is failing, and what to do next. `/site curate` picks which Threads posts appear; `/site sync` runs the mirror; `/site publish` checks, commits, and opens a pull request.
-- `/secrets` moves tokens and the denylist from a password manager to GitHub with `tools/secrets.mjs`. Values are never typed into the chat: a hook stops messages that look like credentials, and another stops commands that would print one.
+- `/secrets` gives the GitHub page to paste a token into, from a phone browser, and the steps for Threads and the private denylist. Values are never typed into the chat: a hook stops messages that look like credentials, and another stops commands that would print one.
 - `/inspect` reviews design and copy against the working manual and impeccable.style. `/writeup` and `/deai` help write without handing over the voice.
 
-The computer has to stay awake with the session running. It needs Node 18 or newer, the GitHub CLI signed in (`gh auth login`), and optionally a password manager CLI. Personal settings go in `.claude/settings.local.json` and `CLAUDE.local.md`, both git-ignored.
+The computer has to stay awake with the session running. It needs Node 18 or newer and the GitHub CLI signed in (`gh auth login`). Personal settings go in `.claude/settings.local.json` and `CLAUDE.local.md`, both git-ignored.
 
 ## Checks
 

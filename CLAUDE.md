@@ -9,7 +9,7 @@ The owner's computer is Windows, so commands there run in PowerShell. Everything
 ## Rules that are not negotiable
 
 - Everything pushed is public, history included. Read PUBLISHING.md before adding anything about the owner's work. Employer work is keep-out at most. Home projects in the employer's field are not published at all without the owner's written clearance.
-- Never ask for, print, or accept a secret value in the conversation. Secrets move from the owner's password manager to GitHub with `node tools/secrets.mjs`. Never read the private denylist; `node tools/disclosure-check.mjs` reports matches by number only. Hooks in `.claude/hooks/` enforce this; don't work around them.
+- Never ask for, print, or accept a secret value in the conversation. The owner pastes secrets directly into GitHub's secret pages (`node tools/secrets.mjs link NAME` gives the page). Never read the private denylist; `node tools/disclosure-check.mjs` reports matches by number only. Hooks in `.claude/hooks/` enforce this; don't work around them.
 - Never invent facts about the owner: numbers, results, dates, names, quotes, employers. If a sentence needs a fact you don't have, ask.
 - Copy you draft is a draft for the owner to rewrite, not final copy in their voice. Say which sentences you wrote so they know what to own.
 - Don't add personal ambitions, job-search signals, or anything about pay to the site or to commit messages.
@@ -52,7 +52,7 @@ If `CLAUDE.local.md` exists, it holds the owner's full manual and takes preceden
 ## Skills and agents
 
 - `/site`: status, Threads notes and curation, sync, publish.
-- `/secrets`: set up and renew secrets without values in the chat.
+- `/secrets`: links and steps for the Threads token and the private denylist, without values in the chat.
 - `/inspect`: design and writing inspection, ranked P0 to P3, changes nothing.
 - `/writeup`: a new write-up through the seven passes.
 - `/deai`: edit a draft back into the owner's voice.
