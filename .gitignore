@@ -95,8 +95,13 @@ docs/build/
 # Storybook Build
 storybook-static/
 
-# Claude Code
-.claude/
+# Claude Code: the project config is shared; personal and secret files are not
+.claude/settings.local.json
+.claude/secrets.local.json
+.claude/*.local.*
+CLAUDE.local.md
 
 # Review/debug screenshots (root only)
 /*.png
+# Private disclosure denylist, never committed (see PUBLISHING.md)
+.disclosure-terms

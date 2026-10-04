@@ -289,6 +289,11 @@ ol {
   border-radius: 2px;
 }
 
+/* Author display rules would otherwise beat the attribute */
+[hidden] {
+  display: none !important;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -381,6 +386,7 @@ main[tabindex="-1"]:focus-visible {
 
 .brand-name {
   font-weight: 500;
+  white-space: nowrap;
 }
 
 .site-nav {
@@ -1755,6 +1761,572 @@ dialog.project-modal::backdrop {
 }
 
 /* --------------------------------------------------------------------------
+   11c. Keep-out: work described without being shown
+   A keep-out zone on a board is the hatched area where nothing may be
+   placed. Here it marks what is deliberately left off the page, so the
+   hatch is drawn in copper like the rest of the board and never moves.
+   -------------------------------------------------------------------------- */
+
+.keepout {
+  margin-top: clamp(3.5rem, 3rem + 3vw, 5.5rem);
+}
+
+.keepout-head {
+  max-width: 44rem;
+  margin-bottom: clamp(1.6rem, 1.2rem + 1.5vw, 2.4rem);
+}
+
+.keepout-head h3 {
+  font-size: var(--text-lg);
+  margin-bottom: 0.8rem;
+}
+
+.keepout-head p {
+  color: var(--text-2);
+}
+
+.keepout-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(1.2rem, 2vw, 1.8rem);
+}
+
+.keepout-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.keepout-band {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem 1.1rem;
+  border-bottom: 1px dashed var(--copper-dim);
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--copper-dim) 0 1px,
+    transparent 1px 9px
+  );
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.keepout-band span {
+  background: var(--surface);
+  padding: 0.1rem 0.45rem;
+  border-radius: 3px;
+}
+
+.keepout-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 1.3rem 1.4rem 1.5rem;
+}
+
+.keepout-body h4 {
+  font-size: var(--text-md);
+  line-height: 1.2;
+  font-weight: 620;
+  letter-spacing: -0.01em;
+  margin-bottom: 0.5rem;
+}
+
+.keepout-role {
+  font-size: var(--text-sm);
+  color: var(--text-2);
+  margin-bottom: 1.1rem;
+}
+
+.keepout-split {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  font-size: var(--text-sm);
+}
+
+.keepout-split dt {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 0.2rem;
+}
+
+.keepout-split dd {
+  margin: 0;
+  color: var(--text-2);
+  line-height: 1.55;
+}
+
+.keepout-split a {
+  color: var(--accent);
+  border-bottom: 1px solid var(--accent-dim);
+}
+
+/* --------------------------------------------------------------------------
+   11d. Lab teaser
+   -------------------------------------------------------------------------- */
+
+.lab-teaser {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  gap: clamp(2rem, 4vw, 4rem);
+  align-items: center;
+}
+
+.lab-teaser .case-desc {
+  color: var(--text-2);
+  margin-bottom: 1.6rem;
+}
+
+.lab-teaser h2 {
+  font-size: var(--text-lg);
+  margin-bottom: 1rem;
+}
+
+.lab-figure {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-2);
+  padding: clamp(1rem, 3vw, 2rem);
+}
+
+.lab-figure svg {
+  width: 100%;
+  height: auto;
+}
+
+.lab-figure .lf-axis {
+  stroke: var(--border-2);
+  stroke-width: 1;
+}
+
+.lab-figure .lf-env {
+  fill: var(--copper-dim);
+  opacity: 0.55;
+}
+
+.lab-figure .lf-wave {
+  fill: none;
+  stroke: var(--text);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.lab-figure .lf-trace {
+  fill: none;
+  stroke: var(--copper);
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+
+.lab-figure .lf-load {
+  fill: none;
+  stroke: var(--copper);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.lab-figure text {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  fill: var(--text-3);
+}
+
+/* --------------------------------------------------------------------------
+   11e. Notes mirrored from Threads
+   A single trace runs down the left; each post is a pad on it, and a reply
+   in the same conversation branches off at 45 degrees like a stub.
+   -------------------------------------------------------------------------- */
+
+.notes-list {
+  position: relative;
+  max-width: 46rem;
+  padding-left: 2rem;
+}
+
+.notes-list::before {
+  content: "";
+  position: absolute;
+  left: 0.42rem;
+  top: 0.6rem;
+  bottom: 0.6rem;
+  width: 2px;
+  background: var(--copper-dim);
+  border-radius: 1px;
+}
+
+.note {
+  position: relative;
+  padding-bottom: 1.9rem;
+}
+
+.note::before {
+  content: "";
+  position: absolute;
+  left: calc(-2rem + 0.1rem);
+  top: 0.32rem;
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 50%;
+  background: var(--copper);
+  box-shadow: 0 0 0 4px var(--bg);
+}
+
+/* Replies that stand alone are vias: a ring rather than a filled pad */
+.note--reply::before {
+  background: var(--bg);
+  border: 2px solid var(--copper);
+}
+
+.note-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.9rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  color: var(--text-3);
+  margin-bottom: 0.4rem;
+}
+
+.note-meta .tag {
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.note-text {
+  color: var(--text);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.note-text a {
+  color: var(--accent);
+  border-bottom: 1px solid var(--accent-dim);
+}
+
+.note-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-2);
+  padding-block: 0.7rem;
+  margin-block: -0.2rem -0.7rem;
+}
+
+.note-link:hover {
+  color: var(--accent);
+}
+
+.note-link svg {
+  width: 12px;
+  height: 12px;
+}
+
+.note-branch {
+  position: relative;
+  margin: 1.1rem 0 0 1.6rem;
+  padding-left: 1rem;
+  border-left: 1px solid var(--border-2);
+}
+
+/* A horizontal stub from the main trace to the branch, like a short
+   track tapping off a bus */
+.note-branch::before {
+  content: "";
+  position: absolute;
+  left: calc(-1.6rem - 2rem + 0.42rem + 1px);
+  width: calc(1.6rem + 2rem - 0.42rem - 1px);
+  top: 0.62rem;
+  height: 2px;
+  background: var(--copper-dim);
+}
+
+.note-branch .note-text {
+  color: var(--text-2);
+  font-size: var(--text-sm);
+}
+
+.notes-foot {
+  max-width: 46rem;
+  margin-top: 0.6rem;
+  padding-top: 1.4rem;
+  border-top: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: 1.7;
+  color: var(--text-3);
+}
+
+.notes-foot a {
+  color: var(--text-2);
+  border-bottom: 1px solid var(--border-2);
+}
+
+.notes-foot a:hover {
+  color: var(--accent);
+  border-color: var(--accent-dim);
+}
+
+/* --------------------------------------------------------------------------
+   11f. Lab page
+   -------------------------------------------------------------------------- */
+
+.site-nav a.nav-link[aria-current="page"] {
+  color: var(--accent);
+}
+
+.site-nav a.nav-link[aria-current="page"]::after {
+  content: "";
+  position: absolute;
+  left: 0.65rem;
+  right: 0.65rem;
+  bottom: 0.28rem;
+  height: 1.5px;
+  background: var(--accent);
+}
+
+.text-inline {
+  color: var(--accent);
+  border-bottom: 1px solid var(--accent-dim);
+  transition: border-color 0.2s ease;
+}
+
+.text-inline:hover {
+  border-color: var(--accent);
+}
+
+.lab-hero h1 {
+  font-size: var(--text-2xl);
+  font-stretch: 118%;
+}
+
+.lab-stage {
+  padding-top: clamp(2rem, 4vh, 3rem);
+}
+
+.lab-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.75fr) minmax(17rem, 1fr);
+  gap: clamp(1.2rem, 2.4vw, 2rem);
+  align-items: start;
+}
+
+.lab-view {
+  position: sticky;
+  top: 5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-2);
+  overflow: hidden;
+  aspect-ratio: 16 / 10;
+}
+
+.lab-view canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* Vertical swipes scroll the page; sideways drags tilt the board */
+  touch-action: pan-y pinch-zoom;
+  cursor: grab;
+}
+
+.lab-view canvas:active {
+  cursor: grabbing;
+}
+
+.lab-view.is-fallback {
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+}
+
+.lab-fallback {
+  color: var(--text-2);
+  max-width: 28rem;
+  text-align: center;
+}
+
+.lab-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+
+.lab-view-tools {
+  position: absolute;
+  left: 0.8rem;
+  right: 0.8rem;
+  bottom: 0.8rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1.2rem;
+}
+
+.lab-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-2);
+  cursor: pointer;
+}
+
+.lab-check input,
+.lab-range input {
+  accent-color: var(--accent);
+}
+
+.lab-check input {
+  width: 1rem;
+  height: 1rem;
+}
+
+.lab-panel {
+  display: grid;
+  gap: 1.3rem;
+}
+
+.lab-smith {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 1rem 1rem 0.6rem;
+}
+
+.lab-smith svg {
+  width: 100%;
+  max-width: 20rem;
+  margin-inline: auto;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.lab-smith .sm-disc {
+  fill: var(--bg-2);
+  stroke: var(--border-2);
+  stroke-width: 0.012;
+}
+
+.lab-smith .sm-grid {
+  fill: none;
+  stroke: var(--border-2);
+  stroke-width: 0.006;
+}
+
+.lab-smith .sm-vswr {
+  fill: none;
+  stroke: var(--rule);
+  stroke-width: 0.01;
+  stroke-dasharray: 0.04 0.03;
+}
+
+.lab-smith .sm-center {
+  fill: var(--text-3);
+}
+
+.lab-smith .sm-point {
+  fill: var(--accent);
+  stroke: var(--bg);
+  stroke-width: 0.018;
+}
+
+.lab-smith .sm-label {
+  font-family: var(--font-mono);
+  font-size: 0.07px;
+  letter-spacing: 0.01px;
+  fill: var(--text-3);
+  pointer-events: none;
+}
+
+.lab-hint {
+  margin-top: 0.4rem;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-3);
+}
+
+.lab-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.lab-presets .chip {
+  min-height: 40px;
+}
+
+.lab-controls {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.lab-range {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.lab-range-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  color: var(--text-2);
+}
+
+.lab-range-head output {
+  color: var(--text);
+}
+
+.lab-range input {
+  width: 100%;
+  min-height: 32px;
+}
+
+.lab-readout {
+  margin: 0;
+}
+
+.lab-readout td {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------------------
    12. Reveal on scroll
    -------------------------------------------------------------------------- */
 
@@ -1784,8 +2356,20 @@ dialog.project-modal::backdrop {
     grid-template-columns: repeat(2, 1fr);
   }
 
+  .keepout-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
   .hero-circuit {
     width: 72vw;
+  }
+}
+
+/* With six sections in the nav, the name gives way before the links do;
+   the mark still leads home */
+@media (min-width: 821px) and (max-width: 980px) {
+  .brand-name {
+    display: none;
   }
 }
 
@@ -1849,6 +2433,20 @@ dialog.project-modal::backdrop {
     grid-template-columns: 1fr;
   }
 
+  .lab-teaser {
+    grid-template-columns: 1fr;
+  }
+
+  .lab-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lab-view {
+    position: relative;
+    top: 0;
+    aspect-ratio: 4 / 3.4;
+  }
+
   .about-grid {
     grid-template-columns: 1fr;
   }
@@ -1886,6 +2484,27 @@ dialog.project-modal::backdrop {
 @media (max-width: 560px) {
   .skills-grid {
     grid-template-columns: 1fr;
+  }
+
+  .keepout-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .notes-list {
+    padding-left: 1.7rem;
+  }
+
+  .note::before {
+    left: calc(-1.7rem + 0.1rem);
+  }
+
+  .note-branch {
+    margin-left: 0.6rem;
+  }
+
+  .note-branch::before {
+    left: calc(-0.6rem - 1.7rem + 0.42rem + 1px);
+    width: calc(0.6rem + 1.7rem - 0.42rem - 1px);
   }
 
   .spec-table th,

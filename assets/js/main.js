@@ -746,4 +746,162 @@
       }
     });
   });
+
+  /* ----------------------------------------------------------------
+     Notes: a curated mirror of Threads, read from this site's own
+     origin. The page never contacts Threads; a scheduled workflow
+     writes data/threads.json. Text is inserted as text, never as HTML.
+     ---------------------------------------------------------------- */
+
+  var notesSection = document.getElementById("notes");
+  var notesList = document.querySelector("[data-notes]");
+  if (notesSection && notesList && window.fetch) {
+    /* Notes appears after the page has loaded, which pushes everything below
+       it down. If the visitor arrived on a link to a section below Notes
+       (/#skills, /#contact) and hasn't started scrolling, put them back on
+       it. Scroll events can't tell us that, since the browser's own jump to
+       the anchor fires them, so input events are watched instead. */
+    var visitorMoved = false;
+    var markMoved = function () {
+      visitorMoved = true;
+    };
+    ["wheel", "touchstart", "keydown", "mousedown"].forEach(function (type) {
+      window.addEventListener(type, markMoved, { once: true, passive: true });
+    });
+    var keepAnchor = function () {
+      if (visitorMoved || !location.hash || location.hash.length < 2) return;
+      var target = null;
+      try {
+        target = document.querySelector(location.hash);
+      } catch (e) {}
+      if (!target || target.tagName === "DIALOG") return;
+      if (notesSection.compareDocumentPosition(target) & Node.DOCUMENT_POSITION_FOLLOWING) {
+        target.scrollIntoView({ block: "start" });
+      }
+    };
+
+    var URL_RE = /https?:\/\/[^\s<>"']+[^\s<>"'.,;:!?)\]]/g;
+    var dateFmt = new Intl.DateTimeFormat(undefined, { year: "numeric", month: "short", day: "numeric" });
+
+    var appendText = function (el, text) {
+      var last = 0;
+      text.replace(URL_RE, function (url, at) {
+        el.appendChild(document.createTextNode(text.slice(last, at)));
+        var a = document.createElement("a");
+        a.href = url;
+        a.rel = "nofollow noopener ugc";
+        a.target = "_blank";
+        a.textContent = url.replace(/^https?:\/\/(www\.)?/, "");
+        el.appendChild(a);
+        last = at + url.length;
+        return url;
+      });
+      el.appendChild(document.createTextNode(text.slice(last)));
+    };
+
+    var when = function (iso) {
+      var d = new Date(iso);
+      return isNaN(d) ? "" : dateFmt.format(d);
+    };
+
+    var renderNote = function (item, tag, isBranch) {
+      var el = document.createElement(tag);
+      var meta = document.createElement("p");
+      meta.className = "note-meta";
+      var time = document.createElement("time");
+      time.dateTime = item.timestamp || "";
+      time.textContent = when(item.timestamp);
+      meta.appendChild(time);
+      var label = item.topic || (isBranch ? "Reply" : item.kind === "reply" ? "In a conversation" : "");
+      if (label) {
+        var t = document.createElement("span");
+        t.className = "tag";
+        t.textContent = label;
+        meta.appendChild(t);
+      }
+      el.appendChild(meta);
+
+      var text = document.createElement("p");
+      text.className = "note-text";
+      appendText(text, item.text || "");
+      el.appendChild(text);
+
+      if (item.permalink && /^https:\/\//.test(item.permalink)) {
+        var link = document.createElement("a");
+        link.className = "note-link";
+        link.href = item.permalink;
+        link.target = "_blank";
+        link.rel = "noopener";
+        link.textContent = item.media ? "Photo and thread on Threads" : "Thread on Threads";
+        link.insertAdjacentHTML(
+          "beforeend",
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg><span class="sr-only"> (opens in a new tab)</span>'
+        );
+        el.appendChild(link);
+      }
+      return el;
+    };
+
+    fetch("data/threads.json", { cache: "no-cache" })
+      .then(function (res) {
+        return res.ok ? res.json() : null;
+      })
+      .then(function (data) {
+        if (!data || !data.items || !data.items.length) return;
+
+        /* Replies to a post that is shown hang off it as branches; any
+           other reply stands on the trace by itself */
+        var posts = {};
+        data.items.forEach(function (item) {
+          if (item.kind === "post") posts[item.id] = { item: item, replies: [] };
+        });
+        var top = [];
+        data.items.forEach(function (item) {
+          if (item.kind === "post") top.push(item);
+          else if (item.root && posts[item.root]) posts[item.root].replies.push(item);
+          else top.push(item);
+        });
+        var byTime = function (a, b) {
+          return String(a.timestamp).localeCompare(String(b.timestamp));
+        };
+        top.sort(byTime).reverse();
+
+        top.forEach(function (item) {
+          var li = renderNote(item, "li");
+          li.className = "note" + (item.kind === "reply" ? " note--reply" : "");
+          var group = posts[item.id];
+          if (group && group.replies.length) {
+            group.replies.sort(byTime).forEach(function (reply) {
+              var branch = renderNote(reply, "div", true);
+              branch.className = "note-branch";
+              li.appendChild(branch);
+            });
+          }
+          notesList.appendChild(li);
+        });
+
+        var foot = document.querySelector("[data-notes-foot]");
+        if (foot) {
+          foot.textContent =
+            "Only my own posts on work topics are mirrored here, a few times a day. Other people's replies stay on Threads, where they wrote them. ";
+          if (data.profile && /^https:\/\//.test(data.profile)) {
+            var a = document.createElement("a");
+            a.href = data.profile;
+            a.target = "_blank";
+            a.rel = "noopener me";
+            a.textContent = "@" + data.handle + " on Threads";
+            foot.appendChild(a);
+          }
+        }
+
+        notesSection.hidden = false;
+        document.querySelectorAll("[data-notes-link]").forEach(function (link) {
+          link.hidden = false;
+        });
+        keepAnchor();
+      })
+      .catch(function () {
+        /* No notes is a normal state; the section simply stays hidden */
+      });
+  }
 })();

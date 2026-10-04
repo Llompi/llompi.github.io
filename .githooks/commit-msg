@@ -1,0 +1,4 @@
+#!/bin/sh
+# A denylisted term in a commit message is as public as one in a page.
+command -v node >/dev/null 2>&1 || { echo "commit-msg: Node.js not found, so the disclosure check can't run. Install Node 18+." >&2; exit 1; }
+exec node "$(git rev-parse --show-toplevel)/tools/disclosure-check.mjs" --message "$1"

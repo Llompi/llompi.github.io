@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Mismatch · Lab · Joan Llompart</title>
+  <meta name="description" content="An interactive look at what an impedance mismatch does to a signal on a transmission line: drag the load around a Smith chart and watch the standing wave form on a board in 3D.">
+  <meta name="author" content="Joan Llompart">
+  <link rel="canonical" href="https://llompi.github.io/lab/">
+
+  <meta name="theme-color" content="#0d0d0f">
+
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Mismatch: a standing wave you can move">
+  <meta property="og:description" content="Drag the load around a Smith chart and watch the standing wave form on a board in 3D.">
+  <meta property="og:url" content="https://llompi.github.io/lab/">
+  <meta property="og:image" content="https://llompi.github.io/assets/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+  <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+
+  <!-- Set theme before first paint -->
+  <script>
+    (function () {
+      var stored = null;
+      try { stored = localStorage.getItem("theme"); } catch (e) {}
+      var theme = stored || (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+      document.documentElement.setAttribute("data-theme", theme);
+      var m = document.querySelector('meta[name="theme-color"]');
+      if (m) m.setAttribute("content", theme === "light" ? "#f1f1ef" : "#0d0d0f");
+    })();
+  </script>
+
+  <link rel="preload" href="../assets/fonts/archivo-400-800-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../assets/fonts/ibm-plex-mono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+
+  <link rel="stylesheet" href="../assets/css/styles.css">
+
+  <script type="importmap">
+    { "imports": { "three": "../assets/vendor/three/three.module.min.js" } }
+  </script>
+</head>
+<body>
+
+  <a class="skip-link" href="#article">Skip to content</a>
+
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="../" aria-label="Joan Llompart, back to portfolio">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <rect x="1.5" y="1.5" width="61" height="61" rx="14" fill="var(--surface)" stroke="var(--border-2)" stroke-width="1.5"/>
+          <circle cx="27" cy="14.8" r="3.2" fill="none" stroke="var(--copper)" stroke-width="2.4"/>
+          <path d="M27 20 V36.5 Q27 45 20 45" fill="none" stroke="var(--copper)" stroke-width="4.2" stroke-linecap="round"/>
+          <circle cx="18.5" cy="45" r="2.8" fill="var(--copper)"/>
+          <circle cx="40" cy="14.8" r="3.2" fill="none" stroke="var(--copper)" stroke-width="2.4"/>
+          <path d="M40 20 V40.5 Q40 45 44.5 45 H51" fill="none" stroke="var(--copper)" stroke-width="4.2" stroke-linecap="round"/>
+          <circle cx="52.5" cy="45" r="2.8" fill="var(--copper)"/>
+        </svg>
+        <span class="brand-name">Joan Llompart</span>
+      </a>
+
+      <nav class="site-nav" id="site-nav" aria-label="Primary">
+        <a class="nav-link" href="../#work">Work</a>
+        <a class="nav-link" href="./" aria-current="page">Lab</a>
+        <a class="nav-link" href="../#about">About</a>
+        <a class="nav-link" href="../#skills">Skills</a>
+        <a class="nav-link" href="../#contact">Contact</a>
+      </nav>
+
+      <div class="header-actions">
+        <button class="theme-toggle" type="button" aria-pressed="true" aria-label="Dark theme">
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        </button>
+        <a class="btn btn-ghost btn-sm" href="../docs/assets/Joan-Llompart-Resume.pdf" target="_blank" rel="noopener">Resume<span class="sr-only"> (PDF, opens in a new tab)</span></a>
+        <button class="nav-burger" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="article-main" id="article" tabindex="-1">
+
+    <header class="article-hero lab-hero">
+      <div class="container">
+        <p class="kicker">Lab</p>
+        <h1>Mismatch</h1>
+        <p class="article-summary">A 50 ohm line, a load at the far end, and the wave between them. Move the load and watch what comes back. It's the problem the matching network on my <a class="text-inline" href="../#modal-rf">RF amplifier</a> exists to solve, drawn so you can see it instead of reading about it.</p>
+      </div>
+    </header>
+
+    <section class="lab-stage" aria-label="Interactive transmission line">
+      <div class="container">
+        <div class="lab-grid">
+
+          <div class="lab-view" data-lab-view>
+            <canvas data-lab-canvas role="img" aria-label="A circuit board in 3D with a copper trace running from a connector to a load resistor. Above the trace, the voltage wave on the line and its standing-wave envelope."></canvas>
+            <span class="lab-label" data-lab-label="source" aria-hidden="true">Source</span>
+            <span class="lab-label" data-lab-label="load" aria-hidden="true">Load</span>
+            <p class="lab-fallback" data-lab-fallback hidden>This browser could not start WebGL, so the 3D view is off. The Smith chart and the numbers still work.</p>
+            <div class="lab-view-tools">
+              <button class="btn btn-ghost btn-sm" type="button" data-lab-play>Pause</button>
+              <label class="lab-check"><input type="checkbox" data-lab-parts> Show both waves</label>
+            </div>
+          </div>
+
+          <div class="lab-panel">
+            <div class="lab-smith">
+              <svg viewBox="-1.12 -1.12 2.24 2.24" data-lab-smith role="img" aria-label="Smith chart">
+                <title>Smith chart. Drag the point to change the load.</title>
+              </svg>
+              <p class="lab-hint">Drag the point, or use the sliders.</p>
+            </div>
+
+            <div class="lab-presets" role="group" aria-label="Load presets">
+              <button type="button" class="chip" data-preset="50,0">Matched</button>
+              <button type="button" class="chip" data-preset="75,0">75 ohm</button>
+              <button type="button" class="chip" data-preset="25,-40">25 − j40</button>
+              <button type="button" class="chip" data-preset="open">Open</button>
+              <button type="button" class="chip" data-preset="short">Short</button>
+            </div>
+
+            <div class="lab-controls">
+              <div class="lab-range">
+                <span class="lab-range-head"><label for="lab-r">Resistance</label><output for="lab-r" data-out="r">50 ohm</output></span>
+                <input id="lab-r" type="range" min="0" max="1000" step="1" value="566" data-in="r">
+              </div>
+              <div class="lab-range">
+                <span class="lab-range-head"><label for="lab-x">Reactance</label><output for="lab-x" data-out="x">0 ohm</output></span>
+                <input id="lab-x" type="range" min="-500" max="500" step="1" value="0" data-in="x">
+              </div>
+              <div class="lab-range">
+                <span class="lab-range-head"><label for="lab-len">Line length</label><output for="lab-len" data-out="len">1.50 wavelengths</output></span>
+                <input id="lab-len" type="range" min="0.25" max="3" step="0.05" value="1.5" data-in="len">
+              </div>
+            </div>
+
+            <table class="spec-table lab-readout">
+              <caption class="sr-only">Results for the current load</caption>
+              <tbody>
+                <tr><th scope="row">Load</th><td data-read="z">50 + j0 ohm</td></tr>
+                <tr><th scope="row">Reflection</th><td data-read="gamma">0.000</td></tr>
+                <tr><th scope="row">VSWR</th><td data-read="vswr">1.00</td></tr>
+                <tr><th scope="row">Return loss</th><td data-read="rl">over 60 dB</td></tr>
+                <tr><th scope="row">Power to load</th><td data-read="power">100.0 %</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <article class="article-body">
+      <div class="container">
+
+        <h2>What you're looking at</h2>
+        <p>The copper trace is a transmission line with a characteristic impedance of 50 ohms. A wave leaves the connector on the left and travels toward the load on the right. If the load is also 50 ohms, the line can't tell where it ends: all the power goes into the load and the wave arrives with nothing to send back. The shaded envelope is flat.</p>
+        <p>Any other load reflects part of the wave. The reflected wave runs back toward the source and adds to the next incoming one. Where they line up the voltage swings wider, and where they oppose it nearly cancels, and those points stay in place: a standing wave. The envelope's ripple is the mismatch made visible. The ratio of its peak to its dip is the VSWR.</p>
+
+        <h2>Reading the Smith chart</h2>
+        <p>The chart maps every possible load onto a disc. The center is a perfect match. The edge is total reflection: a short on the left, an open on the right. Upper half is inductive, lower half capacitive. The distance from the center is how much comes back, and the dashed circle through the point is every load with that same VSWR. A matching network's whole job is to walk a load from wherever it lands to the center.</p>
+
+        <h2>Why line length matters</h2>
+        <p>Changing the length is the same as changing frequency: what counts is how many wavelengths fit between source and load. Slide it and the pattern shifts along the trace, but the ripple keeps its size. That's why a match at one frequency can be a poor one at another, and why the amplifier was measured across its whole band, not at one point.</p>
+
+        <h2>What's simplified</h2>
+        <ul role="list">
+          <li>The line is lossless and the source is matched, so there are no re-reflections from the left end.</li>
+          <li>The load is a fixed impedance. A real component changes with frequency, which is most of what makes matching hard.</li>
+          <li>Heights are voltage, not distance. The wave is drawn above the trace; the actual fields live in the substrate between the trace and the ground plane underneath.</li>
+        </ul>
+
+        <blockquote>
+          <p>Everything here runs in your browser: three.js for the board and plain JavaScript for the math, served from this site with no tracking. The source is in <a class="text-inline" href="https://github.com/Llompi/llompi.github.io/blob/main/assets/js/lab.js" target="_blank" rel="noopener">assets/js/lab.js</a>.</p>
+        </blockquote>
+
+        <p class="article-back"><a class="text-link" href="../#lab">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transform:rotate(180deg)"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          Back to the portfolio</a></p>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-brand">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <rect x="1.5" y="1.5" width="61" height="61" rx="14" fill="var(--surface)" stroke="var(--border-2)" stroke-width="1.5"/>
+          <circle cx="27" cy="14.8" r="3.2" fill="none" stroke="var(--copper)" stroke-width="2.4"/>
+          <path d="M27 20 V36.5 Q27 45 20 45" fill="none" stroke="var(--copper)" stroke-width="4.2" stroke-linecap="round"/>
+          <circle cx="18.5" cy="45" r="2.8" fill="var(--copper)"/>
+          <circle cx="40" cy="14.8" r="3.2" fill="none" stroke="var(--copper)" stroke-width="2.4"/>
+          <path d="M40 20 V40.5 Q40 45 44.5 45 H51" fill="none" stroke="var(--copper)" stroke-width="4.2" stroke-linecap="round"/>
+          <circle cx="52.5" cy="45" r="2.8" fill="var(--copper)"/>
+        </svg>
+        <span class="footer-note">© 2026 Joan Llompart</span>
+      </div>
+      <p class="footer-note">Plain HTML, CSS, and JavaScript, no build step. <a href="https://github.com/Llompi/llompi.github.io" target="_blank" rel="noopener">View source</a></p>
+    </div>
+  </footer>
+
+  <script src="../assets/js/main.js" defer></script>
+  <script type="module" src="../assets/js/lab.js"></script>
+</body>
+</html>
