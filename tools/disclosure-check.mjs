@@ -35,7 +35,7 @@ const ROOT = fileURLToPath(new URL("..", import.meta.url));
    public, tooling and Claude Code config included, so it is all scanned
    for denylisted terms. */
 const SKIP_DIRS = new Set([".git", "node_modules"]);
-const TEXT_EXT = new Set([".html", ".htm", ".css", ".js", ".mjs", ".json", ".md", ".txt", ".xml", ".svg"]);
+const TEXT_EXT = new Set([".html", ".htm", ".css", ".js", ".mjs", ".json", ".md", ".txt", ".xml", ".svg", ".yml", ".yaml", ".ps1", ".sh", ".toml"]);
 const IMAGE_EXT = new Set([".jpg", ".jpeg", ".png"]);
 /* Draft markers only matter on pages the site serves. Docs, tooling, and
    Claude Code config are allowed to talk about drafts; they are still

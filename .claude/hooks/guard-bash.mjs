@@ -42,7 +42,7 @@ const parts = command
   .filter(Boolean);
 const isTool = (p) => /^node\s+(?:\.[\\/])?tools[\\/][\w.-]+\.mjs\b/.test(p);
 
-const SECRET_NAMES = "THREADS_ACCESS_TOKEN|SECRETS_WRITE_TOKEN|DISCLOSURE_TERMS|THREADS_APP_SECRET|GH_TOKEN|GITHUB_TOKEN";
+const SECRET_NAMES = "THREADS_ACCESS_TOKEN|SECRETS_WRITE_TOKEN|DISCLOSURE_TERMS|THREADS_APP_SECRET|GH_TOKEN|GITHUB_TOKEN|OP_SERVICE_ACCOUNT_TOKEN|OP_SESSION_\\w+|BW_SESSION";
 
 for (const p of parts) {
   if (isTool(p)) continue;

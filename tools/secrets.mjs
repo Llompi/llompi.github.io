@@ -38,7 +38,7 @@
 
 import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { join, delimiter } from "node:path";
 import { fileURLToPath } from "node:url";
 
 /* fileURLToPath, not .pathname: on Windows .pathname gives /C:/... */
@@ -76,7 +76,7 @@ function loadConfig() {
 function readValue(name, config, { keepNewlines = false } = {}) {
   const entry = config[name];
   if (!entry || !entry.cmd) die(name + " has no command in .claude/secrets.local.json");
-  const r = spawnSync(entry.cmd, { shell: entry.shell || true, cwd: ROOT, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], timeout: 60000, windowsHide: true });
+  const r = spawnSync(entry.cmd, { shell: entry.shell || true, cwd: ROOT, env: toolEnv(), encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], timeout: 60000, windowsHide: true });
   if (r.status !== 0) {
     /* stderr from a password manager is about locking or sign-in, not the value */
     die(name + ": the command failed (" + (r.stderr || "").trim().split("\n")[0] + "). Is the password manager unlocked?");
@@ -86,6 +86,23 @@ function readValue(name, config, { keepNewlines = false } = {}) {
   const value = keepNewlines ? out.replace(/\s+$/, "") + "\n" : out.trim();
   if (!value.trim()) die(name + ": the command printed nothing.");
   return value;
+}
+
+/* A CLI installed with winget after Claude Code started is not on this
+   process's PATH yet; its shim folder is added so it is found anyway. */
+function toolEnv() {
+  const env = { ...process.env };
+  if (process.platform === "win32" && env.LOCALAPPDATA) {
+    const links = join(env.LOCALAPPDATA, "Microsoft", "WinGet", "Links");
+    const key = Object.keys(env).find((k) => k.toLowerCase() === "path") || "PATH";
+    if (!String(env[key] || "").toLowerCase().includes(links.toLowerCase())) env[key] = (env[key] || "") + delimiter + links;
+  }
+  return env;
+}
+
+function onPath(cmd) {
+  const probe = process.platform === "win32" ? spawnSync("where", [cmd], { env: toolEnv(), stdio: "ignore" }) : spawnSync("sh", ["-c", "command -v " + cmd], { stdio: "ignore" });
+  return probe.status === 0;
 }
 
 function ghAvailable() {
@@ -124,6 +141,10 @@ switch (cmd) {
     const config = existsSync(CONFIG) ? JSON.parse(readFileSync(CONFIG, "utf8")) : {};
     const remote = ghAvailable() ? ghSecrets(repo) : null;
     const names = new Set([...Object.keys(config), ...Object.keys(remote || {}), "DISCLOSURE_TERMS", "THREADS_ACCESS_TOKEN", "SECRETS_WRITE_TOKEN"]);
+    const op = onPath("op");
+    const sa = Boolean(process.env.OP_SERVICE_ACCOUNT_TOKEN);
+    console.log("1Password CLI: " + (op ? "installed" : "not found") + (op ? ", service account " + (sa ? "set" : "not set (run tools/setup-1password.ps1 at the computer)") : ""));
+    console.log("");
     console.log("name".padEnd(24) + "source here".padEnd(16) + "on GitHub");
     for (const n of names) {
       const local = config[n] ? (config[n].github === false ? "local only" : "configured") : "-";

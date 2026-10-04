@@ -11,6 +11,7 @@ import { execFileSync } from "node:child_process";
 
 const PATTERNS = [
   ["a GitHub token", /\b(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{30,}\b|\bgithub_pat_[A-Za-z0-9_]{40,}\b/],
+  ["a 1Password service account token", /\bops_[A-Za-z0-9_-]{40,}/],
   ["a Threads or Meta access token", /\b(?:TH[A-Z]{2}|EAA)[A-Za-z0-9_-]{80,}/],
   ["an Anthropic API key", /\bsk-ant-[A-Za-z0-9_-]{20,}/],
   ["an OpenAI API key", /\bsk-(?:proj-)?[A-Za-z0-9_-]{32,}/],
