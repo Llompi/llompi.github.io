@@ -1877,7 +1877,7 @@ dialog.project-modal::backdrop {
 }
 
 /* --------------------------------------------------------------------------
-   11d. Lab teaser and principles
+   11d. Lab teaser
    -------------------------------------------------------------------------- */
 
 .lab-teaser {
@@ -1945,45 +1945,6 @@ dialog.project-modal::backdrop {
   font-family: var(--font-mono);
   font-size: 11px;
   fill: var(--text-3);
-}
-
-.principles {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: clamp(1.4rem, 2.4vw, 2.2rem) clamp(1.6rem, 3vw, 2.8rem);
-}
-
-.principle h3 {
-  position: relative;
-  font-size: var(--text-md);
-  font-stretch: 100%;
-  padding-left: 1.2rem;
-  margin-bottom: 0.6rem;
-}
-
-/* A pad, the same mark the skill lists use */
-.principle h3::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0.42em;
-  width: 7px;
-  height: 7px;
-  background: var(--copper);
-  border-radius: 1px;
-  transform: rotate(45deg);
-}
-
-.principle p {
-  color: var(--text-2);
-  font-size: var(--text-sm);
-  line-height: 1.65;
-  padding-left: 1.2rem;
-}
-
-.principle a {
-  color: var(--accent);
-  border-bottom: 1px solid var(--accent-dim);
 }
 
 /* --------------------------------------------------------------------------
@@ -2394,8 +2355,7 @@ dialog.project-modal::backdrop {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .keepout-grid,
-  .principles {
+  .keepout-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 
@@ -2525,8 +2485,7 @@ dialog.project-modal::backdrop {
     grid-template-columns: 1fr;
   }
 
-  .keepout-grid,
-  .principles {
+  .keepout-grid {
     grid-template-columns: 1fr;
   }
 
