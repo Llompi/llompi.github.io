@@ -1058,11 +1058,12 @@ h3 {
 
 .case-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: clamp(1.4rem, 2.4vw, 2.2rem);
 }
 
 .case-card {
+  grid-column: span 3;
   display: flex;
   flex-direction: column;
   border: 1px solid var(--border);
@@ -1146,6 +1147,22 @@ h3 {
 
 .case-card--text .case-desc {
   font-size: var(--text-base);
+}
+
+/* Short text card for work done at work: three to a row, no photo, no link.
+   Nothing on it opens anything, so it keeps its resting look on hover. */
+.case-card--brief {
+  grid-column: span 2;
+}
+
+.case-card--brief:hover,
+.case-card--brief:focus-within {
+  border-color: var(--border);
+  background: var(--surface);
+}
+
+.case-card--brief .case-desc {
+  margin-bottom: 0;
 }
 
 /* --------------------------------------------------------------------------
@@ -1761,122 +1778,6 @@ dialog.project-modal::backdrop {
 }
 
 /* --------------------------------------------------------------------------
-   11c. Keep-out: work described without being shown
-   A keep-out zone on a board is the hatched area where nothing may be
-   placed. Here it marks what is deliberately left off the page, so the
-   hatch is drawn in copper like the rest of the board and never moves.
-   -------------------------------------------------------------------------- */
-
-.keepout {
-  margin-top: clamp(3.5rem, 3rem + 3vw, 5.5rem);
-}
-
-.keepout-head {
-  max-width: 44rem;
-  margin-bottom: clamp(1.6rem, 1.2rem + 1.5vw, 2.4rem);
-}
-
-.keepout-head h3 {
-  font-size: var(--text-lg);
-  margin-bottom: 0.8rem;
-}
-
-.keepout-head p {
-  color: var(--text-2);
-}
-
-.keepout-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: clamp(1.2rem, 2vw, 1.8rem);
-}
-
-.keepout-card {
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  overflow: hidden;
-}
-
-.keepout-band {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.7rem 1.1rem;
-  border-bottom: 1px dashed var(--copper-dim);
-  background-image: repeating-linear-gradient(
-    -45deg,
-    var(--copper-dim) 0 1px,
-    transparent 1px 9px
-  );
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--text-3);
-}
-
-.keepout-band span {
-  background: var(--surface);
-  padding: 0.1rem 0.45rem;
-  border-radius: 3px;
-}
-
-.keepout-body {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  padding: 1.3rem 1.4rem 1.5rem;
-}
-
-.keepout-body h4 {
-  font-size: var(--text-md);
-  line-height: 1.2;
-  font-weight: 620;
-  letter-spacing: -0.01em;
-  margin-bottom: 0.5rem;
-}
-
-.keepout-role {
-  font-size: var(--text-sm);
-  color: var(--text-2);
-  margin-bottom: 1.1rem;
-}
-
-.keepout-split {
-  display: grid;
-  gap: 0.9rem;
-  margin-top: auto;
-  padding-top: 1rem;
-  border-top: 1px solid var(--border);
-  font-size: var(--text-sm);
-}
-
-.keepout-split dt {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--text-3);
-  margin-bottom: 0.2rem;
-}
-
-.keepout-split dd {
-  margin: 0;
-  color: var(--text-2);
-  line-height: 1.55;
-}
-
-.keepout-split a {
-  color: var(--accent);
-  border-bottom: 1px solid var(--accent-dim);
-}
-
-/* --------------------------------------------------------------------------
    11d. Lab teaser
    -------------------------------------------------------------------------- */
 
@@ -2356,10 +2257,6 @@ dialog.project-modal::backdrop {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .keepout-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
   .hero-circuit {
     width: 72vw;
   }
@@ -2433,6 +2330,11 @@ dialog.project-modal::backdrop {
     grid-template-columns: 1fr;
   }
 
+  .case-card,
+  .case-card--brief {
+    grid-column: auto;
+  }
+
   .lab-teaser {
     grid-template-columns: 1fr;
   }
@@ -2483,10 +2385,6 @@ dialog.project-modal::backdrop {
 
 @media (max-width: 560px) {
   .skills-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .keepout-grid {
     grid-template-columns: 1fr;
   }
 
