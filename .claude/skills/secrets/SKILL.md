@@ -23,10 +23,21 @@ Run `node tools/secrets.mjs status` and `node tools/site-status.mjs`. Report wha
 
 ## setup (first time on this computer)
 
-1. Find a password manager CLI: `op` (1Password), `bw` (Bitwarden), `pass`, or macOS `security`. If there are several or none, ask which one the owner uses.
-2. Copy `.claude/secrets.example.json` to `.claude/secrets.local.json` (git-ignored) and adjust each `cmd` to the owner's vault and item names. Ask for the item names; they aren't secret. Bitwarden needs `BW_SESSION` set in the shell that started Claude Code.
-3. Run `node tools/secrets.mjs check`. It prints only lengths and term counts. Fix any entry that fails, usually a locked vault or a wrong item path.
-4. Offer `push --all`, then `pull-denylist`.
+The owner uses 1Password, and this computer runs Windows. The desktop-app unlock needs a Windows Hello prompt on the computer's own screen, which can't be answered from a phone, so this project uses a 1Password service account: a read-only token limited to one vault.
+
+Run `node tools/secrets.mjs status` first and pick up from the first step that isn't done.
+
+1. CLI: if `op` is not found, ask, then run `winget install --id AgileBits.1Password.CLI -e --accept-source-agreements --accept-package-agreements`.
+2. In 1Password, on the phone or at 1password.com (the owner does this; you give the steps):
+   - Create a vault named `Site automation` that holds only this site's secrets.
+   - In it, create a Secure Note `Site denylist` (one term per line in the note) and an item `Threads API` with fields `token` and `app secret`. `GitHub site PAT` with a `token` field is optional (see threads below).
+   - At 1password.com, Developer, Service Accounts: create one with read access to `Site automation` only. Save its token in 1Password itself; it is shown once.
+3. At the computer, not through this chat: the owner runs `powershell -ExecutionPolicy Bypass -File tools\setup-1password.ps1` and pastes the service account token at its hidden prompt. It checks the token and saves it as a Windows user variable. Then they restart `claude remote-control`. This is the only step that needs the owner at the computer, and it happens once.
+4. Copy `.claude/secrets.example.json` to `.claude/secrets.local.json` (git-ignored). The example already points at the names above; change it only if the owner named things differently. Item and vault names aren't secret, so you may ask for them.
+5. Run `node tools/secrets.mjs check`. It prints only lengths and term counts. A failure usually means a wrong vault, item, or field name.
+6. Offer `push --all`, then `pull-denylist`.
+
+Never check or print `OP_SERVICE_ACCOUNT_TOKEN`; `secrets.mjs status` reports only whether it is set. Other managers (Bitwarden, pass, macOS Keychain) work too: change the `cmd` entries; Bitwarden needs `BW_SESSION` set in the shell that started Claude Code.
 
 ## push NAME, push --all
 
