@@ -15,7 +15,7 @@ The owner's manual says critique leaves the design unchanged: it recommends, the
 
 - `node tools/disclosure-check.mjs`
 - `npx impeccable detect <html and css files for the target>` for the source scan.
-- Start a local server (`python3 -m http.server 8765` in the background) and run `npx impeccable detect http://localhost:8765/<path>` for the rendered scan. On Linux as root, Chromium needs `--no-sandbox`; point `PUPPETEER_EXECUTABLE_PATH` at a wrapper script that adds it.
+- Start the preview (`node tools/serve.mjs 8765` in the background) and run `npx impeccable detect http://127.0.0.1:8765/<path>` for the rendered scan. On Linux as root, Chromium needs `--no-sandbox`; point `PUPPETEER_EXECUTABLE_PATH` at a wrapper script that adds it.
 - Treat detector hits as leads. Confirm each one by looking. A contrast hit measured mid reveal-animation, or "cramped padding" on a section whose border sits above generous padding, are known false positives.
 - If Playwright is available, take screenshots at 1280 and 390 wide, in both themes.
 

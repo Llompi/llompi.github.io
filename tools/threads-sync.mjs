@@ -19,8 +19,8 @@
    Only your own words are mirrored. Other people's replies and handles stay
    on Threads; the page links to the conversation instead of copying it.
 
-   Every candidate also goes through the private disclosure denylist used by
-   tools/disclosure-check.mjs, and a match drops the post. Posts are already
+   Every candidate also goes through the private disclosure denylist
+   (tools/lib/disclosure.mjs), and a match drops the post. Posts are already
    public on Threads, but the site is where your employer looks.
 
    Tokens: the Graph API Explorer hands out short-lived tokens (one hour).
@@ -39,7 +39,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { loadTerms, termMatchers, checkText } from "./disclosure-check.mjs";
+import { loadTerms, termMatchers, checkText } from "./lib/disclosure.mjs";
 
 /* fileURLToPath, not .pathname: on Windows .pathname gives /C:/... */
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
@@ -59,8 +59,12 @@ const config = JSON.parse(readFileSync(CONFIG, "utf8"));
 const lower = (a) => (a || []).map((s) => String(s).toLowerCase().replace(/^#/, ""));
 const topics = new Set(lower(config.topics));
 const hashtags = new Set(lower(config.hashtags));
+/* Entries are post ids or the code from a post link (threads.com/@you/post/CODE),
+   so posts can be picked from the Threads app without an API token */
 const include = new Set((config.include || []).map(String));
 const exclude = new Set((config.exclude || []).map(String));
+const codeOf = (item) => ((String(item.permalink || "").match(/\/post\/([^/?#]+)/) || [])[1] || "");
+const listed = (set, item) => set.has(String(item.id)) || (codeOf(item) && set.has(codeOf(item)));
 const maxItems = config.maxItems || 24;
 const matchers = termMatchers(loadTerms());
 
@@ -117,9 +121,8 @@ function tagsIn(text) {
 }
 
 function qualifies(item) {
-  const id = String(item.id);
-  if (exclude.has(id)) return false;
-  if (include.has(id)) return true;
+  if (listed(exclude, item)) return false;
+  if (listed(include, item)) return true;
   if (item.topic_tag && topics.has(String(item.topic_tag).toLowerCase())) return true;
   for (const t of tagsIn(item.text)) if (hashtags.has(t)) return true;
   return false;
@@ -202,7 +205,7 @@ async function main() {
   const shownIds = new Set(shownPosts.map((p) => p.id));
   const shownReplies = replies
     .map((r) => ({ raw: r, item: shape(r, "reply") }))
-    .filter(({ raw, item }) => !exclude.has(item.id) && (qualifies(raw) || (item.root && shownIds.has(item.root))))
+    .filter(({ raw, item }) => !listed(exclude, raw) && (qualifies(raw) || (item.root && shownIds.has(item.root))))
     .filter(({ raw }) => safe(raw) || (dropped++, false))
     .map(({ item }) => item);
 

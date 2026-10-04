@@ -1,232 +1,96 @@
 #!/usr/bin/env node
-/* Pre-publish disclosure check. Node 18+, no dependencies.
-
-   Fails when anything that is about to be served by GitHub Pages contains:
-     1. A term from a private denylist (project code names, customer and
-        sponsor names, part numbers, hostnames, anything not yours to share).
-     2. Photo metadata that leaks more than the picture: GPS position,
-        camera serial numbers, or embedded text/XMP blocks.
-     3. A draft marker left in published copy: "TODO", "DRAFT", "[redact".
-
-   The denylist is never stored in this repository, because a public list of
-   what must not be said is itself a disclosure. It is read from, in order:
-     - the DISCLOSURE_TERMS environment variable (a GitHub Actions secret), one
-       term per line
-     - a local .disclosure-terms file at the repository root (git-ignored)
-   Matches are reported by term number, never by the term itself, so CI logs
-   on a public repository do not print what they were protecting.
+/* Disclosure check: is any of this safe to publish? Node 18+, no deps.
+   The rules and the private denylist are described in tools/lib/disclosure.mjs.
 
    Usage:
-     node tools/disclosure-check.mjs            everything git would publish (tracked
-                                                and untracked, minus ignored files)
-     node tools/disclosure-check.mjs --tracked  only committed and staged files
-     node tools/disclosure-check.mjs file ...   specific files
-   Exit code 1 on any finding. */
+     node tools/disclosure-check.mjs              the working tree as git would publish it
+     node tools/disclosure-check.mjs --staged     exactly what is staged (pre-commit hook)
+     node tools/disclosure-check.mjs --push       the commits a push would send; reads
+                                                  git's pre-push lines on stdin (pre-push hook)
+     node tools/disclosure-check.mjs --range A..B the commits in a range (CI)
+     node tools/disclosure-check.mjs --message F  a commit message file (commit-msg hook)
+     node tools/disclosure-check.mjs file ...     specific files
 
-import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
-import { join, relative, extname, resolve } from "node:path";
-import { execFileSync } from "node:child_process";
+   Exit code 1 on any finding. Commit and push checks look at the contents
+   git actually stores, never at a working copy that may have changed. */
+
+import { readFileSync } from "node:fs";
+import { relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  TERMS_FILE, loadTerms, termMatchers, checkText, checkFile, kindOf,
+  stagedFiles, outgoingCommits, commitContents, workingFiles, git
+} from "./lib/disclosure.mjs";
 
-/* fileURLToPath, not .pathname: on Windows .pathname gives /C:/... */
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
-
-/* Used only when git is unavailable. Everything else in the repository is
-   public, tooling and Claude Code config included, so it is all scanned
-   for denylisted terms. */
-const SKIP_DIRS = new Set([".git", "node_modules"]);
-const TEXT_EXT = new Set([".html", ".htm", ".css", ".js", ".mjs", ".json", ".md", ".txt", ".xml", ".svg", ".yml", ".yaml", ".ps1", ".sh", ".toml"]);
-const IMAGE_EXT = new Set([".jpg", ".jpeg", ".png"]);
-/* Draft markers only matter on pages the site serves. Docs, tooling, and
-   Claude Code config are allowed to talk about drafts; they are still
-   scanned for denylisted terms. */
-const DRAFT_EXEMPT = new Set(["README.md", "CONTRIBUTING.md", "PUBLISHING.md", "CLAUDE.md", "LICENSE"]);
-const DRAFT_EXEMPT_DIRS = [".github/", ".claude/", "tools/", "legacy/", "assets/vendor/"];
-const DRAFT_PATTERNS = [/\bTODO\b/, /\bDRAFT\b/, /\[redact/i, /\bTBD\b/];
-
-export function loadTerms() {
-  let raw = process.env.DISCLOSURE_TERMS || "";
-  const local = join(ROOT, ".disclosure-terms");
-  if (!raw && existsSync(local)) raw = readFileSync(local, "utf8");
-  return raw
-    .split(/\r?\n/)
-    .map((t) => t.trim())
-    .filter((t) => t && !t.startsWith("#"));
-}
-
-function walk(dir, out = []) {
-  for (const name of readdirSync(dir)) {
-    if (SKIP_DIRS.has(name)) continue;
-    const full = join(dir, name);
-    const st = statSync(full);
-    if (st.isDirectory()) walk(full, out);
-    else out.push(full);
-  }
-  return out;
-}
-
-/* Everything git would publish: tracked files plus new files that are not
-   ignored. Ignored files (the denylist itself, local secrets config,
-   CLAUDE.local.md) never leave this computer, so they are not scanned. */
-function publishable(trackedOnly) {
-  try {
-    /* --tracked: only what is committed or staged, for the commit and push
-       hooks, so an unrelated draft sitting untracked does not block them */
-    const which = trackedOnly ? ["--cached"] : ["--cached", "--others", "--exclude-standard"];
-    const out = execFileSync("git", ["ls-files", ...which, "-z"], { cwd: ROOT, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
-    return out.split("\0").filter(Boolean).map((f) => join(ROOT, f)).filter((f) => existsSync(f));
-  } catch (e) {
-    return walk(ROOT);
-  }
-}
-
-function escapeRe(s) {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-/* Whole-word, case-insensitive. Short terms would otherwise match inside
-   ordinary words and train you to ignore the check. */
-export function termMatchers(terms) {
-  return terms.map((t) => new RegExp("(^|[^\\p{L}\\p{N}])" + escapeRe(t) + "(?=$|[^\\p{L}\\p{N}])", "iu"));
-}
-
-/* ---------------------------------------------------------------- Text */
-
-export function checkText(text, matchers, { drafts = true } = {}) {
-  const findings = [];
-  const lines = text.split(/\r?\n/);
-  lines.forEach((line, i) => {
-    matchers.forEach((re, n) => {
-      if (re.test(line)) findings.push({ line: i + 1, kind: "term", detail: "denylisted term #" + (n + 1) });
-    });
-    if (drafts) {
-      for (const re of DRAFT_PATTERNS) {
-        if (re.test(line)) {
-          findings.push({ line: i + 1, kind: "draft", detail: "draft marker " + re.source.replace(/\\b/g, "") });
-          break;
-        }
-      }
-    }
-  });
-  return findings;
-}
-
-/* ---------------------------------------------------------------- JPEG */
-
-/* Walks the JPEG segments and reads the EXIF IFD0 for the tags that give a
-   person away. Image pixels are not touched. */
-function checkJpeg(buf) {
-  const findings = [];
-  if (buf[0] !== 0xff || buf[1] !== 0xd8) return findings;
-  let p = 2;
-  while (p + 4 < buf.length) {
-    if (buf[p] !== 0xff) break;
-    const marker = buf[p + 1];
-    if (marker === 0xda || marker === 0xd9) break; /* start of scan / end */
-    const len = buf.readUInt16BE(p + 2);
-    const seg = buf.subarray(p + 4, p + 2 + len);
-    if (marker === 0xe1) {
-      const head = seg.subarray(0, 29).toString("latin1");
-      if (head.startsWith("Exif\0\0")) findings.push(...readExif(seg.subarray(6)));
-      else if (head.startsWith("http://ns.adobe.com/xap/1.0/")) {
-        findings.push({ kind: "metadata", detail: "XMP block (can carry location, author and editing history)" });
-      }
-    }
-    p += 2 + len;
-  }
-  return findings;
-}
-
-const SENSITIVE_TAGS = {
-  0x8825: "GPS position",
-  0xa431: "camera body serial number",
-  0xa435: "lens serial number",
-  0x013b: "artist name",
-  0x9c9c: "embedded comment",
-  0x9286: "embedded comment"
+const argv = process.argv.slice(2);
+const flag = (name) => argv.includes(name);
+const value = (name) => {
+  const i = argv.indexOf(name);
+  return i >= 0 ? argv[i + 1] : null;
 };
 
-function readExif(tiff) {
-  const findings = [];
-  if (tiff.length < 8) return findings;
-  const le = tiff.toString("latin1", 0, 2) === "II";
-  const u16 = (o) => (le ? tiff.readUInt16LE(o) : tiff.readUInt16BE(o));
-  const u32 = (o) => (le ? tiff.readUInt32LE(o) : tiff.readUInt32BE(o));
-  const seen = new Set();
-  const visit = (offset) => {
-    if (!offset || seen.has(offset) || offset + 2 > tiff.length) return;
-    seen.add(offset);
-    const count = u16(offset);
-    for (let i = 0; i < count; i++) {
-      const e = offset + 2 + i * 12;
-      if (e + 12 > tiff.length) return;
-      const tag = u16(e);
-      if (SENSITIVE_TAGS[tag]) findings.push({ kind: "metadata", detail: "EXIF " + SENSITIVE_TAGS[tag] });
-      if (tag === 0x8769) visit(u32(e + 8)); /* Exif sub-IFD holds the serials */
-    }
-  };
-  visit(u32(4));
-  return findings;
-}
+const terms = loadTerms();
+const matchers = termMatchers(terms);
+const report = [];
+const opaque = [];
+let scanned = 0;
+let scope = "files";
 
-/* ---------------------------------------------------------------- PNG */
-
-function checkPng(buf) {
-  const findings = [];
-  if (buf.toString("latin1", 1, 4) !== "PNG") return findings;
-  let p = 8;
-  while (p + 8 <= buf.length) {
-    const len = buf.readUInt32BE(p);
-    const type = buf.toString("latin1", p + 4, p + 8);
-    if (type === "eXIf") findings.push({ kind: "metadata", detail: "PNG eXIf chunk" });
-    if (type === "iTXt" || type === "tEXt" || type === "zTXt") {
-      const key = buf.toString("latin1", p + 8, Math.min(p + 8 + len, p + 8 + 80)).split("\0")[0];
-      /* Software and colour keys are harmless; anything else gets a look */
-      if (!/^(Software|Creation Time|date:|icc|exif:Pixel)/i.test(key)) {
-        findings.push({ kind: "metadata", detail: "PNG text chunk \"" + key + "\"" });
-      }
-    }
-    if (type === "IEND") break;
-    p += 12 + len;
-  }
-  return findings;
-}
-
-/* ---------------------------------------------------------------- Run */
-
-function main() {
-  const terms = loadTerms();
-  const matchers = termMatchers(terms);
-  const flags = process.argv.slice(2).filter((a) => a.startsWith("--"));
-  const args = process.argv.slice(2).filter((a) => !a.startsWith("--"));
-  const files = args.length ? args.map((f) => resolve(f)) : publishable(flags.includes("--tracked"));
-  let total = 0;
-
-  for (const file of files) {
-    const rel = relative(ROOT, file);
-    const ext = extname(file).toLowerCase();
-    let findings = [];
-    if (TEXT_EXT.has(ext)) {
-      const drafts = !DRAFT_EXEMPT.has(rel) && !DRAFT_EXEMPT_DIRS.some((d) => rel.startsWith(d));
-      findings = checkText(readFileSync(file, "utf8"), matchers, { drafts });
-    } else if (IMAGE_EXT.has(ext)) {
-      const buf = readFileSync(file);
-      findings = ext === ".png" ? checkPng(buf) : checkJpeg(buf);
-    }
-    for (const f of findings) {
-      total++;
-      console.log(rel + (f.line ? ":" + f.line : "") + "  " + f.kind + "  " + f.detail);
+function scan(files, { drafts = true, label, changed } = {}) {
+  for (const f of files) {
+    scanned++;
+    if (kindOf(f.rel) === "opaque" && (!changed || changed.has(f.rel))) opaque.push(f.rel);
+    for (const x of checkFile(f.rel, f.buf, matchers, { drafts })) {
+      report.push((label ? label(f) : "") + f.rel + (x.line ? ":" + x.line : "") + "  " + x.kind + "  " + x.detail);
     }
   }
-
-  const note = terms.length ? terms.length + " private terms" : "no private terms loaded";
-  if (total) {
-    console.log("\n" + total + " finding(s), " + note + ". Nothing above is safe to publish until it is resolved.");
-    process.exit(1);
-  }
-  console.log("Disclosure check passed: " + files.length + " files, " + note + ".");
 }
 
-/* Run only when executed directly, not when imported by threads-sync.
-   Compare real paths: on Windows argv[1] is C:\\... while the URL is file:///C:/... */
-if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) main();
+if (flag("--staged")) {
+  scope = "staged files";
+  /* Every staged file is checked; binaries are listed only when this
+     commit adds or changes them, so the note isn't noise on every commit */
+  let changed = new Set();
+  try {
+    changed = new Set(git(ROOT, ["diff", "--cached", "--name-only", "-z"]).toString("utf8").split("\0").filter(Boolean));
+  } catch (e) {}
+  scan(stagedFiles(ROOT), { changed });
+} else if (flag("--push") || flag("--range")) {
+  const input = flag("--push") ? readFileSync(0, "utf8") : "";
+  const commits = outgoingCommits(ROOT, { prePushInput: input, range: value("--range") });
+  scope = commits.length + " outgoing commit(s)";
+  const { files, messages } = commitContents(ROOT, commits);
+  /* History is checked for terms and photo data; draft markers only matter
+     in the final pages, which pre-commit already checked */
+  scan(files, { drafts: false, label: (f) => f.commit.slice(0, 7) + " " });
+  for (const m of messages) {
+    for (const x of checkText(m.text, matchers, { drafts: false })) {
+      report.push(m.commit.slice(0, 7) + " commit message:" + x.line + "  " + x.kind + "  " + x.detail);
+    }
+  }
+} else if (flag("--message")) {
+  scope = "commit message";
+  const text = readFileSync(value("--message"), "utf8").replace(/^#.*$/gm, "");
+  for (const x of checkText(text, matchers, { drafts: false })) report.push("commit message:" + x.line + "  " + x.kind + "  " + x.detail);
+} else {
+  const paths = argv.filter((a) => !a.startsWith("--"));
+  if (paths.length) {
+    scan(paths.map((p) => ({ rel: relative(ROOT, resolve(p)).split(sep).join("/"), buf: readFileSync(p) })));
+  } else {
+    scope = "files git would publish";
+    scan(workingFiles(ROOT));
+  }
+}
+
+const note = terms.length ? terms.length + " private terms" : "no private terms loaded (" + TERMS_FILE + " not found)";
+if (opaque.length) {
+  console.log("Not checked (binary; look at these yourself): " + Array.from(new Set(opaque)).join(", "));
+}
+if (report.length) {
+  console.log(report.join("\n"));
+  console.log("\n" + report.length + " finding(s) in " + scope + ", " + note + ". Nothing above is safe to publish until it is resolved.");
+  process.exit(1);
+}
+const what = scope === "commit message" ? "commit message" : /outgoing/.test(scope) ? scanned + " file versions in " + scope : scanned + " " + scope;
+console.log("Disclosure check passed: " + what + ", " + note + ".");

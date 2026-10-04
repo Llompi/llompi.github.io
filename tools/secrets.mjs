@@ -37,8 +37,9 @@
      node tools/secrets.mjs link NAME            GitHub page to set it by hand from a phone */
 
 import { execFileSync, spawnSync } from "node:child_process";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { join, delimiter } from "node:path";
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { join, delimiter, dirname } from "node:path";
+import { TERMS_FILE } from "./lib/disclosure.mjs";
 import { fileURLToPath } from "node:url";
 
 /* fileURLToPath, not .pathname: on Windows .pathname gives /C:/... */
@@ -68,7 +69,17 @@ function loadConfig() {
         "and point each entry at your password manager. Values never go in that file, only the commands."
     );
   }
-  return JSON.parse(readFileSync(CONFIG, "utf8"));
+  return parseConfig();
+}
+
+/* The parser's own error quotes the offending line, which could be a value
+   pasted where a command belongs, so it is never shown */
+function parseConfig() {
+  try {
+    return JSON.parse(readFileSync(CONFIG, "utf8").replace(/^\uFEFF/, ""));
+  } catch (e) {
+    die(".claude/secrets.local.json is not valid JSON. Fix it at the computer.");
+  }
 }
 
 /* Runs the configured command and returns its stdout. The command text is
@@ -78,8 +89,9 @@ function readValue(name, config, { keepNewlines = false } = {}) {
   if (!entry || !entry.cmd) die(name + " has no command in .claude/secrets.local.json");
   const r = spawnSync(entry.cmd, { shell: entry.shell || true, cwd: ROOT, env: toolEnv(), encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], timeout: 60000, windowsHide: true });
   if (r.status !== 0) {
-    /* stderr from a password manager is about locking or sign-in, not the value */
-    die(name + ": the command failed (" + (r.stderr || "").trim().split("\n")[0] + "). Is the password manager unlocked?");
+    /* stderr is not shown: a shell's "not found" message would quote a value
+       pasted in place of a command */
+    die(name + ": the command failed (exit code " + r.status + "). Is the password manager unlocked, and is the item path right?");
   }
   /* Normalise Windows line endings so terms match on every platform */
   const out = r.stdout.replace(/\r\n/g, "\n");
@@ -138,7 +150,7 @@ const repo = repoSlug();
 
 switch (cmd) {
   case "status": {
-    const config = existsSync(CONFIG) ? JSON.parse(readFileSync(CONFIG, "utf8")) : {};
+    const config = existsSync(CONFIG) ? parseConfig() : {};
     const remote = ghAvailable() ? ghSecrets(repo) : null;
     const names = new Set([...Object.keys(config), ...Object.keys(remote || {}), "DISCLOSURE_TERMS", "THREADS_ACCESS_TOKEN", "SECRETS_WRITE_TOKEN"]);
     const op = onPath("op");
@@ -180,8 +192,9 @@ switch (cmd) {
   case "pull-denylist": {
     const config = loadConfig();
     const v = readValue("DISCLOSURE_TERMS", config, { keepNewlines: true });
-    writeFileSync(join(ROOT, ".disclosure-terms"), v, { mode: 0o600 });
-    console.log("Wrote .disclosure-terms (" + describe("DISCLOSURE_TERMS", v) + "). It is git-ignored.");
+    mkdirSync(dirname(TERMS_FILE), { recursive: true });
+    writeFileSync(TERMS_FILE, v, { mode: 0o600 });
+    console.log("Wrote the local denylist (" + describe("DISCLOSURE_TERMS", v) + ") outside the repository.");
     break;
   }
 

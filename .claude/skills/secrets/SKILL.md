@@ -15,7 +15,7 @@ Never ask for a secret value, never print one, and never accept one in the chat.
 
 If the owner offers to paste a value here, decline and give the link instead. A hook blocks messages that look like tokens, but it can miss one. If a value does reach the conversation, tell the owner to revoke and reissue it now, and where (Meta: the app's Threads API settings; GitHub: Settings, Developer settings, Personal access tokens).
 
-Never read the denylist file; the command hook blocks it. `node tools/disclosure-check.mjs` uses it and reports matches by number only.
+Never read the denylist file; it lives outside the repository and the command hook blocks reading it. `node tools/disclosure-check.mjs` uses it and reports matches by number only.
 
 Keep it short. Everything here is optional: the site works without any secret, and the Notes section stays hidden until Threads is connected.
 
@@ -27,9 +27,10 @@ Run `node tools/site-status.mjs`. Report only what the owner might want to do ne
 
 The private list of terms the disclosure check blocks (code names, sponsor and customer names, hostnames, coworkers' names, unpublished project names). One term per line, `#` for comments, whole-word and case-insensitive.
 
-- On this computer (what protects a push): the owner runs, at the computer,
-  `notepad "$env:USERPROFILE\Documents\Projects\GitHub\llompi.github.io\.disclosure-terms"`
-  types the terms, and saves. The file is git-ignored. Don't open it yourself.
+- On this computer (what protects a commit and a push): the list lives outside the repository, so no search, preview, or commit can reach it. The owner runs this once at the computer, types the terms, and saves:
+  `mkdir -Force "$env:APPDATA\llompi-site" | Out-Null; notepad "$env:APPDATA\llompi-site\disclosure-terms.txt"`
+  (macOS or Linux: `~/.config/llompi-site/disclosure-terms.txt`.) Don't open it yourself.
+- If an old `.disclosure-terms` file sits in the repository folder, tell the owner to move its contents to the new file and delete it.
 - In CI (optional, a second net after a push): `node tools/secrets.mjs link DISCLOSURE_TERMS` and the owner pastes the same list there.
 
 You may suggest kinds of terms. Never ask for the terms.

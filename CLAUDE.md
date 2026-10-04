@@ -9,7 +9,7 @@ The owner's computer is Windows, so commands there run in PowerShell. Everything
 ## Rules that are not negotiable
 
 - Everything pushed is public, history included. Read PUBLISHING.md before adding anything about the owner's work. Employer work is keep-out at most. Home projects in the employer's field are not published at all without the owner's written clearance.
-- Never ask for, print, or accept a secret value in the conversation. The owner pastes secrets directly into GitHub's secret pages (`node tools/secrets.mjs link NAME` gives the page). Never read the private denylist; `node tools/disclosure-check.mjs` reports matches by number only. Hooks in `.claude/hooks/` enforce this; don't work around them.
+- Never ask for, print, or accept a secret value in the conversation. The owner pastes secrets directly into GitHub's secret pages (`node tools/secrets.mjs link NAME` gives the page). Never read the private denylist (it lives outside the repository); `node tools/disclosure-check.mjs` reports matches by number only. The disclosure check runs as git hooks in `.githooks/` on every commit and push; never use `--no-verify` or change `core.hooksPath`. Hooks in `.claude/hooks/` turn the git hooks on and guard against printing secrets.
 - Never invent facts about the owner: numbers, results, dates, names, quotes, employers. If a sentence needs a fact you don't have, ask.
 - Copy you draft is a draft for the owner to rewrite, not final copy in their voice. Say which sentences you wrote so they know what to own.
 - Don't add personal ambitions, job-search signals, or anything about pay to the site or to commit messages.
@@ -42,7 +42,7 @@ If `CLAUDE.local.md` exists, it holds the owner's full manual and takes preceden
 
 | Task | Command |
 |---|---|
-| Preview | `python3 -m http.server 8000` |
+| Preview | `node tools/serve.mjs` (127.0.0.1:8000, publishable files only) |
 | Disclosure check | `node tools/disclosure-check.mjs` |
 | Design detector | `npx impeccable detect index.html lab/index.html assets/css/styles.css` |
 | Site status | `node tools/site-status.mjs` |

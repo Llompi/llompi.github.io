@@ -1,0 +1,6 @@
+#!/bin/sh
+# Disclosure check on every commit this push would send, not just the
+# latest state: a term removed in a later commit is still in the history.
+# git passes the refs being pushed on stdin; exec hands them to node.
+command -v node >/dev/null 2>&1 || { echo "pre-push: Node.js not found, so the disclosure check can't run. Install Node 18+." >&2; exit 1; }
+exec node "$(git rev-parse --show-toplevel)/tools/disclosure-check.mjs" --push

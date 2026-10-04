@@ -5,18 +5,19 @@
 
    Usage:
      node tools/threads-curate.mjs shown                  what the site shows now
-     node tools/threads-curate.mjs recent [N]             your latest posts and replies, each marked
-                                                          shown or hidden and why (needs the token)
-     node tools/threads-curate.mjs include <id|url>       always show this post
-     node tools/threads-curate.mjs exclude <id|url>       never show this post
+     node tools/threads-curate.mjs include <id|link>      always show this post
+     node tools/threads-curate.mjs exclude <id|link>      never show this post
+     node tools/threads-curate.mjs recent [N]             your latest posts, each marked shown or hidden
+                                                          and why (only with a Threads token on this computer)
      node tools/threads-curate.mjs reset <id|url>         back to the topic and hashtag rules
      node tools/threads-curate.mjs topics                 list the rules
      node tools/threads-curate.mjs topic add|remove NAME
      node tools/threads-curate.mjs hashtag add|remove TAG
 
-   `recent` reads the token from THREADS_ACCESS_TOKEN in the environment or
-   from the command in .claude/secrets.local.json. Post text is printed (it is
-   already public on Threads); the token never is.
+   include and exclude work from a post link alone, so curating needs no
+   token: copy the link in the Threads app and paste it. Only `recent` calls
+   the API, with THREADS_ACCESS_TOKEN from the environment or the command in
+   .claude/secrets.local.json; the token is never printed.
 
    Changes take effect on the next sync. Commit and push the config, then
    run: gh workflow run threads-sync.yml */
@@ -44,13 +45,21 @@ const day = (iso) => String(iso || "").slice(0, 10);
 function token() {
   if (process.env.THREADS_ACCESS_TOKEN) return process.env.THREADS_ACCESS_TOKEN;
   if (existsSync(SECRETS)) {
-    const entry = JSON.parse(readFileSync(SECRETS, "utf8")).THREADS_ACCESS_TOKEN;
+    let entries = {};
+    try {
+      entries = JSON.parse(readFileSync(SECRETS, "utf8"));
+    } catch (e) {
+      /* The parser's message quotes the file, which may hold a pasted value */
+      console.error(".claude/secrets.local.json is not valid JSON. Fix it at the computer.");
+      process.exit(1);
+    }
+    const entry = entries.THREADS_ACCESS_TOKEN;
     if (entry && entry.cmd) {
       const r = spawnSync(entry.cmd, { shell: entry.shell || true, cwd: ROOT, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], timeout: 60000, windowsHide: true });
       if (r.status === 0 && r.stdout.trim()) return r.stdout.trim();
     }
   }
-  console.error("No Threads token here. Set THREADS_ACCESS_TOKEN, or configure it in .claude/secrets.local.json.");
+  console.error("Listing recent posts needs a Threads token on this computer, and there isn't one (it lives in GitHub). Pick posts from the Threads app instead: include or exclude takes a post link.");
   process.exit(1);
 }
 
@@ -85,32 +94,23 @@ function verdict(item, shownRoots) {
   return "hidden: " + (item.topic_tag ? "topic " + item.topic_tag + " not in the list" : "no matching topic or hashtag");
 }
 
-/* Accepts a numeric id or a threads.com / threads.net permalink */
+/* Accepts a post id, or a Threads link (threads.com/@you/post/CODE or a
+   /t/CODE share link). A link is stored as its code; the sync matches codes
+   against each post's link, so no API token is needed to curate. */
 async function resolve(ref) {
   if (!ref) {
     console.error("Give a post id or its Threads link.");
     process.exit(1);
   }
   if (/^\d+$/.test(ref)) return ref;
-  const code = (ref.match(/\/post\/([^/?#]+)/) || [])[1];
+  const code = (ref.match(/\/(?:post|t)\/([A-Za-z0-9_-]+)/) || [])[1] || (/^[A-Za-z0-9_-]{6,}$/.test(ref) ? ref : null);
   if (!code) {
     console.error("That doesn't look like a post id or a Threads post link.");
     process.exit(1);
   }
   const local = existsSync(DATA) ? JSON.parse(readFileSync(DATA, "utf8")).items || [] : [];
-  const hit = local.find((i) => String(i.permalink || "").includes("/post/" + code));
-  if (hit) return hit.id;
-  const tok = token();
-  const all = [
-    ...(await fetchAll(tok, "/me/threads", "id,permalink")),
-    ...(await fetchAll(tok, "/me/replies", "id,permalink").catch(() => []))
-  ];
-  const found = all.find((i) => String(i.permalink || "").includes("/post/" + code));
-  if (!found) {
-    console.error("Couldn't find that post among your latest 50 posts and replies.");
-    process.exit(1);
-  }
-  return String(found.id);
+  const hit = local.find((i) => new RegExp("/post/" + code + "(?:[/?#]|$)").test(String(i.permalink || "")));
+  return hit ? hit.id : code;
 }
 
 function setList(id, add, remove) {

@@ -1,7 +1,9 @@
 name: Disclosure check
 
-# Blocks a push or pull request that would publish a denylisted term or a
-# photo carrying location or serial-number metadata. See PUBLISHING.md.
+# Flags a push or pull request that publishes a denylisted term or a photo
+# carrying location or serial-number metadata. The git hooks in .githooks/
+# stop these before a push; this is the alarm if one gets through.
+# See PUBLISHING.md.
 
 on:
   push:
@@ -15,6 +17,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -22,3 +26,10 @@ jobs:
         env:
           DISCLOSURE_TERMS: ${{ secrets.DISCLOSURE_TERMS }}
         run: node tools/disclosure-check.mjs
+
+      # The tree can be clean while a pushed commit in between was not
+      - name: Scan the pushed commits
+        if: github.event_name == 'push' && github.event.before != '0000000000000000000000000000000000000000'
+        env:
+          DISCLOSURE_TERMS: ${{ secrets.DISCLOSURE_TERMS }}
+        run: node tools/disclosure-check.mjs --range "${{ github.event.before }}..${{ github.sha }}"

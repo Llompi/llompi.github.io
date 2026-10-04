@@ -51,15 +51,18 @@ The computer has to stay awake with the session running. It needs Node 18 or new
 ## Checks
 
 ```
-node tools/disclosure-check.mjs
+git config core.hooksPath .githooks   # once per clone; Claude Code sessions do this for you
+node tools/disclosure-check.mjs       # by hand, any time
 ```
+
+With the hooks on, git runs the disclosure check on what is staged, on the commit message, and on every commit a push sends.
 
 ## Local development
 
-Open `index.html` in a browser, or serve the folder:
+Open `index.html` in a browser, or serve it on this computer only (127.0.0.1:8000, files git would publish):
 
 ```
-python -m http.server 8000
+node tools/serve.mjs
 ```
 
 ## License

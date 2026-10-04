@@ -28,28 +28,29 @@ Decide the level before writing a word.
 
 ## The automated check
 
-`tools/disclosure-check.mjs` runs on every push and pull request (`.github/workflows/disclosure-check.yml`). It fails the build when the published tree contains:
+`tools/disclosure-check.mjs` looks for:
 
 1. a term from a private denylist,
 2. photo metadata that gives away a location or a device (GPS, camera and lens serials, artist, comments, XMP),
-3. a draft marker (`TODO`, `DRAFT`, `TBD`, `[redact`) in published pages.
+3. a draft marker (`TODO`, `DRAFT`, `TBD`, `[redact`) in served pages.
 
-Run it locally before committing:
+It runs in three places:
 
-```
-node tools/disclosure-check.mjs
-```
+- **Git hooks, on this computer** (`.githooks/`): before a commit it checks exactly what is staged and the commit message; before a push it checks every commit being sent, so a term added and then removed is still caught. Turn them on once per clone with `git config core.hooksPath .githooks` (Claude Code sessions here do it for you). These are what keep a mistake private, because they run before anything leaves the computer.
+- **CI** (`.github/workflows/disclosure-check.yml`) on every push and pull request. By then a push is already public, so CI is the alarm, not the lock.
+- **By hand**, any time: `node tools/disclosure-check.mjs`.
+
+Binary files it can't read (PDFs, videos, WebP) are listed as "not checked" so you look at them yourself.
 
 ### The denylist
 
-The list of things that must not be said cannot live in a public repository; it would be a disclosure itself. It is read from:
+The list of things that must not be said can't live in a public repository; it would be a disclosure itself. It lives outside the repository folder, so no search, preview, or commit can touch it:
 
-- **In CI:** a repository secret named `DISCLOSURE_TERMS`, one term per line. Settings, Secrets and variables, Actions, New repository secret.
-- **Locally:** a file named `.disclosure-terms` in the repository root, same format. It is in `.gitignore`.
+- **On this computer:** `%APPDATA%\llompi-site\disclosure-terms.txt` on Windows, `~/.config/llompi-site/disclosure-terms.txt` elsewhere. One term per line, `#` for comments. To create it on Windows:
+  `mkdir -Force "$env:APPDATA\llompi-site" | Out-Null; notepad "$env:APPDATA\llompi-site\disclosure-terms.txt"`
+- **In CI (optional):** a repository secret named `DISCLOSURE_TERMS` with the same lines.
 
-The local file is the one that protects you, because it runs before anything leaves the computer; CI only sees a push after it is public. In Claude Code, the command hook runs the check before every commit and push. (`tools/secrets.mjs` can also copy the list from a password manager, if you ever want that.)
-
-Matching is whole-word and case-insensitive. Findings are reported as "term #3", never by the term, so public CI logs don't print it. Good candidates: program and project code names, customer, sponsor and partner names, internal hostnames and IP ranges, part numbers of custom parts, colleagues' names, the name of any home project that isn't public yet.
+Matching is whole-word and case-insensitive, and the words of a multi-word term may be split by line breaks or non-breaking spaces. Findings are reported as "term #3", never by the term, so public CI logs don't print it. Good candidates: program and project code names, customer, sponsor and partner names, internal hostnames and IP ranges, part numbers of custom parts, colleagues' names, the name of any home project that isn't public yet.
 
 Note that a pushed commit is public even if the next commit removes it. If the check catches something after it was pushed, treat it as published and tell whoever owns it.
 

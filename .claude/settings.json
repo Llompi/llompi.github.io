@@ -46,6 +46,8 @@
       "PowerShell(git log *)"
     ],
     "deny": [
+      "Read(~/.config/llompi-site/**)",
+      "Read(~/AppData/Roaming/llompi-site/**)",
       "Read(./.disclosure-terms)",
       "Read(./.env)",
       "Read(./.env.*)"
@@ -57,7 +59,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PROJECT_DIR}/tools/site-status.mjs\" --brief",
+            "command": "node \"${CLAUDE_PROJECT_DIR}/.claude/hooks/session-start.mjs\"",
             "timeout": 30
           }
         ]
@@ -68,7 +70,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PROJECT_DIR}/.claude/hooks/guard-prompt.mjs\"",
+            "command": "node \"${CLAUDE_PROJECT_DIR}/.claude/hooks/guard-prompt.mjs\" || exit 2",
             "timeout": 10
           }
         ]
@@ -80,7 +82,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PROJECT_DIR}/.claude/hooks/guard-bash.mjs\"",
+            "command": "node \"${CLAUDE_PROJECT_DIR}/.claude/hooks/guard-bash.mjs\" || exit 2",
             "timeout": 90
           }
         ]

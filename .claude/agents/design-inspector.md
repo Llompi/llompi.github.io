@@ -24,4 +24,4 @@ How to report:
 - Name strengths only when the praise explains a decision worth keeping.
 - End with any question whose answer would change the direction.
 
-Useful tools: `npx impeccable detect <files or URL>` (treat hits as leads and confirm them), `python3 -m http.server` for a local preview, and Playwright if it is installed.
+Useful tools: `npx impeccable detect <files or URL>` (treat hits as leads and confirm them), `node tools/serve.mjs` for a local preview (127.0.0.1 only), and Playwright if it is installed.
