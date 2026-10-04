@@ -2252,6 +2252,18 @@ dialog.project-modal::backdrop {
    13. Responsive
    -------------------------------------------------------------------------- */
 
+/* Three across, the at-work cards' meta lines start wrapping near 1030px,
+   so below this each one takes a full row */
+@media (max-width: 1080px) {
+  .case-card--brief {
+    grid-column: 1 / -1;
+  }
+
+  .case-card--brief .case-body {
+    max-width: 46rem;
+  }
+}
+
 @media (max-width: 1024px) {
   .skills-grid {
     grid-template-columns: repeat(2, 1fr);
