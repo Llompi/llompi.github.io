@@ -1,0 +1,11 @@
+// Cloudflare mirror of the site. GitHub Pages and Cloudflare both deploy
+// from main, so there is one source and nothing to keep in sync by hand.
+// Static assets only: no Worker script, no build step.
+{
+  "name": "llompi-site",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./",
+    "not_found_handling": "404-page"
+  }
+}

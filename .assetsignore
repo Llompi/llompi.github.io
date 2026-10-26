@@ -1,0 +1,17 @@
+# Files Cloudflare must not serve. Only the site itself goes up:
+# index.html, 404.html, robots.txt, sitemap.xml, assets/, data/, docs/, lab/, writeup/.
+.git
+.github
+.githooks
+.claude
+.gitattributes
+.gitignore
+.assetsignore
+.disclosure-terms
+wrangler.jsonc
+node_modules
+legacy
+tools
+*.md
+LICENSE
+data/threads.config.json
