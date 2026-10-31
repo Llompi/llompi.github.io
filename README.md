@@ -30,7 +30,7 @@ legacy/                     Archived earlier iterations
 
 Design notes: graphite and paper themes, Archivo and IBM Plex Mono type, and a circuit-trace hero drawn in SVG. Two colours with separate jobs: copper depicts the board (traces, pads, vias, registration marks, the brand mark) and never moves; verdigris, what copper oxidises into, carries the interface (action, state, focus, wayfinding) and is spent on nothing decorative. Fonts are self-hosted, so the page makes no third-party requests. The theme toggle respects `prefers-color-scheme` and remembers the choice in `localStorage`. Animations respect `prefers-reduced-motion`, and content is readable with JavaScript disabled.
 
-Work that belongs to someone else sits under "keep-out", the hatched zone on a board where nothing may be placed: each card says what the work is and what I did, then lists what is shown and what is kept back. How that line is drawn, and the check that enforces it, are in [PUBLISHING.md](PUBLISHING.md).
+Work I do for my employer appears in Selected work as short text cards: what it is and what I did, with no photos or detail pages. How that line is drawn, and the check that enforces it, are in [PUBLISHING.md](PUBLISHING.md).
 
 The lab is three.js, self-hosted and loaded only on `/lab/`. It renders only while it's on screen and something is moving, pauses for `prefers-reduced-motion`, and falls back to the Smith chart and the numbers when WebGL is unavailable.
 
